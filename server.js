@@ -19,6 +19,50 @@ const MIME_TYPES = {
 };
 
 function requestHandler(req, res) {
+  // CORS Headers for Agent & MCP integrations
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  // MCP Endpoint 1: GET /api/mcp/tools (Tool Catalog)
+  if (req.url === '/api/mcp/tools' && req.method === 'GET') {
+    try {
+      const { MCP_TOOLS } = require('./mcp-server.js');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'ACTIVE', count: MCP_TOOLS.length, tools: MCP_TOOLS }, null, 2));
+      return;
+    } catch(e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+      return;
+    }
+  }
+
+  // MCP Endpoint 2: POST /api/mcp (Standard JSON-RPC 2.0)
+  if (req.url === '/api/mcp' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const { processMessage } = require('./mcp-server.js');
+        const jsonMsg = JSON.parse(body);
+        const rpcResult = await processMessage(jsonMsg);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(rpcResult, null, 2));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: err.message } }));
+      }
+    });
+    return;
+  }
+
   let reqPath = decodeURI(req.url.split('?')[0].split('#')[0]);
   if (reqPath === '/' || reqPath === '') {
     reqPath = '/index.html';
