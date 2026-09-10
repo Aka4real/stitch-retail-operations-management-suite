@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Employee Profile - Nexus Retail Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;900&amp;family=Inter:wght@400;500&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#8192a7",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary-container": "#ca8100",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-tertiary-fixed": "#2a1700",
+                        "error-container": "#ffdad6",
+                        "surface-container-high": "#dce9ff",
+                        "on-primary-fixed": "#0b1d2d",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c4c6cd",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-container": "#00714d",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b7c8de",
+                        "on-primary-fixed-variant": "#38485a",
+                        "on-primary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "surface-bright": "#f8f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#4f6073",
+                        "secondary-fixed": "#6ffbbe",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-surface": "#0b1c30",
+                        "surface-variant": "#d3e4fe",
+                        "primary-fixed": "#d2e4fb",
+                        "on-background": "#0b1c30",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "secondary-container": "#6cf8bb",
+                        "surface-container": "#e5eeff",
+                        "primary": "#041627",
+                        "secondary": "#006c49",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "outline": "#74777d",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#3e2400",
+                        "secondary-fixed-dim": "#4edea3",
+                        "tertiary": "#221200",
+                        "primary-fixed-dim": "#b7c8de",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface": "#f8f9ff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#213145",
+                        "primary-container": "#1a2b3c",
+                        "surface-container-low": "#eff4ff",
+                        "on-surface-variant": "#44474c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "lg": "24px",
+                        "sm": "12px",
+                        "gutter": "20px",
+                        "margin": "24px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "label-sm": ["JetBrains Mono"],
+                        "table-data": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "table-data": ["13px", { "lineHeight": "18px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- Navigation Drawer -->
+<nav class="w-[280px] h-screen fixed left-0 top-0 bg-surface dark:bg-primary border-r border-outline-variant dark:border-on-primary-fixed-variant flex flex-col p-md gap-xs hidden md:flex z-50">
+<div class="mb-xl px-sm">
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Nexus Retail</h1>
+</div>
+<div class="flex items-center gap-md px-md py-sm mb-lg">
+<img alt="Manager Portrait" class="w-10 h-10 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a corporate manager in a modern, well-lit office setting. Light mode aesthetic, sharp focus, professional attire." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEtgbD42vTVYvwwPXqru8XxXxERIZ6MHbJXTgp2rF-x67Qo2NDtX2IiiwFPt3TctDPyacdi1tcJmdhb4KzqQ6eJuw_4So7YQ5b2BgSS8bW6h2u65cBGQ1oF-heEhqs8JGBEY9Oez2OjKzcqa09We9ExTDpmOcDSrK4nw0mnoYyItl_zfUHyG6kBxYWrxmSdkXllJPSS4Iv1FYtkKfwGKacePdLlwvCa-ow7ILDVJxR8yc7sZtATutu"/>
+<div>
+<p class="font-headline-md text-body-md font-bold text-on-surface">Center Operations</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Global Administrator</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-70">Nexus Mall HQ</p>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-xs">
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-on-primary-container hover:bg-surface-container-high dark:hover:bg-primary-container rounded-xl transition-colors cursor-pointer transition-all duration-200 active:scale-[0.98]" href="../index.html#inventory">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-body-md text-body-md font-medium">Inventory</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-on-primary-container hover:bg-surface-container-high dark:hover:bg-primary-container rounded-xl transition-colors cursor-pointer transition-all duration-200 active:scale-[0.98]" href="../index.html#sales">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-body-md text-body-md font-medium">Sales &amp; Finance</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-on-primary-container hover:bg-surface-container-high dark:hover:bg-primary-container rounded-xl transition-colors cursor-pointer transition-all duration-200 active:scale-[0.98]" href="../index.html#hr">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span class="font-body-md text-body-md font-medium">Human Resources</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed font-bold rounded-xl cursor-pointer transition-all duration-200 active:scale-[0.98]" href="../index.html#hr">
+<span class="material-symbols-outlined icon-filled" data-icon="groups">groups</span>
+<span class="font-body-md text-body-md">Team Management</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-[280px] flex flex-col min-h-screen">
+<!-- Top App Bar -->
+<header class="bg-surface dark:bg-primary border-b border-outline-variant dark:border-on-primary-fixed-variant flex justify-between items-center px-lg py-md sticky top-0 z-40 w-full">
+<div class="flex items-center gap-md">
+<button class="md:hidden text-on-surface hover:bg-surface-container rounded-full p-2 transition-all duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim">Operational Dashboard</h2>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:bg-surface-container dark:hover:bg-primary-container rounded-full p-2 transition-all duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<img alt="User Profile" class="w-8 h-8 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity" data-alt="A small circular avatar of a retail manager. Professional corporate style, light mode, clear focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1bEvouwHvmUdwQj_BYIag3bVDltqRJGXxc4-Jut2UtaFL7EJMNJQS47smgGMHW78FTLpcRN_v4CZGVauE1DndKObGqSVPNEGQW_fWss0dMxAOEr62GxgrnXgUSzZ3VoHD2CuNjxFYWDJXAAqyxjuhC9IIqtyDLTdBOCU_l4saqBxYPEGnVDQvFWM9UOmB_VCQQVCR--_vCfvdJwjy_2sFxiZVlgxol4VmxeXM1XSK8-bjlcGZdJKz"/>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-lg md:p-xl space-y-lg max-w-7xl mx-auto w-full">
+<!-- Breadcrumbs & Actions -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-md">
+<div class="flex items-center gap-sm text-on-surface-variant font-label-sm text-label-sm">
+<a class="hover:text-primary transition-colors" href="#">Team Management</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Associates</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary font-medium">Elena Rodriguez</span>
+</div>
+<div class="flex gap-sm">
+<button class="px-md py-sm bg-surface border border-outline-variant rounded-lg text-primary font-body-md text-body-md font-medium hover:bg-surface-container transition-all">Edit Profile</button>
+<button class="px-md py-sm bg-primary text-on-primary rounded-lg font-body-md text-body-md font-medium hover:opacity-90 transition-opacity shadow-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">assignment_add</span>
+                        Assign Task
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Header / Identity Card (Spans 8 columns) -->
+<div class="md:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.02)] relative overflow-hidden flex flex-col md:flex-row items-center md:items-start gap-lg">
+<!-- Subtle background decoration -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary-fixed-dim rounded-full blur-3xl opacity-20 -mr-20 -mt-20 pointer-events-none"></div>
+<div class="relative">
+<img class="w-32 h-32 md:w-40 md:h-40 rounded-xl object-cover border-4 border-surface shadow-sm z-10 relative" data-alt="A professional portrait of a female retail senior sales associate, smiling confidently. Bright retail store background softly blurred. Modern corporate aesthetic, high key lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSy1JbUL5EHLhUSq8T2TP-nxMlEbEub9YzHHTfuoYoS7r_OInuKon5Y3btmVGcZx939OM0OSKVXIiE6xlFNw_VaZ51zI6AQsAdFTyNlxkGfznYfVX---VEIieISxwt_ATd9yuxqcPQrm2X_WSq3aOD-wZfaEuY1azLRJaw90ELG92UZK-syldymQKKs95hUMo6-QdGaT21IyeehJgHFVEA8aqPls9RyWeVAvBhtYknb5wJ19k45v0X"/>
+<div class="absolute -bottom-2 -right-2 bg-[#dcfce7] text-[#166534] px-3 py-1 rounded-full font-label-sm text-label-sm border border-surface flex items-center gap-1 shadow-sm z-20">
+<span class="w-2 h-2 rounded-full bg-[#16a34a]"></span>
+                            Clocked In
+                        </div>
+</div>
+<div class="flex-1 text-center md:text-left z-10 w-full pt-2">
+<h1 class="font-display-lg text-[36px] leading-[44px] text-on-surface mb-1">Elena Rodriguez</h1>
+<p class="font-headline-md text-headline-md text-primary font-medium mb-md">Senior Sales Associate</p>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-md mt-lg border-t border-outline-variant/30 pt-md">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Employee ID</p>
+<p class="font-body-md text-body-md font-medium text-on-surface">NEX-8492</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Department</p>
+<p class="font-body-md text-body-md font-medium text-on-surface">Apparel &amp; Styling</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Hire Date</p>
+<p class="font-body-md text-body-md font-medium text-on-surface">Oct 12, 2021</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Store</p>
+<p class="font-body-md text-body-md font-medium text-on-surface">North Wing #42</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Contact & Logistics (Spans 4 columns) -->
+<div class="md:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+<div>
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface mb-md flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">contact_mail</span>
+                            Contact Information
+                        </h3>
+<ul class="space-y-sm">
+<li class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">mail</span>
+<span class="font-body-md text-body-md text-on-surface">e.rodriguez@nexusretail.com</span>
+</li>
+<li class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">call</span>
+<span class="font-body-md text-body-md text-on-surface">+1 (555) 293-8472</span>
+</li>
+<li class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">location_on</span>
+<span class="font-body-md text-body-md text-on-surface text-balance">1422 Sycamore Lane, Apt 4B<br/>Metropolis, NY 10021</span>
+</li>
+</ul>
+</div>
+<div class="mt-lg pt-lg border-t border-outline-variant/50">
+<button class="w-full px-md py-sm bg-surface-container border border-outline-variant rounded-lg text-primary font-body-md text-body-md font-medium hover:bg-surface-container-high transition-all flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">history</span>
+                            View Full Log
+                        </button>
+</div>
+</div>
+<!-- Performance Stats (Spans 12 columns, nested grid) -->
+<div class="md:col-span-12 grid grid-cols-1 md:grid-cols-4 gap-md">
+<!-- Stat 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-[0_4px_12px_rgba(0,0,0,0.02)] relative overflow-hidden group hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-sm relative z-10">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Efficiency Score</span>
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-1 rounded-md">bolt</span>
+</div>
+<div class="flex items-baseline gap-2 relative z-10">
+<span class="font-display-lg text-[32px] text-on-surface">98.5%</span>
+<span class="text-[#16a34a] font-label-sm flex items-center"><span class="material-symbols-outlined text-[14px]">arrow_upward</span> 2.1%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-sm overflow-hidden relative z-10">
+<div class="bg-primary h-full rounded-full w-[98.5%]"></div>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tasks Completed</span>
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-1 rounded-md">task_alt</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-[32px] text-on-surface">42/42</span>
+<span class="text-on-surface-variant font-label-sm">This Week</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-sm overflow-hidden">
+<div class="bg-[#16a34a] h-full rounded-full w-full"></div>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Avg Customer Rating</span>
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-1 rounded-md">star</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-[32px] text-on-surface">4.9</span>
+<span class="text-on-surface-variant font-label-sm">/ 5.0</span>
+</div>
+<div class="flex gap-1 mt-sm text-[#eab308]">
+<span class="material-symbols-outlined icon-filled text-[18px]">star</span>
+<span class="material-symbols-outlined icon-filled text-[18px]">star</span>
+<span class="material-symbols-outlined icon-filled text-[18px]">star</span>
+<span class="material-symbols-outlined icon-filled text-[18px]">star</span>
+<span class="material-symbols-outlined icon-filled text-[18px]">star_half</span>
+</div>
+</div>
+<!-- Stat 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Sales Generated</span>
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-1 rounded-md">payments</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-display-lg text-[28px] text-on-surface">$14,280</span>
+</div>
+<div class="w-full mt-sm text-on-surface-variant font-label-sm text-label-sm flex justify-between">
+<span>Target: $12,000</span>
+<span class="text-[#16a34a] font-medium">+119%</span>
+</div>
+</div>
+</div>
+<!-- Split Content: Assignments & Shift/History -->
+<div class="md:col-span-12 grid grid-cols-1 md:grid-cols-2 gap-lg">
+<!-- Current Assignments -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex flex-col h-full">
+<div class="flex justify-between items-center mb-md pb-sm border-b border-outline-variant/50">
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface">Current Assignments</h3>
+<span class="bg-surface-container text-on-surface-variant font-label-sm px-2 py-1 rounded">3 Active</span>
+</div>
+<div class="space-y-sm flex-1">
+<!-- Task 1 -->
+<div class="p-sm border border-outline-variant rounded-lg hover:bg-surface-container transition-colors cursor-pointer group flex items-start gap-md">
+<div class="mt-1">
+<span class="material-symbols-outlined text-[#16a34a]">radio_button_checked</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md font-medium text-on-surface group-hover:text-primary transition-colors">Inventory Audit - North Wing</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">High Priority • Due in 2 hours</p>
+</div>
+<span class="bg-[#dcfce7] text-[#166534] px-2 py-0.5 rounded font-label-sm text-[10px] uppercase border border-[#bbf7d0]">In Progress</span>
+</div>
+<!-- Task 2 -->
+<div class="p-sm border border-outline-variant rounded-lg hover:bg-surface-container transition-colors cursor-pointer group flex items-start gap-md">
+<div class="mt-1">
+<span class="material-symbols-outlined text-outline">radio_button_unchecked</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md font-medium text-on-surface group-hover:text-primary transition-colors">Setup Fall Collection Display</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Medium Priority • Due Tomorrow</p>
+</div>
+<span class="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded font-label-sm text-[10px] uppercase border border-outline-variant">Pending</span>
+</div>
+<!-- Task 3 -->
+<div class="p-sm border border-outline-variant rounded-lg hover:bg-surface-container transition-colors cursor-pointer group flex items-start gap-md">
+<div class="mt-1">
+<span class="material-symbols-outlined text-outline">radio_button_unchecked</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-body-md font-medium text-on-surface group-hover:text-primary transition-colors">New Hire Shadowing (J. Smith)</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Low Priority • Due Friday</p>
+</div>
+<span class="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded font-label-sm text-[10px] uppercase border border-outline-variant">Pending</span>
+</div>
+</div>
+<button class="mt-md w-full py-sm text-primary font-label-sm text-label-sm font-medium hover:underline text-center">View All Assignments</button>
+</div>
+<!-- Shift & Attendance / History Stack -->
+<div class="flex flex-col gap-lg h-full">
+<!-- Shift Info -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.02)] flex-1">
+<div class="flex justify-between items-center mb-md pb-sm border-b border-outline-variant/50">
+<h3 class="font-headline-md text-body-lg font-bold text-on-surface">Shift &amp; Attendance</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Week 42</span>
+</div>
+<div class="flex justify-between items-end mb-md">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Total Hours</p>
+<p class="font-display-lg text-[28px] leading-tight text-on-surface">32<span class="text-[16px] text-on-surface-variant font-medium">/40h</span></p>
+</div>
+<div class="text-right">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Current Shift</p>
+<p class="font-body-md text-body-md font-medium text-on-surface">09:00 AM - 05:00 PM</p>
+</div>
+</div>
+<div class="space-y-xs">
+<div class="flex justify-between items-center p-xs bg-surface-container-low rounded">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Today</span>
+<div class="flex gap-4">
+<span class="font-table-data text-table-data text-[#16a34a]"><span class="material-symbols-outlined text-[14px] align-middle mr-1">login</span>08:55 AM</span>
+<span class="font-table-data text-table-data text-outline">--:-- --</span>
+</div>
+</div>
+<div class="flex justify-between items-center p-xs hover:bg-surface-container-low rounded transition-colors">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Yesterday</span>
+<div class="flex gap-4">
+<span class="font-table-data text-table-data text-on-surface">09:02 AM</span>
+<span class="font-table-data text-table-data text-on-surface">05:15 PM</span>
+</div>
+</div>
+<div class="flex justify-between items-center p-xs hover:bg-surface-container-low rounded transition-colors">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mon, Oct 16</span>
+<div class="flex gap-4">
+<span class="font-table-data text-table-data text-on-surface">08:58 AM</span>
+<span class="font-table-data text-table-data text-on-surface">05:05 PM</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Performance History Chart (Simulated with CSS) -->
+<div class="bg-primary text-on-primary rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] flex-1 relative overflow-hidden">
+<!-- Abstract gradient background representing data flow -->
+<div class="absolute inset-0 bg-gradient-to-br from-primary via-primary-container to-inverse-surface opacity-90 z-0"></div>
+<div class="relative z-10 h-full flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-md text-body-lg font-bold text-on-primary">Performance Trend</h3>
+<span class="font-label-sm text-label-sm text-primary-fixed-dim">Last 6 Months</span>
+</div>
+<div class="flex-1 flex items-end justify-between gap-2 pt-8">
+<!-- Simple CSS Bar Chart -->
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary-fixed-dim/20 rounded-t-sm h-[40%] relative group-hover:bg-primary-fixed transition-colors"><div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-[10px] font-label-sm transition-opacity">82</div></div>
+<span class="text-[10px] text-primary-fixed-dim font-label-sm uppercase">May</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary-fixed-dim/20 rounded-t-sm h-[55%] relative group-hover:bg-primary-fixed transition-colors"><div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-[10px] font-label-sm transition-opacity">88</div></div>
+<span class="text-[10px] text-primary-fixed-dim font-label-sm uppercase">Jun</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary-fixed-dim/20 rounded-t-sm h-[45%] relative group-hover:bg-primary-fixed transition-colors"><div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-[10px] font-label-sm transition-opacity">85</div></div>
+<span class="text-[10px] text-primary-fixed-dim font-label-sm uppercase">Jul</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary-fixed-dim/20 rounded-t-sm h-[70%] relative group-hover:bg-primary-fixed transition-colors"><div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-[10px] font-label-sm transition-opacity">92</div></div>
+<span class="text-[10px] text-primary-fixed-dim font-label-sm uppercase">Aug</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary-fixed-dim/20 rounded-t-sm h-[85%] relative group-hover:bg-primary-fixed transition-colors"><div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-[10px] font-label-sm transition-opacity">96</div></div>
+<span class="text-[10px] text-primary-fixed-dim font-label-sm uppercase">Sep</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2 group">
+<div class="w-full bg-secondary-fixed rounded-t-sm h-[95%] relative group-hover:bg-secondary-fixed-dim transition-colors shadow-[0_0_8px_rgba(111,251,190,0.4)]"><div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 text-[10px] font-label-sm transition-opacity text-secondary-fixed">98.5</div></div>
+<span class="text-[10px] text-secondary-fixed font-label-sm uppercase font-bold">Oct</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+<!-- Nexus Suite Floating Interactive Launcher -->
+<div style="position:fixed;bottom:16px;right:16px;z-index:9999;background:#041627;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3);font-family:sans-serif;font-size:13px;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,0.15);">
+  <span><strong>Nexus Retail Suite</strong> (Prototype View)</span>
+  <a href="../index.html#profile" style="background:#6cf8bb;color:#00714d;padding:6px 12px;border-radius:8px;font-weight:bold;text-decoration:none;font-size:12px;display:inline-flex;align-items:center;gap:4px;">
+    Launch Unified Suite &rarr;
+  </a>
+</div>
+
+</body></html>

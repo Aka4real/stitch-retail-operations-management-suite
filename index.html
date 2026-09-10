@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Nexus Retail Operations Management Suite</title>
+  
+  <!-- Tailwind CSS with Forms & Container Queries -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Design System Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Custom Design System Styles -->
+  <link rel="stylesheet" href="styles.css"/>
+
+  <!-- Tailwind Configuration according to DESIGN.md -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#041627",
+            "primary-container": "#1a2b3c",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#8192a7",
+            "inverse-primary": "#b7c8de",
+            "primary-fixed": "#d2e4fb",
+            "primary-fixed-dim": "#b7c8de",
+            "secondary": "#006c49",
+            "secondary-container": "#6cf8bb",
+            "on-secondary": "#ffffff",
+            "on-secondary-container": "#00714d",
+            "secondary-fixed": "#6ffbbe",
+            "secondary-fixed-dim": "#4edea3",
+            "tertiary": "#221200",
+            "tertiary-container": "#3e2400",
+            "on-tertiary": "#ffffff",
+            "on-tertiary-container": "#ca8100",
+            "error": "#ba1a1a",
+            "error-container": "#ffdad6",
+            "on-error": "#ffffff",
+            "on-error-container": "#93000a",
+            "surface": "#f8f9ff",
+            "surface-dim": "#cbdbf5",
+            "surface-bright": "#f8f9ff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#eff4ff",
+            "surface-container": "#e5eeff",
+            "surface-container-high": "#dce9ff",
+            "surface-container-highest": "#d3e4fe",
+            "on-surface": "#0b1c30",
+            "on-surface-variant": "#44474c",
+            "outline": "#74777d",
+            "outline-variant": "#c4c6cd",
+            "background": "#f8f9ff"
+          },
+          fontFamily: {
+            "headline": ["Hanken Grotesk", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          },
+          borderRadius: {
+            "sm": "0.125rem",
+            "DEFAULT": "0.25rem",
+            "md": "0.375rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "3xl": "1.5rem",
+            "full": "9999px"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex selection:bg-primary selection:text-white">
+
+  <!-- Mobile Drawer Overlay -->
+  <div id="mobile-drawer-overlay" onclick="closeMobileDrawer()" class="fixed inset-0 bg-primary/40 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
+
+  <!-- Left Navigation Rail (280px fixed on desktop, slide-in on mobile) -->
+  <!-- Left Navigation Rail (280px fixed on desktop, slide-in on mobile) -->
+  <aside id="sidebar-drawer" class="w-[280px] h-screen fixed left-0 top-0 bg-surface dark:bg-surface-lowest border-r border-outline-variant/60 flex flex-col p-4 gap-2 z-50 transition-transform duration-300 md:translate-x-0 -translate-x-full">
+    <!-- Brand & Active Session Card -->
+    <div class="p-3 mb-2 rounded-2xl bg-surface-container-low/60 border border-outline-variant/40 hover:border-primary transition-all cursor-pointer" onclick="openModal('modal-switch-user')">
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <img id="sidebar-user-avatar" class="w-12 h-12 rounded-full object-cover shadow-[0_4px_12px_rgba(0,0,0,0.08)] border-2 border-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKSgqOhip-FBpGhGxiH_p3xkjhxsk3PP2VO6IGwn9PSyLusBEUkgw6evs1p0mAX4naSSp_htp8N8deYgLX2qkNuBz_euEwpwPPD_C7FEVU3h6-cFvXeyrS1zZRrhaDC2mZilSquCjUp0An5W9mC553moCWm57K_QsXn9RcOkzH1FV53yaDg0ce1g7EsukiDU-9Fy-hHVH5YZHw-g7R8_FAfCtKXRUcUiZGA5tEBzJJFhBDFDJEcnCw" alt="Active Profile"/>
+          <span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-secondary border-2 border-white dark:border-primary"></span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h2 id="sidebar-user-name" class="font-headline text-sm font-bold text-primary dark:text-primary-fixed truncate">Marcus Vance</h2>
+          <p id="sidebar-user-role" class="text-[11px] text-on-surface-variant truncate font-medium">Global Administrator</p>
+          <span id="sidebar-user-rank" class="font-mono text-[9px] px-2 py-0.5 rounded-full mt-1 inline-block rank-badge-5">Rank 5 Clearance</span>
+        </div>
+        <span class="material-symbols-outlined text-outline text-[18px]">unfold_more</span>
+      </div>
+    </div>
+
+    <!-- Navigation Links with active indicators -->
+    <nav class="flex-1 flex flex-col gap-1 overflow-y-auto pr-1">
+      <a href="#dashboard" data-view="dashboard" onclick="navigateTo('dashboard')" class="nav-link active">
+        <span class="material-symbols-outlined fill text-[20px]">dashboard</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="#inventory" data-view="inventory" onclick="navigateTo('inventory')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+        <span>Inventory &amp; Stock</span>
+      </a>
+      <a href="#sales" data-view="sales" onclick="navigateTo('sales')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">payments</span>
+        <span>Sales &amp; Finance</span>
+      </a>
+      <a href="#hr" data-view="hr" onclick="navigateTo('hr')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">badge</span>
+        <span>HR &amp; Team Roster</span>
+      </a>
+      <a href="#onboarding" data-view="onboarding" onclick="navigateTo('onboarding')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">punch_clock</span>
+        <span class="flex-1">Staff Onboarding</span>
+        <span class="font-mono text-[9px] bg-secondary-container text-on-secondary-container px-1.5 py-0.2 rounded-full font-bold">DUTY</span>
+      </a>
+      <a href="#profile" data-view="profile" onclick="navigateTo('profile')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">account_circle</span>
+        <span>Associate Profile</span>
+      </a>
+      <a href="#assign-task" data-view="assign-task" onclick="navigateTo('assign-task')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">assignment_add</span>
+        <span>Assign New Task</span>
+      </a>
+      <a href="#management" data-view="management" onclick="navigateTo('management')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+        <span class="flex-1">Manager Portal</span>
+        <span id="manager-nav-lock" class="hidden font-mono text-[9px] bg-tertiary-container text-on-tertiary-container px-1.5 py-0.2 rounded-full font-bold flex items-center gap-0.5">
+          <span class="material-symbols-outlined text-[10px]">lock</span>RANK 4+
+        </span>
+      </a>
+    </nav>
+
+    <!-- Bottom Actions & System Status -->
+    <div class="pt-2 border-t border-outline-variant/60 flex flex-col gap-2">
+      <!-- Quick Command Palette Trigger -->
+      <button onclick="toggleCommandPalette()" class="w-full flex items-center justify-between px-3 py-1.5 text-xs text-on-surface-variant hover:bg-surface-container rounded-lg border border-outline-variant/40 transition-colors">
+        <span class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px]">terminal</span>
+          <span>Command Menu</span>
+        </span>
+        <kbd class="font-mono bg-surface px-1.5 py-0.5 rounded text-[10px] border border-outline-variant/50">Ctrl K</kbd>
+      </button>
+
+      <!-- Theme Switcher & Switch User -->
+      <div class="flex items-center justify-between px-1">
+        <button onclick="toggleTheme()" class="flex items-center gap-1.5 text-xs font-medium text-on-surface-variant hover:text-primary transition-colors p-1 rounded-lg hover:bg-surface-container">
+          <span class="material-symbols-outlined text-[18px] theme-toggle-icon">dark_mode</span>
+          <span>Theme</span>
+        </button>
+        <button onclick="openModal('modal-switch-user')" class="flex items-center gap-1 text-xs font-semibold text-primary dark:text-primary-fixed hover:underline">
+          <span class="material-symbols-outlined text-[16px]">switch_account</span>
+          <span>Switch User</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main View Container Area -->
+  <div class="flex-1 ml-0 md:ml-[280px] flex flex-col min-h-screen">
+    
+    <!-- Unified Top App Header -->
+    <header class="sticky top-0 z-30 bg-surface/90 dark:bg-surface-lowest/90 backdrop-blur-md border-b border-outline-variant/60 px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="openMobileDrawer()" class="md:hidden p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors">
+          <span class="material-symbols-outlined text-[24px]">menu</span>
+        </button>
+        <div>
+          <h1 id="topbar-title" class="font-headline text-lg md:text-xl font-bold text-on-surface">Nexus Retail Management</h1>
+          <p class="text-xs text-on-surface-variant hidden sm:block">Operations, Staff RBAC &amp; Floor Intelligence</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons & Active Profile Session -->
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        <button onclick="openModal('modal-add-transaction')" class="hidden sm:flex items-center gap-1.5 bg-primary text-on-primary px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-primary-container transition-colors shadow-sm active:scale-95">
+          <span class="material-symbols-outlined text-[16px]">add</span>
+          <span>Add Sale</span>
+        </button>
+        <button onclick="navigateTo('assign-task')" class="flex items-center gap-1.5 bg-secondary-container text-on-secondary-container px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-secondary-fixed-dim transition-colors shadow-sm active:scale-95">
+          <span class="material-symbols-outlined text-[16px]">task_alt</span>
+          <span>New Task</span>
+        </button>
+
+        <!-- Command Palette Icon -->
+        <button onclick="toggleCommandPalette()" class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors" title="Quick Search (Ctrl+K)">
+          <span class="material-symbols-outlined text-[20px]">search</span>
+        </button>
+
+        <!-- Active User Session Pill (Clickable to switch or authenticate) -->
+        <div onclick="openModal('modal-switch-user')" class="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-surface-container border border-outline-variant/60 cursor-pointer hover:border-primary transition-all">
+          <img id="header-user-avatar" class="w-7 h-7 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKSgqOhip-FBpGhGxiH_p3xkjhxsk3PP2VO6IGwn9PSyLusBEUkgw6evs1p0mAX4naSSp_htp8N8deYgLX2qkNuBz_euEwpwPPD_C7FEVU3h6-cFvXeyrS1zZRrhaDC2mZilSquCjUp0An5W9mC553moCWm57K_QsXn9RcOkzH1FV53yaDg0ce1g7EsukiDU-9Fy-hHVH5YZHw-g7R8_FAfCtKXRUcUiZGA5tEBzJJFhBDFDJEcnCw" alt="User Avatar"/>
+          <div class="hidden md:block text-left">
+            <div id="header-user-name" class="text-xs font-bold text-on-surface leading-none">Marcus Vance</div>
+            <span id="header-user-rank" class="badge-pill text-[9px] rank-badge-5 mt-0.5">Rank 5: Executive</span>
+          </div>
+          <span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: OPERATIONAL DASHBOARD -->
+    <!-- ========================================================================= -->
+    <main id="view-dashboard" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6">
+      
+      <!-- KPI Overview Grid (Doppelrand nested styling for top-tier feel) -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        
+        <!-- Total Sales KPI -->
+        <div class="nexus-card p-5 flex flex-col justify-between">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Total Sales (Today)</span>
+              <div id="dash-kpi-sales" class="font-headline text-3xl font-extrabold text-primary dark:text-primary-fixed mt-1">$124,500</div>
+            </div>
+            <div class="p-2.5 bg-secondary-container/30 text-secondary rounded-xl">
+              <span class="material-symbols-outlined text-[22px]">trending_up</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs">
+            <span class="font-mono font-semibold text-secondary bg-secondary-container/40 px-2 py-0.5 rounded-full">+14.2%</span>
+            <span class="text-on-surface-variant">vs yesterday</span>
+          </div>
+        </div>
+
+        <!-- Foot Traffic KPI -->
+        <div class="nexus-card p-5 flex flex-col justify-between">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Live Foot Traffic</span>
+                <span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span>
+              </div>
+              <div id="dash-kpi-traffic" class="font-headline text-3xl font-extrabold text-primary dark:text-primary-fixed mt-1">8,432</div>
+            </div>
+            <div class="p-2.5 bg-surface-container text-primary dark:text-primary-fixed rounded-xl">
+              <span class="material-symbols-outlined text-[22px]">directions_walk</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs">
+            <span class="font-mono font-semibold text-error bg-error-container/30 px-2 py-0.5 rounded-full">-2.1%</span>
+            <span class="text-on-surface-variant">vs expected peak</span>
+          </div>
+        </div>
+
+        <!-- Critical Low Stock KPI -->
+        <div class="nexus-card p-5 flex flex-col justify-between">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Critical Low Stock</span>
+              <div id="dash-kpi-stock" class="font-headline text-3xl font-extrabold text-error mt-1">12</div>
+            </div>
+            <div class="p-2.5 bg-error-container/40 text-error rounded-xl">
+              <span class="material-symbols-outlined text-[22px]">warning</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-semibold text-error bg-error-container/30 px-2 py-0.5 rounded-full">Action Required</span>
+            <button onclick="navigateTo('inventory')" class="text-primary dark:text-primary-fixed hover:underline font-medium">View Items &rarr;</button>
+          </div>
+        </div>
+
+        <!-- Staff on Duty KPI -->
+        <div class="nexus-card p-5 flex flex-col justify-between">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Staff On Duty</span>
+              <div id="dash-kpi-duty" class="font-headline text-3xl font-extrabold text-primary dark:text-primary-fixed mt-1">24 Active</div>
+            </div>
+            <div class="p-2.5 bg-secondary-container/30 text-secondary rounded-xl">
+              <span class="material-symbols-outlined text-[22px]">groups</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-on-surface-variant">3 floor zones covered</span>
+            <button onclick="navigateTo('hr')" class="text-primary dark:text-primary-fixed hover:underline font-medium">Manage &rarr;</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Main Operational Split (8 col / 4 col) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Hourly Revenue Trend Chart (8 cols) -->
+        <section class="lg:col-span-8 nexus-card p-6 flex flex-col justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/40">
+            <div>
+              <h2 class="font-headline text-lg font-bold text-primary dark:text-primary-fixed">Hourly Revenue Trend</h2>
+              <p class="text-xs text-on-surface-variant">Real-time point-of-sale telemetry across mall terminals</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="badge-pill bg-secondary-container/40 text-secondary">Peak: 18:00</span>
+              <button onclick="toast.info('Telemetry Updated', 'Fetched latest PoS node readings')" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors">
+                <span class="material-symbols-outlined text-[18px]">refresh</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive Chart Engine Container -->
+          <div id="dash-revenue-chart" class="w-full flex-1 min-h-[280px]">
+            <!-- Injected by app.js -->
+          </div>
+        </section>
+
+        <!-- Team Status & Immediate Dispatch (4 cols) -->
+        <section class="lg:col-span-4 nexus-card p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/40">
+              <h2 class="font-headline text-lg font-bold text-primary dark:text-primary-fixed">Team Status</h2>
+              <span class="badge-pill bg-secondary-container/40 text-secondary">Active Floor</span>
+            </div>
+
+            <!-- Team Avatars & Load -->
+            <div class="space-y-3.5">
+              <div class="flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container transition-colors cursor-pointer" onclick="navigateTo('profile')">
+                <div class="flex items-center gap-3">
+                  <div class="relative">
+                    <img class="w-10 h-10 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSy1JbUL5EHLhUSq8T2TP-nxMlEbEub9YzHHTfuoYoS7r_OInuKon5Y3btmVGcZx939OM0OSKVXIiE6xlFNw_VaZ51zI6AQsAdFTyNlxkGfznYfVX---VEIieISxwt_ATd9yuxqcPQrm2X_WSq3aOD-wZfaEuY1azLRJaw90ELG92UZK-syldymQKKs95hUMo6-QdGaT21IyeehJgHFVEA8aqPls9RyWeVAvBhtYknb5wJ19k45v0X" alt="Elena"/>
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-secondary rounded-full border border-white"></span>
+                  </div>
+                  <div>
+                    <div class="text-sm font-semibold text-on-surface">Elena Rodriguez</div>
+                    <div class="text-xs text-on-surface-variant">North Wing • Floor Lead</div>
+                  </div>
+                </div>
+                <span class="font-mono text-xs font-semibold text-secondary">92%</span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container transition-colors cursor-pointer" onclick="navigateTo('hr')">
+                <div class="flex items-center gap-3">
+                  <div class="relative">
+                    <img class="w-10 h-10 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy2xEe2XngudVkETnuUqbHnByXcJQqYENFFek-6XrOgnfAyfcGG_ZTB0LnCeHbZvQLOmeZX2_IkhfHSKjNqHAD_eX58tVEfD412GFJ3Qf4tB6vnB74OrF-PRG0g1CNatntoQvh7Q8hkbF6SkaoQM27tVGwz_R2szIgAqDrbDHzkNjg-CEvTiRNg0q6SI1cK__O7XHGRhSuJSAK-kQ26WIUAD88KSy49tDqXdcXD0aSJp-m3sHZsHC7" alt="David"/>
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-secondary rounded-full border border-white"></span>
+                  </div>
+                  <div>
+                    <div class="text-sm font-semibold text-on-surface">David Chen</div>
+                    <div class="text-xs text-on-surface-variant">Storage B • Inventory Lead</div>
+                  </div>
+                </div>
+                <span class="font-mono text-xs font-semibold text-primary dark:text-primary-fixed">85%</span>
+              </div>
+
+              <div class="flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container transition-colors cursor-pointer" onclick="navigateTo('hr')">
+                <div class="flex items-center gap-3">
+                  <div class="relative">
+                    <img class="w-10 h-10 rounded-full object-cover border border-outline-variant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCT-BEtrJIqSrrSuRv72V0Mz6dVWZ-YTROUXxG70gj31hVZ4O0bEd4Pc7Yslj_V0pZh4jT2ccgRlojx8Qwn9KA8Mp8XMlof1y7dFFt5YQ2ApLTgFkHwE8iMwBeMUJFTt8fvwydG7y61MZp0Hvu9WfqdsRLgy5TjhhlJu5HmjKKUr3u6QppaeK71-Li19pgna0FxbiUe497tyZ9LoGPQMlemjkL_RcwwsBrN_qOe6L1jMFb-TsvnVRXo" alt="Sarah"/>
+                    <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-secondary rounded-full border border-white"></span>
+                  </div>
+                  <div>
+                    <div class="text-sm font-semibold text-on-surface">Sarah Jenkins</div>
+                    <div class="text-xs text-on-surface-variant">East Promenade • Cashier</div>
+                  </div>
+                </div>
+                <span class="font-mono text-xs font-semibold text-secondary">60%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-outline-variant/40">
+            <button onclick="navigateTo('assign-task')" class="w-full py-2.5 bg-primary text-on-primary font-semibold text-xs rounded-xl hover:bg-primary-container transition-colors shadow-sm flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+              <span>Dispatch Duty Task</span>
+            </button>
+          </div>
+        </section>
+      </div>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: INVENTORY & GOODS TRACKING -->
+    <!-- ========================================================================= -->
+    <main id="view-inventory" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 hidden">
+      
+      <!-- Inventory KPIs -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="nexus-card p-5">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Total Value</span>
+            <span class="material-symbols-outlined text-secondary">account_balance</span>
+          </div>
+          <div id="inv-kpi-total-val" class="font-headline text-3xl font-extrabold text-on-surface">$1,248,320</div>
+          <div class="font-mono text-xs text-secondary mt-1 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">trending_up</span> +2.4% this week
+          </div>
+        </div>
+
+        <div class="nexus-card p-5">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Low Stock SKUs</span>
+            <span class="material-symbols-outlined text-on-tertiary-container">warning</span>
+          </div>
+          <div id="inv-kpi-low" class="font-headline text-3xl font-extrabold text-on-tertiary-container">24</div>
+          <div class="text-xs text-on-surface-variant mt-1">Requires reorder approval</div>
+        </div>
+
+        <div class="nexus-card p-5">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Out of Stock</span>
+            <span class="material-symbols-outlined text-error">error</span>
+          </div>
+          <div id="inv-kpi-out" class="font-headline text-3xl font-extrabold text-error">7</div>
+          <div class="text-xs text-error mt-1 font-medium">Critical replenishment gap</div>
+        </div>
+
+        <div class="nexus-card p-5">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Avg Depletion Rate</span>
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed">speed</span>
+          </div>
+          <div class="font-headline text-3xl font-extrabold text-on-surface">12%</div>
+          <div class="text-xs text-on-surface-variant mt-1">Weekly cross-category rate</div>
+        </div>
+      </section>
+
+      <!-- Inventory Split: Table (8 cols) & Reminders (4 cols) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Inventory List (8 cols) -->
+        <section class="lg:col-span-8 nexus-card flex flex-col overflow-hidden">
+          <!-- Table Header Controls -->
+          <div class="p-5 border-b border-outline-variant/50 bg-surface-container-low/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="font-headline text-lg font-bold text-on-surface">Product Roster</h3>
+              <p class="text-xs text-on-surface-variant">Live catalog telemetry &amp; depletion velocity</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <!-- Search Bar -->
+              <div class="relative w-48 sm:w-56">
+                <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">search</span>
+                <input id="inventory-search-input" oninput="renderInventory()" type="text" placeholder="Search SKU or Name..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-full focus:outline-none focus:ring-1 focus:ring-primary"/>
+              </div>
+
+              <!-- Add Product Button -->
+              <button onclick="openModal('modal-add-product')" class="px-3.5 py-1.5 bg-primary text-on-primary rounded-full text-xs font-semibold hover:bg-primary-container transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+                <span>Add SKU</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Pills -->
+          <div class="px-5 py-2.5 border-b border-outline-variant/40 flex gap-2 overflow-x-auto bg-surface/50">
+            <button onclick="filterInventoryCategory('All')" data-cat="All" class="inv-cat-pill px-3 py-1 bg-primary text-white rounded-lg text-xs font-medium">All Categories</button>
+            <button onclick="filterInventoryCategory('Electronics')" data-cat="Electronics" class="inv-cat-pill px-3 py-1 bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container rounded-lg text-xs font-medium transition-colors">Electronics</button>
+            <button onclick="filterInventoryCategory('Fashion')" data-cat="Fashion" class="inv-cat-pill px-3 py-1 bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container rounded-lg text-xs font-medium transition-colors">Fashion</button>
+            <button onclick="filterInventoryCategory('Home Goods')" data-cat="Home Goods" class="inv-cat-pill px-3 py-1 bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container rounded-lg text-xs font-medium transition-colors">Home Goods</button>
+          </div>
+
+          <!-- Table Content -->
+          <div class="overflow-x-auto max-h-[520px]">
+            <table class="table-nexus w-full text-left border-collapse">
+              <thead class="sticky top-0 bg-surface-container-low/90 backdrop-blur-sm z-10">
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Stock / Capacity</th>
+                  <th>Status</th>
+                  <th>Depletion</th>
+                  <th class="text-right">Quick Restock</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table-body" class="divide-y divide-outline-variant/40">
+                <!-- Populated by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Right Column: Purchase Reminders (4 cols) -->
+        <section class="lg:col-span-4 flex flex-col gap-5">
+          <div class="nexus-card p-5">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/50">
+              <h3 class="font-headline text-base font-bold text-on-surface">Purchase Reminders</h3>
+              <span class="badge-pill bg-tertiary-container/30 text-on-tertiary-container">3 Pending</span>
+            </div>
+
+            <div class="space-y-3.5">
+              <div class="p-3 bg-surface-container-low/50 rounded-xl border border-outline-variant/40">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-on-surface">Wireless Earbuds Pro</span>
+                  <span class="badge-pill bg-error-container/30 text-error">Stock 0</span>
+                </div>
+                <p class="text-[11px] text-on-surface-variant mb-2">Vendor: SoundTech Logistics • MOQ: 100 units</p>
+                <div class="flex gap-2">
+                  <button onclick="toast.success('Purchase Order Approved', 'PO #4928 dispatched to vendor')" class="flex-1 py-1 bg-primary text-on-primary text-xs font-semibold rounded-lg hover:bg-primary-container">Approve</button>
+                  <button onclick="toast.info('Reminder Snoozed', 'Will alert again in 24 hours')" class="px-2.5 py-1 text-xs border border-outline-variant rounded-lg hover:bg-surface-container">Snooze</button>
+                </div>
+              </div>
+
+              <div class="p-3 bg-surface-container-low/50 rounded-xl border border-outline-variant/40">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-bold text-on-surface">Winter Parka - L</span>
+                  <span class="badge-pill bg-tertiary-container/30 text-on-tertiary-container">Stock 12</span>
+                </div>
+                <p class="text-[11px] text-on-surface-variant mb-2">Vendor: Alpine Apparel • MOQ: 50 units</p>
+                <div class="flex gap-2">
+                  <button onclick="toast.success('Purchase Order Approved', 'PO #4929 dispatched to vendor')" class="flex-1 py-1 bg-primary text-on-primary text-xs font-semibold rounded-lg hover:bg-primary-container">Approve</button>
+                  <button onclick="toast.info('Reminder Snoozed', 'Will alert again in 24 hours')" class="px-2.5 py-1 text-xs border border-outline-variant rounded-lg hover:bg-surface-container">Snooze</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 3: SALES & FINANCIAL TRACKING -->
+    <!-- ========================================================================= -->
+    <main id="view-sales" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 hidden">
+      
+      <!-- Sales Header Controls -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="font-headline text-2xl font-bold text-primary dark:text-primary-fixed">Sales &amp; Finance Overview</h2>
+          <p class="text-xs text-on-surface-variant">Track revenue streams, monitor operations expenditures, and audit margins.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <select id="sales-period-select" onchange="renderSales()" class="bg-surface dark:bg-surface-lowest text-xs font-semibold border border-outline-variant/70 rounded-xl px-3 py-2 focus:ring-1 focus:ring-primary outline-none">
+            <option>This Month</option>
+            <option>Last Month</option>
+            <option>This Quarter</option>
+            <option>Year to Date</option>
+          </select>
+          <button onclick="exportSalesReport()" class="px-3.5 py-2 bg-primary text-on-primary rounded-xl text-xs font-semibold hover:bg-primary-container transition-colors flex items-center gap-1.5 shadow-sm active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">download</span>
+            <span>Export CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Financial Metric Cards -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="nexus-card p-5 relative overflow-hidden">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Total Revenue</span>
+            <div class="p-2 bg-secondary-container/30 text-secondary rounded-lg">
+              <span class="material-symbols-outlined text-[20px]">trending_up</span>
+            </div>
+          </div>
+          <div id="sales-kpi-revenue" class="font-headline text-3xl font-extrabold text-primary dark:text-primary-fixed">$142,500</div>
+          <div class="flex items-center gap-1 text-xs text-secondary mt-1 font-medium font-mono">
+            <span>&uarr; +12.5%</span> <span class="text-on-surface-variant font-normal">vs last month</span>
+          </div>
+        </div>
+
+        <div class="nexus-card p-5 relative overflow-hidden">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Total Expenditure</span>
+            <div class="p-2 bg-error-container/30 text-error rounded-lg">
+              <span class="material-symbols-outlined text-[20px]">trending_down</span>
+            </div>
+          </div>
+          <div id="sales-kpi-expense" class="font-headline text-3xl font-extrabold text-primary dark:text-primary-fixed">$48,200</div>
+          <div class="flex items-center gap-1 text-xs text-error mt-1 font-medium font-mono">
+            <span>&uarr; +4.2%</span> <span class="text-on-surface-variant font-normal">vs last month</span>
+          </div>
+        </div>
+
+        <div class="bg-primary text-on-primary rounded-xl p-5 shadow-[0_4px_16px_rgba(4,22,39,0.15)] flex flex-col justify-between">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-[11px] font-semibold text-inverse-primary uppercase tracking-wider">Net Operating Profit</span>
+            <span class="badge-pill bg-secondary-container text-on-secondary-container">On Target</span>
+          </div>
+          <div id="sales-kpi-net" class="font-headline text-3xl font-extrabold text-white">$94,300</div>
+          <div class="text-xs text-inverse-primary/80 mt-1">EBITDA margin at 66.1%</div>
+        </div>
+      </section>
+
+      <!-- Sales Layout Split: Chart & Transactions (8 col) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Revenue vs Expense Chart (8 cols) -->
+        <section class="lg:col-span-8 nexus-card p-6 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/40">
+            <div>
+              <h3 class="font-headline text-lg font-bold text-primary dark:text-primary-fixed">Revenue vs. Operational Expenses</h3>
+              <p class="text-xs text-on-surface-variant">Multi-stream monthly comparative trajectory</p>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-medium">
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-secondary"></span>
+                <span>Revenue</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-error"></span>
+                <span>Expenses</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="sales-financial-chart" class="w-full flex-1 min-h-[300px]">
+            <!-- Injected by app.js -->
+          </div>
+        </section>
+
+        <!-- Right Side: Quick Add & Channel Share (4 cols) -->
+        <section class="lg:col-span-4 flex flex-col gap-5">
+          <div class="nexus-card p-5">
+            <h3 class="font-headline text-base font-bold text-on-surface mb-3 pb-2 border-b border-outline-variant/50">Channel Breakdown</h3>
+            <div class="space-y-3 text-xs">
+              <div>
+                <div class="flex justify-between font-medium mb-1">
+                  <span>Retail Tenant Leases</span>
+                  <span class="font-mono font-semibold">68%</span>
+                </div>
+                <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+                  <div class="h-full bg-primary" style="width: 68%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between font-medium mb-1">
+                  <span>Food Court Royalties</span>
+                  <span class="font-mono font-semibold">18%</span>
+                </div>
+                <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+                  <div class="h-full bg-secondary" style="width: 18%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between font-medium mb-1">
+                  <span>Parking &amp; Facilities</span>
+                  <span class="font-mono font-semibold">14%</span>
+                </div>
+                <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+                  <div class="h-full bg-on-tertiary-container" style="width: 14%"></div>
+                </div>
+              </div>
+            </div>
+
+            <button onclick="openModal('modal-add-transaction')" class="mt-6 w-full py-2.5 bg-secondary-container text-on-secondary-container font-bold text-xs rounded-xl hover:bg-secondary-fixed-dim transition-colors flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+              <span>Record Transaction</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Transactions Table (Full 12 cols) -->
+        <section class="col-span-12 nexus-card overflow-hidden">
+          <div class="p-5 border-b border-outline-variant/50 flex justify-between items-center bg-surface-container-low/40">
+            <div>
+              <h3 class="font-headline text-lg font-bold text-primary dark:text-primary-fixed">Recent Ledger Transactions</h3>
+              <p class="text-xs text-on-surface-variant">Validated financial events across mall accounts</p>
+            </div>
+            <button onclick="openModal('modal-add-transaction')" class="text-xs font-semibold text-primary dark:text-primary-fixed hover:underline flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">add_circle</span>
+              <span>New Entry</span>
+            </button>
+          </div>
+
+          <div class="overflow-x-auto max-h-[380px]">
+            <table class="table-nexus w-full text-left border-collapse">
+              <thead class="sticky top-0 bg-surface-container-low/90 backdrop-blur-sm z-10">
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th class="text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="sales-transactions-body">
+                <!-- Populated by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 4: HR & TEAM PERFORMANCE -->
+    <!-- ========================================================================= -->
+    <main id="view-hr" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 hidden">
+      
+      <!-- View Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="font-headline text-2xl font-bold text-primary dark:text-primary-fixed">Human Resources &amp; Team Performance</h2>
+          <p class="text-xs text-on-surface-variant">Organizational hierarchy, staff dispatch workloads, and live duty rosters.</p>
+        </div>
+        <button onclick="navigateTo('assign-task')" class="px-3.5 py-2 bg-primary text-on-primary rounded-xl text-xs font-semibold hover:bg-primary-container transition-colors flex items-center gap-1.5 shadow-sm active:scale-95">
+          <span class="material-symbols-outlined text-[16px]">assignment_add</span>
+          <span>Assign New Duty</span>
+        </button>
+      </div>
+
+      <!-- Organizational Hierarchy Tree (Node Cards with connecting lines) -->
+      <section class="nexus-card p-6">
+        <h3 class="font-headline text-base font-bold text-primary dark:text-primary-fixed mb-4 pb-2 border-b border-outline-variant/40">Organizational Hierarchy &amp; Workload</h3>
+        
+        <div class="flex flex-col md:flex-row gap-6 items-center justify-around relative py-4">
+          <!-- Line connector behind nodes on desktop -->
+          <div class="hidden md:block absolute top-1/2 left-[15%] right-[15%] h-px bg-outline-variant/60 -translate-y-6 z-0"></div>
+
+          <!-- Floor Manager Node -->
+          <div onclick="openAssociateProfile('David Chen')" class="flex flex-col items-center gap-2 relative z-10 p-4 rounded-2xl bg-surface dark:bg-surface-lowest border border-outline-variant/60 shadow-sm w-full md:w-64 cursor-pointer hover:border-primary transition-all">
+            <img class="w-16 h-16 rounded-full object-cover border-2 border-primary/20 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy2xEe2XngudVkETnuUqbHnByXcJQqYENFFek-6XrOgnfAyfcGG_ZTB0LnCeHbZvQLOmeZX2_IkhfHSKjNqHAD_eX58tVEfD412GFJ3Qf4tB6vnB74OrF-PRG0g1CNatntoQvh7Q8hkbF6SkaoQM27tVGwz_R2szIgAqDrbDHzkNjg-CEvTiRNg0q6SI1cK__O7XHGRhSuJSAK-kQ26WIUAD88KSy49tDqXdcXD0aSJp-m3sHZsHC7" alt="David"/>
+            <div class="text-center">
+              <h4 class="font-bold text-sm text-on-surface">David Chen</h4>
+              <p class="text-xs text-on-surface-variant font-medium">Floor Manager</p>
+            </div>
+            <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden mt-1">
+              <div class="bg-primary dark:bg-primary-fixed h-full rounded-full" style="width: 85%"></div>
+            </div>
+            <span class="font-mono text-[10px] text-on-surface-variant">Capacity Load: 85%</span>
+          </div>
+
+          <!-- Team Lead East Node -->
+          <div onclick="openAssociateProfile('Sarah Jenkins')" class="flex flex-col items-center gap-2 relative z-10 p-4 rounded-2xl bg-surface dark:bg-surface-lowest border border-outline-variant/60 shadow-sm w-full md:w-64 cursor-pointer hover:border-primary transition-all">
+            <img class="w-16 h-16 rounded-full object-cover border-2 border-secondary/20 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCT-BEtrJIqSrrSuRv72V0Mz6dVWZ-YTROUXxG70gj31hVZ4O0bEd4Pc7Yslj_V0pZh4jT2ccgRlojx8Qwn9KA8Mp8XMlof1y7dFFt5YQ2ApLTgFkHwE8iMwBeMUJFTt8fvwydG7y61MZp0Hvu9WfqdsRLgy5TjhhlJu5HmjKKUr3u6QppaeK71-Li19pgna0FxbiUe497tyZ9LoGPQMlemjkL_RcwwsBrN_qOe6L1jMFb-TsvnVRXo" alt="Sarah"/>
+            <div class="text-center">
+              <h4 class="font-bold text-sm text-on-surface">Sarah Jenkins</h4>
+              <p class="text-xs text-on-surface-variant font-medium">Team Lead - East</p>
+            </div>
+            <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden mt-1">
+              <div class="bg-secondary h-full rounded-full" style="width: 60%"></div>
+            </div>
+            <span class="font-mono text-[10px] text-on-surface-variant">Capacity Load: 60%</span>
+          </div>
+
+          <!-- Team Lead West Node -->
+          <div onclick="openAssociateProfile('Marcus Thorne')" class="flex flex-col items-center gap-2 relative z-10 p-4 rounded-2xl bg-surface dark:bg-surface-lowest border border-outline-variant/60 shadow-sm w-full md:w-64 cursor-pointer hover:border-primary transition-all">
+            <img class="w-16 h-16 rounded-full object-cover border-2 border-on-tertiary-container/30 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB53ZHJNsRwuEOo42TueHQHHwFFqRQWcBbh6hmgJG-5W4Al0cszV3p-1zccIjwuiG-eZunPKo8dOgDTcQfsfqdbVEoxp5kFGXMqFmatiLrr8PFdftVXrooDhXfSNW0flXnrP-YKmvKJF11JylvLuFvr9Lm28cvpz7UtjB7ezdWmAuv5Ua3t9Dr5c_BlBJxvCYWMtoVYxduR-UseW4BijMcbo6boPW0kDfmAwGhbnhPYMxzTrqfuWy3I" alt="Marcus"/>
+            <div class="text-center">
+              <h4 class="font-bold text-sm text-on-surface">Marcus Thorne</h4>
+              <p class="text-xs text-on-surface-variant font-medium">Team Lead - West</p>
+            </div>
+            <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden mt-1">
+              <div class="bg-on-tertiary-container h-full rounded-full" style="width: 95%"></div>
+            </div>
+            <span class="font-mono text-[10px] text-on-tertiary-container font-semibold">Capacity Load: 95% (High)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Duty Assignments Table -->
+      <section class="nexus-card overflow-hidden">
+        <div class="p-5 border-b border-outline-variant/50 flex justify-between items-center bg-surface-container-low/40">
+          <div>
+            <h3 class="font-headline text-lg font-bold text-primary dark:text-primary-fixed">Active Duty Assignments</h3>
+            <p class="text-xs text-on-surface-variant">Live zone tracking and task fulfillment status</p>
+          </div>
+          <button onclick="navigateTo('assign-task')" class="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-primary-container transition-colors flex items-center gap-1 shadow-sm">
+            <span class="material-symbols-outlined text-[16px]">add</span>
+            <span>Assign</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto max-h-[420px]">
+          <table class="table-nexus w-full text-left border-collapse">
+            <thead class="sticky top-0 bg-surface-container-low/90 backdrop-blur-sm z-10">
+              <tr>
+                <th>Associate</th>
+                <th>Zone</th>
+                <th>Task</th>
+                <th>Status</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="hr-assignments-body">
+              <!-- Populated by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 5: EMPLOYEE PROFILE (ELENA RODRIGUEZ) -->
+    <!-- ========================================================================= -->
+    <main id="view-profile" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 max-w-7xl mx-auto w-full hidden">
+      
+      <!-- Breadcrumb & Actions -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-xs text-on-surface-variant font-medium">
+          <button onclick="navigateTo('hr')" class="hover:text-primary transition-colors">Team Management</button>
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+          <button onclick="navigateTo('hr')" class="hover:text-primary transition-colors">Associates</button>
+          <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+          <span class="text-primary dark:text-primary-fixed font-bold">Elena Rodriguez</span>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="openModal('modal-edit-profile')" class="px-3.5 py-1.5 bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-lg text-xs font-semibold text-primary dark:text-primary-fixed hover:bg-surface-container transition-all">
+            Edit Profile
+          </button>
+          <button onclick="navigateTo('assign-task'); selectAssociate('Elena Rodriguez');" class="px-3.5 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:bg-primary-container transition-all shadow-sm flex items-center gap-1.5 active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">assignment_add</span>
+            <span>Assign Task</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Elena Identity Header (Doppelrand nested frame) -->
+      <div class="doppelrand">
+        <div class="doppelrand-inner p-6 flex flex-col md:flex-row items-center md:items-start gap-6 relative overflow-hidden">
+          <div class="relative">
+            <img class="w-32 h-32 md:w-36 md:h-36 rounded-2xl object-cover border-4 border-surface shadow-md relative z-10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSy1JbUL5EHLhUSq8T2TP-nxMlEbEub9YzHHTfuoYoS7r_OInuKon5Y3btmVGcZx939OM0OSKVXIiE6xlFNw_VaZ51zI6AQsAdFTyNlxkGfznYfVX---VEIieISxwt_ATd9yuxqcPQrm2X_WSq3aOD-wZfaEuY1azLRJaw90ELG92UZK-syldymQKKs95hUMo6-QdGaT21IyeehJgHFVEA8aqPls9RyWeVAvBhtYknb5wJ19k45v0X" alt="Elena Rodriguez"/>
+            <div class="absolute -bottom-2 -right-2 bg-secondary-container text-on-secondary-container px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold border border-surface shadow-sm z-20 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-secondary"></span>
+              Clocked In
+            </div>
+          </div>
+
+          <div class="flex-1 text-center md:text-left w-full pt-1">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+              <div>
+                <h1 id="profile-name" class="font-headline text-3xl font-extrabold text-on-surface">Elena Rodriguez</h1>
+                <p id="profile-title" class="font-headline text-base text-primary dark:text-primary-fixed font-semibold">Senior Sales Associate &amp; Floor Lead</p>
+              </div>
+              <span class="badge-pill bg-secondary-container/40 text-secondary self-center md:self-start">Grade A+ Performer</span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5 pt-4 border-t border-outline-variant/30">
+              <div>
+                <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Employee ID</span>
+                <p class="font-mono text-xs font-bold text-on-surface mt-0.5">NEX-8492</p>
+              </div>
+              <div>
+                <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Department</span>
+                <p id="profile-dept" class="text-xs font-bold text-on-surface mt-0.5">Apparel &amp; Styling</p>
+              </div>
+              <div>
+                <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Hire Date</span>
+                <p class="font-mono text-xs font-bold text-on-surface mt-0.5">Oct 12, 2021</p>
+              </div>
+              <div>
+                <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Assigned Store</span>
+                <p class="text-xs font-bold text-on-surface mt-0.5">North Wing #42</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Split: Contact & Performance -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        
+        <!-- Contact & Logistics (4 cols) -->
+        <section class="md:col-span-4 nexus-card p-5 flex flex-col justify-between">
+          <div>
+            <h3 class="font-headline text-base font-bold text-on-surface mb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-[20px]">contact_mail</span>
+              <span>Contact Information</span>
+            </h3>
+            
+            <div class="space-y-3 text-xs">
+              <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low/40">
+                <span class="flex items-center gap-2 text-on-surface-variant">
+                  <span class="material-symbols-outlined text-[16px]">mail</span>
+                  <span id="profile-email">e.rodriguez@nexusretail.com</span>
+                </span>
+                <button onclick="copyContact(document.getElementById('profile-email').textContent, 'Email')" class="p-1 hover:text-primary text-on-surface-variant">
+                  <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                </button>
+              </div>
+
+              <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low/40">
+                <span class="flex items-center gap-2 text-on-surface-variant">
+                  <span class="material-symbols-outlined text-[16px]">call</span>
+                  <span id="profile-phone">+1 (555) 293-8472</span>
+                </span>
+                <button onclick="copyContact(document.getElementById('profile-phone').textContent, 'Phone')" class="p-1 hover:text-primary text-on-surface-variant">
+                  <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                </button>
+              </div>
+
+              <div class="p-2 rounded-lg bg-surface-container-low/40 text-on-surface-variant">
+                <div class="flex items-center gap-2 font-medium mb-1">
+                  <span class="material-symbols-outlined text-[16px]">location_on</span>
+                  <span>Primary Residence</span>
+                </div>
+                <div class="text-[11px] leading-relaxed pl-6">1422 Sycamore Lane, Apt 4B<br/>Metropolis, NY 10021</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-outline-variant/40">
+            <button onclick="toast.info('Badge NFC Active', 'Associate terminal pass synchronized')" class="w-full py-2 bg-surface-container text-primary font-semibold text-xs rounded-lg hover:bg-surface-highest transition-colors flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">badge</span>
+              <span>Sync Security RFID</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Performance Scorecard & Active Tasks (8 cols) -->
+        <section class="md:col-span-8 flex flex-col gap-6">
+          
+          <!-- Performance Metrics -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="nexus-card p-4">
+              <span class="font-mono text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">Monthly Sales Quota</span>
+              <div class="font-headline text-2xl font-bold text-on-surface mt-1">$42,800</div>
+              <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden mt-2">
+                <div class="bg-secondary h-full" style="width: 95%"></div>
+              </div>
+              <span class="font-mono text-[10px] text-secondary font-semibold mt-1 inline-block">95% of $45,000 target</span>
+            </div>
+
+            <div class="nexus-card p-4">
+              <span class="font-mono text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">CSAT Feedback</span>
+              <div class="font-headline text-2xl font-bold text-on-surface mt-1">4.9 / 5.0</div>
+              <div class="text-xs text-secondary mt-1 font-medium flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">star</span> 124 shopper reviews
+              </div>
+            </div>
+
+            <div class="nexus-card p-4">
+              <span class="font-mono text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">Punctuality &amp; Shifts</span>
+              <div class="font-headline text-2xl font-bold text-on-surface mt-1">99.2%</div>
+              <div class="text-xs text-on-surface-variant mt-1">0 unexcused absences</div>
+            </div>
+          </div>
+
+          <!-- Active Assigned Duties Checklist -->
+          <div class="nexus-card p-5">
+            <div class="flex items-center justify-between mb-4 pb-2 border-b border-outline-variant/40">
+              <h3 class="font-headline text-base font-bold text-on-surface">Assigned Duty Checklist</h3>
+              <span class="text-xs text-on-surface-variant">Check items as completed</span>
+            </div>
+
+            <div id="profile-tasks-list" class="space-y-2.5">
+              <!-- Injected by app.js -->
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 6: ASSIGN NEW TASK -->
+    <!-- ========================================================================= -->
+    <main id="view-assign-task" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 max-w-4xl mx-auto w-full hidden">
+      
+      <!-- Back & Title -->
+      <div class="flex items-center gap-3">
+        <button onclick="history.back()" class="p-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors">
+          <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+        </button>
+        <div>
+          <h2 class="font-headline text-2xl font-bold text-primary dark:text-primary-fixed">Assign New Duty Task</h2>
+          <p class="text-xs text-on-surface-variant">Dispatch operational duties to center floor staff with automated telemetry</p>
+        </div>
+      </div>
+
+      <!-- Form Container -->
+      <form id="assign-task-form" onsubmit="handleAssignTaskSubmit(event)" class="space-y-6">
+        
+        <!-- Associate Selector Carousel -->
+        <section class="nexus-card p-5">
+          <h3 class="font-headline text-base font-bold text-on-surface mb-3">1. Select Associate</h3>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <!-- Elena -->
+            <div onclick="selectAssociate('Elena Rodriguez')" data-name="Elena Rodriguez" class="associate-card p-3 rounded-xl border border-outline-variant/60 flex flex-col items-center gap-2 cursor-pointer transition-all hover:bg-surface-container relative">
+              <img class="w-14 h-14 rounded-full object-cover shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSy1JbUL5EHLhUSq8T2TP-nxMlEbEub9YzHHTfuoYoS7r_OInuKon5Y3btmVGcZx939OM0OSKVXIiE6xlFNw_VaZ51zI6AQsAdFTyNlxkGfznYfVX---VEIieISxwt_ATd9yuxqcPQrm2X_WSq3aOD-wZfaEuY1azLRJaw90ELG92UZK-syldymQKKs95hUMo6-QdGaT21IyeehJgHFVEA8aqPls9RyWeVAvBhtYknb5wJ19k45v0X" alt="Elena"/>
+              <span class="selected-check absolute top-2 right-2 w-5 h-5 bg-secondary text-white rounded-full flex items-center justify-center text-[12px]">
+                <span class="material-symbols-outlined text-[14px]">check</span>
+              </span>
+              <div class="text-center">
+                <div class="font-semibold text-xs text-on-surface">Elena Rodriguez</div>
+                <div class="text-[10px] text-on-surface-variant">Floor Lead</div>
+              </div>
+            </div>
+
+            <!-- David -->
+            <div onclick="selectAssociate('David Chen')" data-name="David Chen" class="associate-card p-3 rounded-xl border border-outline-variant/60 flex flex-col items-center gap-2 cursor-pointer transition-all hover:bg-surface-container relative">
+              <img class="w-14 h-14 rounded-full object-cover shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBy2xEe2XngudVkETnuUqbHnByXcJQqYENFFek-6XrOgnfAyfcGG_ZTB0LnCeHbZvQLOmeZX2_IkhfHSKjNqHAD_eX58tVEfD412GFJ3Qf4tB6vnB74OrF-PRG0g1CNatntoQvh7Q8hkbF6SkaoQM27tVGwz_R2szIgAqDrbDHzkNjg-CEvTiRNg0q6SI1cK__O7XHGRhSuJSAK-kQ26WIUAD88KSy49tDqXdcXD0aSJp-m3sHZsHC7" alt="David"/>
+              <span class="selected-check hidden absolute top-2 right-2 w-5 h-5 bg-secondary text-white rounded-full flex items-center justify-center text-[12px]">
+                <span class="material-symbols-outlined text-[14px]">check</span>
+              </span>
+              <div class="text-center">
+                <div class="font-semibold text-xs text-on-surface">David Chen</div>
+                <div class="text-[10px] text-on-surface-variant">Inventory Mgr</div>
+              </div>
+            </div>
+
+            <!-- Sarah -->
+            <div onclick="selectAssociate('Sarah Jenkins')" data-name="Sarah Jenkins" class="associate-card p-3 rounded-xl border border-outline-variant/60 flex flex-col items-center gap-2 cursor-pointer transition-all hover:bg-surface-container relative">
+              <img class="w-14 h-14 rounded-full object-cover shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCT-BEtrJIqSrrSuRv72V0Mz6dVWZ-YTROUXxG70gj31hVZ4O0bEd4Pc7Yslj_V0pZh4jT2ccgRlojx8Qwn9KA8Mp8XMlof1y7dFFt5YQ2ApLTgFkHwE8iMwBeMUJFTt8fvwydG7y61MZp0Hvu9WfqdsRLgy5TjhhlJu5HmjKKUr3u6QppaeK71-Li19pgna0FxbiUe497tyZ9LoGPQMlemjkL_RcwwsBrN_qOe6L1jMFb-TsvnVRXo" alt="Sarah"/>
+              <span class="selected-check hidden absolute top-2 right-2 w-5 h-5 bg-secondary text-white rounded-full flex items-center justify-center text-[12px]">
+                <span class="material-symbols-outlined text-[14px]">check</span>
+              </span>
+              <div class="text-center">
+                <div class="font-semibold text-xs text-on-surface">Sarah Jenkins</div>
+                <div class="text-[10px] text-on-surface-variant">Lead Cashier</div>
+              </div>
+            </div>
+
+            <!-- Marcus -->
+            <div onclick="selectAssociate('Marcus Johnson')" data-name="Marcus Johnson" class="associate-card p-3 rounded-xl border border-outline-variant/60 flex flex-col items-center gap-2 cursor-pointer transition-all hover:bg-surface-container relative">
+              <div class="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center font-bold text-primary text-base">
+                MJ
+              </div>
+              <span class="selected-check hidden absolute top-2 right-2 w-5 h-5 bg-secondary text-white rounded-full flex items-center justify-center text-[12px]">
+                <span class="material-symbols-outlined text-[14px]">check</span>
+              </span>
+              <div class="text-center">
+                <div class="font-semibold text-xs text-on-surface">Marcus Johnson</div>
+                <div class="text-[10px] text-on-surface-variant">Security Lead</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Task Parameters & Templates -->
+        <section class="nexus-card p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-headline text-base font-bold text-on-surface">2. Task Details</h3>
+            
+            <!-- Quick Templates -->
+            <div class="flex items-center gap-1.5 text-xs">
+              <span class="text-on-surface-variant hidden sm:inline">Templates:</span>
+              <button type="button" onclick="applyTaskTemplate('Inventory Audit - North Wing', 'North Wing', 'High')" class="px-2 py-0.5 bg-surface-container text-primary rounded text-[11px] hover:bg-surface-highest">Inventory</button>
+              <button type="button" onclick="applyTaskTemplate('Window Display Restyle', 'East Promenade', 'Medium')" class="px-2 py-0.5 bg-surface-container text-primary rounded text-[11px] hover:bg-surface-highest">Display</button>
+              <button type="button" onclick="applyTaskTemplate('Emergency Spill Cleanup', 'Food Court', 'Urgent')" class="px-2 py-0.5 bg-surface-container text-primary rounded text-[11px] hover:bg-surface-highest">Cleanup</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Task Title *</label>
+            <input name="task_title" type="text" value="Inventory Audit - North Wing" placeholder="e.g. Conduct Stock Audit" class="w-full px-3.5 py-2 text-sm bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none" required/>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Detailed Instructions</label>
+            <textarea name="task_desc" rows="3" placeholder="Provide step-by-step guidance..." class="w-full px-3.5 py-2 text-sm bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none resize-none">Conduct a full recount of high-value electronics in the North Wing storage area. Cross-reference with yesterday's delivery manifest.</textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-on-surface-variant mb-1">Priority Level</label>
+              <div class="flex bg-surface-container p-1 rounded-xl border border-outline-variant/50">
+                <button type="button" onclick="setPriority('Low')" data-priority="Low" class="priority-btn flex-1 py-1.5 px-2 rounded-md text-xs font-semibold text-on-surface-variant">Low</button>
+                <button type="button" onclick="setPriority('Medium')" data-priority="Medium" class="priority-btn flex-1 py-1.5 px-2 rounded-md text-xs font-semibold bg-primary text-white shadow-sm">Med</button>
+                <button type="button" onclick="setPriority('High')" data-priority="High" class="priority-btn flex-1 py-1.5 px-2 rounded-md text-xs font-semibold text-on-surface-variant">High</button>
+                <button type="button" onclick="setPriority('Urgent')" data-priority="Urgent" class="priority-btn flex-1 py-1.5 px-2 rounded-md text-xs font-semibold text-on-surface-variant">Urgent</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-on-surface-variant mb-1">Target Zone</label>
+              <select name="task_zone" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+                <option>North Wing</option>
+                <option>South Atrium</option>
+                <option>East Promenade</option>
+                <option>West Gallery</option>
+                <option>Storage Bay B</option>
+                <option>Food Court</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-on-surface-variant mb-1">Expected Completion</label>
+              <input name="task_due" type="text" value="Today, 4:00 PM" placeholder="e.g. Today, 5:00 PM" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+            </div>
+          </div>
+        </section>
+
+        <!-- Subtasks / Checklist Builder -->
+        <section class="nexus-card p-5">
+          <h3 class="font-headline text-base font-bold text-on-surface mb-3">3. Subtask Checklist</h3>
+          
+          <div id="task-checklist-container" class="space-y-2 mb-3">
+            <!-- Populated by app.js -->
+          </div>
+
+          <div class="flex gap-2">
+            <input id="new-checklist-input" onkeydown="if(event.key==='Enter'){event.preventDefault();addChecklistItem();}" type="text" placeholder="Add checklist step (press Enter)..." class="flex-1 px-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+            <button type="button" onclick="addChecklistItem()" class="px-3 py-1.5 bg-surface-container text-primary font-semibold text-xs rounded-xl hover:bg-surface-highest">
+              Add Step
+            </button>
+          </div>
+        </section>
+
+        <!-- Submit & Actions -->
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" onclick="history.back()" class="px-5 py-2.5 text-xs font-semibold text-on-surface-variant hover:bg-surface-container rounded-xl transition-colors">
+            Cancel
+          </button>
+          <button type="submit" class="px-6 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container transition-all shadow-md active:scale-95 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">send</span>
+            <span>Assign Duty Task</span>
+          </button>
+        </div>
+
+      </form>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 7: MANAGER ACCESS & PERMISSIONS PORTAL -->
+    <!-- ========================================================================= -->
+    <main id="view-management" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 hidden">
+      
+      <!-- Security Gate (Visible when non-manager attempts to enter) -->
+      <div id="management-security-gate" class="security-gate p-8 md:p-12 rounded-3xl border border-outline-variant/60 shadow-xl max-w-xl mx-auto my-auto text-center space-y-5">
+        <div class="w-16 h-16 rounded-2xl bg-tertiary-container/30 text-on-tertiary-container flex items-center justify-center mx-auto shadow-sm">
+          <span class="material-symbols-outlined text-4xl">lock</span>
+        </div>
+        <div>
+          <span class="badge-pill bg-tertiary-container text-on-tertiary-container text-[11px] mb-2 font-mono">Restricted Clearance</span>
+          <h2 class="font-headline text-2xl font-bold text-primary dark:text-primary-fixed">Managerial Authentication Required</h2>
+          <p class="text-xs text-on-surface-variant max-w-md mx-auto mt-1 leading-relaxed">
+            This module requires Rank 4 (Operations Manager) or Rank 5 (Executive Administrator) authorization to provision staff and grant background permissions.
+          </p>
+        </div>
+
+        <div class="p-4 bg-surface-lowest dark:bg-surface-lowest rounded-2xl border border-outline-variant/60 text-xs text-left space-y-2">
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant">Active Authenticated User:</span>
+            <span class="font-bold text-on-surface" id="gate-active-user">Active Staff Member</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant">Access Status:</span>
+            <span class="font-mono text-error font-semibold" id="gate-active-rank">Elevated Passkey Required</span>
+          </div>
+        </div>
+
+        <form onsubmit="handleManagerLoginSubmit(event)" class="space-y-3 pt-2">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">vpn_key</span>
+            <input id="manager-login-pass" type="password" value="nexus2026" placeholder="Enter Manager Passkey (demo: nexus2026)..." class="w-full pl-10 pr-4 py-2.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <button type="submit" class="flex-1 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">verified_user</span>
+              <span>Unlock Manager Access</span>
+            </button>
+            <button type="button" onclick="quickElevateToManager()" class="px-4 py-2.5 bg-secondary-container text-on-secondary-container font-bold text-xs rounded-xl hover:bg-secondary-fixed-dim transition-all shadow-sm active:scale-95" title="One-click switch to Marcus Vance (Rank 5 Admin)">
+              Quick Admin Elevate
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Active Manager Portal Content (Visible when Rank >= 4) -->
+      <div id="management-content-container" class="space-y-6 hidden">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="badge-pill rank-badge-5 text-[10px]">Rank 5 Authorized</span>
+              <span class="text-xs text-secondary font-mono font-bold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Zero-Trust Session Active
+              </span>
+            </div>
+            <h2 class="font-headline text-2xl font-bold text-primary dark:text-primary-fixed mt-1">Manager Control &amp; Staff Permissions</h2>
+            <p class="text-xs text-on-surface-variant">Assign functions, provision mall employees, and audit security permissions across terminals.</p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button onclick="openModal('modal-add-employee')" class="px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:bg-primary-container transition-all shadow-sm active:scale-95 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">person_add</span>
+              <span>+ Provision Staff</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Management Overview KPI Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div class="nexus-card p-5">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Total Provisioned Staff</span>
+            <div id="mgmt-total-staff" class="font-headline text-3xl font-extrabold text-primary dark:text-primary-fixed mt-1">6</div>
+            <p class="text-xs text-on-surface-variant mt-1">Across 4 retail zones</p>
+          </div>
+
+          <div class="nexus-card p-5">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Elevated Managers (Rank 4+)</span>
+            <div id="mgmt-managers-count" class="font-headline text-3xl font-extrabold text-secondary mt-1">1</div>
+            <p class="text-xs text-on-surface-variant mt-1">Has staff &amp; override clearance</p>
+          </div>
+
+          <div class="nexus-card p-5">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Active Policy Rules</span>
+            <div class="font-headline text-3xl font-extrabold text-on-surface mt-1">18</div>
+            <p class="text-xs text-on-surface-variant mt-1">Role-based security gates</p>
+          </div>
+
+          <div class="nexus-card p-5">
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Audit Trail State</span>
+            <div class="font-headline text-2xl font-extrabold text-secondary mt-1">Immutable</div>
+            <p class="text-xs text-on-surface-variant mt-1">All changes logged locally</p>
+          </div>
+        </section>
+
+        <!-- Permissions Matrix Table -->
+        <section class="nexus-card overflow-hidden">
+          <div class="p-5 border-b border-outline-variant/50 bg-surface-container-low/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 class="font-headline text-lg font-bold text-primary dark:text-primary-fixed">Staff Clearance &amp; Granular Permission Matrix</h3>
+              <p class="text-xs text-on-surface-variant">Toggle specific authorizations per employee. Super Administrator retains all clearances.</p>
+            </div>
+            <span class="badge-pill bg-surface-container text-on-surface-variant text-[11px]">Real-time synchronization</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="table-nexus w-full text-left border-collapse">
+              <thead class="sticky top-0 bg-surface-container-low/90 backdrop-blur-sm z-10">
+                <tr>
+                  <th>Employee</th>
+                  <th>Assigned Rank / Role</th>
+                  <th class="text-center">Financials</th>
+                  <th class="text-center">Stock Ops</th>
+                  <th class="text-center">Approve POs</th>
+                  <th class="text-center">Dispatch Duties</th>
+                  <th class="text-center">Manage Staff</th>
+                  <th class="text-center">Clock Override</th>
+                  <th class="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="permissions-matrix-body">
+                <!-- Populated by app.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Security & Audit Trail Section -->
+        <section class="nexus-card p-5">
+          <div class="flex items-center justify-between mb-4 pb-2 border-b border-outline-variant/40">
+            <div>
+              <h3 class="font-headline text-base font-bold text-on-surface">Security &amp; Authorization Audit Trail</h3>
+              <p class="text-xs text-on-surface-variant">Verifiable record of administrative elevation, policy grants, and personnel changes</p>
+            </div>
+            <button onclick="toast.success('Audit Verified', 'All cryptographic hash chains in sync')" class="text-xs font-semibold text-primary dark:text-primary-fixed hover:underline flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">verified</span>
+              <span>Verify Integrity</span>
+            </button>
+          </div>
+
+          <div id="management-audit-logs" class="space-y-2.5">
+            <!-- Populated by app.js -->
+          </div>
+        </section>
+      </div>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 8: STAFF ONBOARDING & DUTY HUB -->
+    <!-- ========================================================================= -->
+    <main id="view-onboarding" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 max-w-6xl mx-auto w-full hidden">
+      
+      <!-- Welcome Header -->
+      <div class="nexus-card p-6 relative overflow-hidden bg-gradient-to-r from-surface-lowest via-surface-lowest to-secondary-container/10">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="badge-pill bg-secondary-container/40 text-secondary text-xs">Staff Duty Station</span>
+              <span class="text-xs text-on-surface-variant font-mono" id="onboard-user-id">NEX-8492</span>
+            </div>
+            <h2 class="font-headline text-2xl md:text-3xl font-bold text-primary dark:text-primary-fixed">
+              Welcome, <span id="onboard-user-name">Elena Rodriguez</span>
+            </h2>
+            <p id="onboard-user-role" class="text-xs text-on-surface-variant font-medium mt-1">Senior Sales Associate &amp; Floor Lead • Apparel &amp; Styling</p>
+          </div>
+
+          <!-- Digital Punch Clock Card -->
+          <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container border border-outline-variant/60 shadow-sm">
+            <div>
+              <span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider block font-semibold">Station Time</span>
+              <div id="live-digital-clock" class="font-mono text-lg font-bold text-primary dark:text-primary-fixed mt-0.5">--:--:-- --</div>
+              <div id="punch-clock-status" class="badge-pill bg-secondary-container/40 text-secondary border border-secondary/30 text-xs mt-1">
+                <span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span>
+                <span>CLOCKED IN</span>
+              </div>
+            </div>
+
+            <div class="border-l border-outline-variant/60 pl-4 flex flex-col gap-1">
+              <button id="punch-clock-btn" onclick="handleStaffClockToggle()" class="px-4 py-2 bg-error text-white font-bold text-xs rounded-xl hover:bg-error/90 transition-all shadow-sm active:scale-95 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                <span>Clock Out</span>
+              </button>
+              <span id="punch-clock-last-time" class="text-[10px] text-on-surface-variant font-mono text-center">Started at 08:45 AM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Split: My Duties Checklist (7 cols) & Orientation / Quick Actions (5 cols) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- My Duties Checklist (7 cols) -->
+        <section class="lg:col-span-7 nexus-card p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/40">
+              <div>
+                <h3 class="font-headline text-lg font-bold text-on-surface">My Assigned Shift Duties</h3>
+                <p class="text-xs text-on-surface-variant">Check off duties as you execute them across your floor zone</p>
+              </div>
+              <button onclick="renderMyDutiesList(); toast.info('Refreshed', 'Duty roster synchronized');" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant">
+                <span class="material-symbols-outlined text-[18px]">sync</span>
+              </button>
+            </div>
+
+            <div id="my-duties-container" class="space-y-3">
+              <!-- Populated by app.js -->
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-outline-variant/40 flex items-center justify-between text-xs">
+            <span class="text-on-surface-variant">Completed duties notify floor supervisor</span>
+            <button onclick="toast.success('Shift Signed', 'All station checks validated for today')" class="text-primary dark:text-primary-fixed font-semibold hover:underline">
+              Submit Shift Summary &rarr;
+            </button>
+          </div>
+        </section>
+
+        <!-- Right Side: New Hire Onboarding Steps & Floor Assistance (5 cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-6">
+          
+          <!-- Onboarding Checklist -->
+          <div class="nexus-card p-6">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant/40">
+              <h3 class="font-headline text-base font-bold text-on-surface">Onboarding &amp; Compliance</h3>
+              <span class="badge-pill bg-secondary-container/40 text-secondary">3 of 4 Complete</span>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div class="flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low/50">
+                <span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+                <div class="flex-1">
+                  <div class="font-bold text-on-surface">Emergency Fire &amp; Evacuation Walk</div>
+                  <div class="text-[11px] text-on-surface-variant">Reviewed exit gates in North Wing</div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low/50">
+                <span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+                <div class="flex-1">
+                  <div class="font-bold text-on-surface">Link Terminal RFID Badge</div>
+                  <div class="text-[11px] text-on-surface-variant">Assigned NFC tag #8492-A</div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low/50">
+                <span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+                <div class="flex-1">
+                  <div class="font-bold text-on-surface">Nexus Retail Conduct Policy</div>
+                  <div class="text-[11px] text-on-surface-variant">Signed digital acknowledgment</div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low/50 border border-secondary/30">
+                <span class="material-symbols-outlined text-on-surface-variant text-[20px]">radio_button_unchecked</span>
+                <div class="flex-1">
+                  <div class="font-bold text-on-surface">Daily Floor Opening Verification</div>
+                  <div class="text-[11px] text-on-surface-variant">Verify register floats and security tags</div>
+                </div>
+                <button onclick="toast.success('Completed!', 'Daily floor opening verification signed'); this.closest('div').querySelector('.material-symbols-outlined').textContent='check_circle'; this.closest('div').querySelector('.material-symbols-outlined').className='material-symbols-outlined text-secondary text-[20px]';" class="px-2 py-1 bg-primary text-white text-[10px] font-bold rounded-lg hover:bg-primary-container">
+                  Sign Off
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Floor Triggers -->
+          <div class="nexus-card p-5">
+            <h3 class="font-headline text-base font-bold text-on-surface mb-3 pb-2 border-b border-outline-variant/40">Floor Incident &amp; Restock Triggers</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="toast.info('Restock Alert Dispatched', 'Storage Bay B notified for immediate replenishment');" class="p-3 bg-surface-container hover:bg-surface-highest rounded-xl text-left border border-outline-variant/40 transition-colors">
+                <span class="material-symbols-outlined text-secondary text-[22px] mb-1">local_shipping</span>
+                <div class="font-bold text-xs text-on-surface">Request Restock</div>
+                <div class="text-[10px] text-on-surface-variant">Alert warehouse lead</div>
+              </button>
+
+              <button onclick="toast.error('Security Dispatched', 'Level 1 hazard team sent to your station');" class="p-3 bg-surface-container hover:bg-surface-highest rounded-xl text-left border border-outline-variant/40 transition-colors">
+                <span class="material-symbols-outlined text-error text-[22px] mb-1">warning</span>
+                <div class="font-bold text-xs text-on-surface">Report Hazard</div>
+                <div class="text-[10px] text-on-surface-variant">Spill / safety alert</div>
+              </button>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ADD PRODUCT SKU -->
+  <!-- ========================================================================= -->
+  <div id="modal-add-product" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div>
+          <h3 class="font-headline text-lg font-bold text-on-surface">Add New Inventory SKU</h3>
+          <p class="text-xs text-on-surface-variant">Register item in mall warehouse tracking</p>
+        </div>
+        <button onclick="closeModal('modal-add-product')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleAddProductSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Product Name *</label>
+          <input name="prod_name" type="text" placeholder="e.g. 4K Smart Camera" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">SKU Code *</label>
+            <input name="prod_sku" type="text" placeholder="EL-4K-CAM" required class="font-mono w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Category</label>
+            <select name="prod_category" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+              <option>Electronics</option>
+              <option>Fashion</option>
+              <option>Home Goods</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Initial Stock</label>
+            <input name="prod_stock" type="number" min="0" value="50" class="font-mono w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Max Capacity</label>
+            <input name="prod_max" type="number" min="1" value="100" class="font-mono w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Unit Price ($)</label>
+            <input name="prod_price" type="number" step="0.01" value="79.99" class="font-mono w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-add-product')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary-container shadow-sm active:scale-95">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: RECORD TRANSACTION -->
+  <!-- ========================================================================= -->
+  <div id="modal-add-transaction" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div>
+          <h3 class="font-headline text-lg font-bold text-on-surface">Record Ledger Transaction</h3>
+          <p class="text-xs text-on-surface-variant">Log operational revenue or expenditure</p>
+        </div>
+        <button onclick="closeModal('modal-add-transaction')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleAddTransactionSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Description *</label>
+          <input name="trans_desc" type="text" placeholder="e.g. Tenant Rent - Nike Store" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Type</label>
+            <select name="trans_type" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+              <option value="revenue">Revenue (+)</option>
+              <option value="expense">Expense (-)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Category</label>
+            <select name="trans_category" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+              <option>Revenue</option>
+              <option>Maintenance</option>
+              <option>Utilities</option>
+              <option>Payroll</option>
+              <option>Concession</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Amount ($) *</label>
+            <input name="trans_amount" type="number" step="0.01" min="1" placeholder="5000.00" required class="font-mono w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Status</label>
+            <select name="trans_status" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+              <option>Completed</option>
+              <option>Pending</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-add-transaction')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary-container shadow-sm active:scale-95">Record Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: EDIT EMPLOYEE PROFILE -->
+  <!-- ========================================================================= -->
+  <div id="modal-edit-profile" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div>
+          <h3 class="font-headline text-lg font-bold text-on-surface">Edit Associate Profile</h3>
+          <p class="text-xs text-on-surface-variant">Update contact &amp; assignment parameters</p>
+        </div>
+        <button onclick="closeModal('modal-edit-profile')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="event.preventDefault(); toast.success('Profile Saved', 'Associate parameters synchronized across cluster'); closeModal('modal-edit-profile');" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Full Name</label>
+          <input type="text" value="Elena Rodriguez" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Role Title</label>
+          <input type="text" value="Senior Sales Associate & Floor Lead" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Email</label>
+          <input type="email" value="e.rodriguez@nexusretail.com" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Phone</label>
+          <input type="text" value="+1 (555) 293-8472" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-edit-profile')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary-container shadow-sm active:scale-95">Update Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- COMMAND PALETTE MODAL (Ctrl+K) -->
+  <!-- ========================================================================= -->
+  <div id="command-palette" class="modal-backdrop fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
+    <div class="modal-content w-full max-w-xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl overflow-hidden relative">
+      <div class="flex items-center gap-3 px-4 py-3 border-b border-outline-variant/50 bg-surface-container-low/50">
+        <span class="material-symbols-outlined text-on-surface-variant text-[22px]">search</span>
+        <input id="palette-input" oninput="filterPaletteActions(this.value)" type="text" placeholder="Type a command or jump to view (e.g. 'inventory', 'sale', 'task')..." class="flex-1 text-sm bg-transparent border-none outline-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant"/>
+        <kbd class="font-mono text-[10px] bg-surface px-1.5 py-0.5 rounded border border-outline-variant">ESC</kbd>
+      </div>
+      <div id="palette-results" class="max-h-80 overflow-y-auto p-2 space-y-1">
+        <!-- Injected by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: SWITCH ACTIVE USER SESSION -->
+  <!-- ========================================================================= -->
+  <div id="modal-switch-user" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-outline-variant/50">
+        <div>
+          <h3 class="font-headline text-lg font-bold text-on-surface">Switch Active Staff Session</h3>
+          <p class="text-xs text-on-surface-variant">Simulate role-based access control across employee ranks</p>
+        </div>
+        <button onclick="closeModal('modal-switch-user')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="py-3 flex items-center justify-between">
+        <span class="text-xs text-on-surface-variant font-medium">Select a profile to authenticate:</span>
+        <button onclick="quickElevateToManager()" class="text-xs font-semibold text-primary dark:text-primary-fixed hover:underline flex items-center gap-1">
+          <span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+          <span>Switch to Admin (Rank 5)</span>
+        </button>
+      </div>
+
+      <div id="switch-user-list" class="flex-1 overflow-y-auto space-y-2.5 pr-1 max-h-[50vh]">
+        <!-- Injected by renderSwitchUserModalList() in app.js -->
+      </div>
+
+      <div class="pt-4 mt-2 border-t border-outline-variant/40 flex items-center justify-between text-xs">
+        <span class="text-on-surface-variant">Need to provision a new hire?</span>
+        <button onclick="closeModal('modal-switch-user'); openModal('modal-add-employee');" class="font-bold text-primary dark:text-primary-fixed hover:underline">
+          + Add New Staff Member
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: MANAGER ELEVATION LOGIN -->
+  <!-- ========================================================================= -->
+  <div id="modal-manager-login" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">security</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">Manager Authorization</h3>
+            <p class="text-xs text-on-surface-variant">Rank 4+ administrative gate</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-manager-login')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-on-surface-variant mb-4">
+        You are attempting to access privileged management functions. Enter your operational passkey or elevate directly with executive credentials.
+      </p>
+
+      <form onsubmit="handleManagerLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Administrative Passkey</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">vpn_key</span>
+            <input id="manager-modal-login-pass" type="password" value="nexus2026" placeholder="nexus2026" required class="w-full pl-9 pr-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <p class="text-[11px] text-outline mt-1 font-mono">Demo default: <span class="text-secondary font-semibold">nexus2026</span></p>
+        </div>
+
+        <div class="flex flex-col gap-2 pt-2">
+          <button type="submit" class="w-full py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-sm active:scale-95 flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">lock_open</span>
+            <span>Authenticate as Manager</span>
+          </button>
+          <button type="button" onclick="quickElevateToManager()" class="w-full py-2 bg-secondary-container text-on-secondary-container font-semibold text-xs rounded-xl hover:bg-secondary-fixed-dim transition-colors">
+            1-Click Admin Elevate (Marcus Vance)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ADD NEW STAFF / PROVISION EMPLOYEE -->
+  <!-- ========================================================================= -->
+  <div id="modal-add-employee" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div>
+          <h3 class="font-headline text-lg font-bold text-on-surface">Provision Staff Member</h3>
+          <p class="text-xs text-on-surface-variant">Assign rank, role, department clearance &amp; initial PIN</p>
+        </div>
+        <button onclick="closeModal('modal-add-employee')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleAddNewEmployee(event)" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Full Name *</label>
+            <input name="emp_name" type="text" placeholder="e.g. Jordan Miller" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Corporate Email *</label>
+            <input name="emp_email" type="email" placeholder="j.miller@nexusretail.com" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Role Title *</label>
+            <input name="emp_role" type="text" placeholder="e.g. Visual Merchandiser" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Security Rank &amp; Clearance *</label>
+            <select name="emp_rank" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-semibold">
+              <option value="1">Rank 1: Associate (Standard floor duties)</option>
+              <option value="2">Rank 2: Specialist (Inventory / Ops)</option>
+              <option value="3" selected>Rank 3: Floor Lead (Task dispatch)</option>
+              <option value="4">Rank 4: Operations Manager (Staff management)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Department</label>
+            <select name="emp_dept" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+              <option>Apparel &amp; Styling</option>
+              <option>Logistics &amp; Stock</option>
+              <option>Customer Relations</option>
+              <option>Security &amp; Safety</option>
+              <option>Executive Operations</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Assigned Zone</label>
+            <select name="emp_zone" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+              <option>North Wing #42</option>
+              <option>Storage Bay B</option>
+              <option>South Atrium</option>
+              <option>West Gallery</option>
+              <option>East Promenade</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Contact Phone</label>
+            <input name="emp_phone" type="text" placeholder="+1 (555) 019-2834" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Terminal Access PIN *</label>
+            <input name="emp_pin" type="password" placeholder="1234" value="1234" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-mono"/>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-surface-container-low/60 border border-outline-variant/40 text-xs text-on-surface-variant">
+          <p><strong>Note:</strong> Permissions are automatically seeded based on rank. You can fine-tune individual clearance switches in the <strong>Permissions Matrix</strong> once provisioned.</p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-add-employee')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary-container shadow-sm active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">person_add</span>
+            <span>Complete Provisioning</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sonner Toast Container -->
+  <div id="sonner-container" class="sonner-container"></div>
+
+  <!-- App Core Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

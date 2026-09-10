@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Assign New Task - Nexus Retail Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#221200",
+                        "primary-fixed-dim": "#b7c8de",
+                        "surface-variant": "#d3e4fe",
+                        "on-surface": "#0b1c30",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-bright": "#f8f9ff",
+                        "on-tertiary-container": "#ca8100",
+                        "on-secondary-container": "#00714d",
+                        "on-error-container": "#93000a",
+                        "secondary": "#006c49",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-low": "#eff4ff",
+                        "secondary-container": "#6cf8bb",
+                        "tertiary-container": "#3e2400",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container": "#e5eeff",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#b7c8de",
+                        "primary": "#041627",
+                        "on-background": "#0b1c30",
+                        "primary-fixed": "#d2e4fb",
+                        "secondary-fixed-dim": "#4edea3",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#005236",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#74777d",
+                        "secondary-fixed": "#6ffbbe",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "surface": "#f8f9ff",
+                        "on-primary-fixed": "#0b1d2d",
+                        "background": "#f8f9ff",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-tertiary": "#ffffff",
+                        "surface-tint": "#4f6073",
+                        "surface-dim": "#cbdbf5",
+                        "on-surface-variant": "#44474c",
+                        "on-primary-container": "#8192a7",
+                        "primary-container": "#1a2b3c",
+                        "inverse-surface": "#213145",
+                        "on-primary-fixed-variant": "#38485a",
+                        "on-error": "#ffffff",
+                        "outline-variant": "#c4c6cd",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-secondary-fixed": "#002113"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "base": "4px",
+                        "md": "16px",
+                        "gutter": "20px",
+                        "xl": "32px",
+                        "margin": "24px",
+                        "sm": "12px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["JetBrains Mono"],
+                        "display-lg": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "table-data": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "table-data": ["13px", { "lineHeight": "18px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Hide scrollbar for clean horizontal scrolling */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background h-full font-body-md antialiased selection:bg-surface-variant selection:text-primary">
+<!-- Navigation Drawer -->
+<nav class="w-[280px] h-screen fixed left-0 top-0 bg-surface dark:bg-primary border-r border-outline-variant dark:border-on-primary-fixed-variant flex flex-col p-md gap-xs z-50 transition-transform duration-300 transform -translate-x-full md:translate-x-0" id="nav-drawer">
+<!-- Header -->
+<div class="flex items-center gap-sm mb-lg px-xs py-sm">
+<img alt="Manager Portrait" class="w-12 h-12 rounded-full object-cover" data-alt="A professional corporate headshot of a retail center manager in bright lighting, smiling slightly, modern corporate environment background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuATvaEpbkMhGxcjDUzC4Ohc6H5YDejQIvOCOgaMm-bJYUiAxpFJngXFiwPxa3QJw2WrTyYox_pXrRMmJ90tAGEEThdJbmVKnhxGWoaf4I25wz8EAL2pPULJMhLJw4rjreOz-Vtxeoi2TAARwP0y7HiUEOSgZiA8pgvSRxX1jwVvQ9SwY3ZO3307zyU9wjcPk6OzM-s9WPXbN4G4nNJEekScaVdoSwwkK71-PN9YBNn1ebWBhvAxjsPL"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Center Operations</span>
+<span class="font-body-md text-body-md text-on-surface-variant dark:text-on-primary-container">Global Administrator</span>
+<span class="font-label-sm text-label-sm text-secondary dark:text-secondary-fixed">Nexus Mall HQ</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-on-primary-container hover:bg-surface-container-highest dark:hover:bg-primary-container rounded-xl transition-colors cursor-pointer transition-all duration-200 active:scale-[0.98]" href="../index.html#inventory">
+<span class="material-symbols-outlined">inventory_2</span>
+            Inventory
+        </a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-on-primary-container hover:bg-surface-container-highest dark:hover:bg-primary-container rounded-xl transition-colors cursor-pointer transition-all duration-200 active:scale-[0.98]" href="../index.html#sales">
+<span class="material-symbols-outlined">payments</span>
+            Sales &amp; Finance
+        </a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-on-primary-container hover:bg-surface-container-highest dark:hover:bg-primary-container rounded-xl transition-colors cursor-pointer transition-all duration-200 active:scale-[0.98]" href="../index.html#hr">
+<span class="material-symbols-outlined">badge</span>
+            Human Resources
+        </a>
+<a class="flex items-center gap-md px-md py-sm bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed font-bold rounded-xl cursor-pointer transition-all duration-200 active:scale-[0.98]" href="../index.html#hr">
+<span class="material-symbols-outlined filled">groups</span>
+            Team Management
+        </a>
+</nav>
+<!-- Overlay for mobile drawer -->
+<div class="fixed inset-0 bg-primary/20 backdrop-blur-sm z-40 hidden md:hidden" id="drawer-overlay"></div>
+<!-- Main Content Area -->
+<main class="h-full flex flex-col md:ml-[280px]">
+<!-- Top App Bar (Task Assignment Specific) -->
+<header class="bg-surface dark:bg-primary border-b border-outline-variant dark:border-on-primary-fixed-variant flex justify-between items-center px-lg py-md sticky top-0 z-30">
+<div class="flex items-center gap-md">
+<button class="md:hidden p-xs rounded-full hover:bg-surface-container dark:hover:bg-primary-container transition-all duration-200 hover:opacity-80 text-primary dark:text-primary-fixed-dim" onclick="document.getElementById('nav-drawer').classList.toggle('-translate-x-full'); document.getElementById('drawer-overlay').classList.toggle('hidden');">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Back Button & Title -->
+<button class="hidden md:flex p-xs rounded-full hover:bg-surface-container text-on-surface-variant transition-colors items-center justify-center mr-xs">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-lg text-headline-lg font-black text-on-surface dark:text-inverse-on-surface">Assign New Task</h1>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-xs rounded-full hover:bg-surface-container text-on-surface-variant transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<div class="flex-1 overflow-y-auto p-md md:p-xl lg:p-margin bg-background">
+<div class="max-w-4xl mx-auto space-y-xl pb-xl">
+<!-- Associate Selection Section (Bento style card) -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-md">Select Associate</h2>
+<!-- Search Input -->
+<div class="relative mb-lg">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface border border-outline-variant rounded-lg pl-xl pr-md py-sm font-body-md text-body-md focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all placeholder:text-on-surface-variant/70" placeholder="Search team members..." type="text"/>
+</div>
+<!-- Horizontal Scrollable List -->
+<div class="flex gap-md overflow-x-auto hide-scrollbar pb-xs">
+<!-- Selected Member -->
+<div class="flex flex-col items-center gap-xs min-w-[100px] cursor-pointer group">
+<div class="relative">
+<img alt="Elena Rodriguez" class="w-16 h-16 rounded-full object-cover border-2 border-primary-container p-0.5" data-alt="Close up professional portrait of a female retail associate named Elena, wearing a corporate uniform, smiling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPlpCYZDyS7ri4xqtBGz7_h0fRGRlqFeR7BRXCGVDAZOQLrUIShlDiXIBthQq7m8hLMwT2WrvecPqmOdm83slaM8lQRAMzKeMwR7GiylxSHey_VyINP1Un2v1ZYigUfm5l9makq0OseAKVLXJGIWy6uOx5WwkrTh6-hngw5djpVkgfYfpIwA6DWN_3WjqEVn8jrpxGRHerSgxQrmqYD9EMFoEY7PUA5wNLxHokZ_aPyPy1sMeRarY1"/>
+<div class="absolute -bottom-1 -right-1 bg-secondary-container text-on-secondary-container rounded-full w-6 h-6 flex items-center justify-center border-2 border-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px] filled">check</span>
+</div>
+</div>
+<span class="font-body-md text-body-md font-medium text-on-surface text-center leading-tight">Elena<br/>Rodriguez</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Floor Lead</span>
+</div>
+<!-- Unselected Member -->
+<div class="flex flex-col items-center gap-xs min-w-[100px] cursor-pointer group opacity-70 hover:opacity-100 transition-opacity">
+<div class="relative">
+<img alt="David Chen" class="w-16 h-16 rounded-full object-cover border-2 border-transparent group-hover:border-outline-variant p-0.5 transition-colors" data-alt="Professional portrait of a male retail associate named David, modern retail store background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4XO8Oy0zjyIYU3MPSISPrwn78aOUxS2g8RnuTO7vp-TUEW4JHIXI0tFIgzDRS2MOTlyr70FS71mXjY7WwM00087CPv3sGV5qlW3jjEPuWDzZZkm05UW5u5mEd_kzGavR07HTKRkviOD-jNtMzLY50pipo6SJ4XwkWcbLjvBC-LeOucZR6j6jIGq1MapsONr4kyWwhiRoO-X2m5idrk2oIQ2Pb5EBP_R6ng4ds7oYquEHnLUBNs9df"/>
+</div>
+<span class="font-body-md text-body-md text-on-surface text-center leading-tight">David<br/>Chen</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Inventory</span>
+</div>
+<!-- Unselected Member -->
+<div class="flex flex-col items-center gap-xs min-w-[100px] cursor-pointer group opacity-70 hover:opacity-100 transition-opacity">
+<div class="relative">
+<img alt="Sarah Jenkins" class="w-16 h-16 rounded-full object-cover border-2 border-transparent group-hover:border-outline-variant p-0.5 transition-colors" data-alt="Professional portrait of a female retail associate named Sarah, modern retail store background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSOhDPu0U2RH63h-KFx2kWZXk5FAtlSxzRvRxexEiJskMCj78Z3FNMG_zuG2k6SXOV-DJzEKe7_CJQsrakBRWEfe-OmR4NU7S8wx22b5bgVPOqaJSit8pjhdgr40WM4FxVWHcfz-3pqZmt1tYerPvR2jUXjDqLDg8gzyDa2BV4TtrEXDvVDeY2rDNPAIE_WZ8mPVF2uX-9CUMXjgWCb6M1pXs562IaLwGhMPmD_c_8aBToEZIwivTm"/>
+</div>
+<span class="font-body-md text-body-md text-on-surface text-center leading-tight">Sarah<br/>Jenkins</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cashier</span>
+</div>
+<!-- Unselected Member -->
+<div class="flex flex-col items-center gap-xs min-w-[100px] cursor-pointer group opacity-70 hover:opacity-100 transition-opacity">
+<div class="relative flex items-center justify-center w-16 h-16 rounded-full bg-surface-container-high border-2 border-transparent group-hover:border-outline-variant transition-colors">
+<span class="font-headline-md text-headline-md text-primary-container">MJ</span>
+</div>
+<span class="font-body-md text-body-md text-on-surface text-center leading-tight">Marcus<br/>Johnson</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Security</span>
+</div>
+</div>
+</section>
+<!-- Task Details Form -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-md">Task Details</h2>
+<div class="space-y-lg">
+<!-- Task Title -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-xs">Task Title</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-md py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all" placeholder="e.g., Inventory Audit - North Wing" type="text" value="Inventory Audit - North Wing"/>
+</div>
+<!-- Description -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-xs">Description</label>
+<textarea class="w-full bg-surface border border-outline-variant rounded-lg px-md py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all resize-none" placeholder="Detailed instructions..." rows="4">Conduct a full recount of high-value electronics in the North Wing storage area. Cross-reference with yesterday's delivery manifest.</textarea>
+</div>
+<!-- Multi-column Layout for smaller fields -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<!-- Priority Picker (Segmented Control style) -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-xs">Priority Level</label>
+<div class="flex bg-surface-container border border-outline-variant rounded-lg p-1">
+<button class="flex-1 py-1.5 px-3 rounded-md font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high transition-colors">Low</button>
+<button class="flex-1 py-1.5 px-3 rounded-md font-body-md text-body-md text-on-surface-variant hover:bg-surface-container-high transition-colors">Medium</button>
+<button class="flex-1 py-1.5 px-3 rounded-md bg-surface-container-lowest shadow-sm font-body-md text-body-md font-medium text-error flex items-center justify-center gap-xs transition-colors">
+<span class="material-symbols-outlined text-[16px] filled">priority_high</span>
+                                        High
+                                    </button>
+</div>
+</div>
+<!-- Zone/Location Dropdown -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-xs">Zone/Location</label>
+<div class="relative">
+<select class="w-full bg-surface border border-outline-variant rounded-lg pl-md pr-xl py-sm font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all cursor-pointer">
+<option>North Wing</option>
+<option>Sales Floor Main</option>
+<option>Warehouse A</option>
+<option>Customer Service Desk</option>
+</select>
+<span class="material-symbols-outlined absolute right-md top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Date/Time Picker -->
+<div class="md:col-span-2">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-xs">Due Date &amp; Time</label>
+<div class="flex flex-col sm:flex-row gap-sm">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">calendar_today</span>
+<input class="w-full bg-surface border border-outline-variant rounded-lg pl-xl pr-md py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all cursor-pointer" type="date" value="2023-11-15"/>
+</div>
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant">schedule</span>
+<input class="w-full bg-surface border border-outline-variant rounded-lg pl-xl pr-md py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all cursor-pointer" type="time" value="14:00"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Attachments Section -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
+<div class="flex justify-between items-center mb-md">
+<h2 class="font-headline-md text-headline-md text-on-surface">Attachments</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Optional</span>
+</div>
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-xl flex flex-col items-center justify-center gap-sm bg-surface-bright hover:bg-surface-container transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-outline text-[32px]">cloud_upload</span>
+<div class="text-center">
+<span class="block font-body-md text-body-md font-medium text-primary">Click to upload</span>
+<span class="block font-body-md text-body-md text-on-surface-variant">or drag and drop</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">PNG, JPG, PDF up to 10MB</span>
+</div>
+<!-- Existing Attachment Example -->
+<div class="mt-md flex items-center justify-between p-sm border border-outline-variant rounded-lg bg-surface">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-container-high rounded-md flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<span class="block font-body-md text-body-md font-medium text-on-surface">Q3_Inventory_Manifest.pdf</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">2.4 MB</span>
+</div>
+</div>
+<button class="p-xs text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-surface-container-highest">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</section>
+<!-- Action Button Area -->
+<div class="pt-md">
+<button class="w-full md:w-auto md:min-w-[200px] float-right bg-primary-container text-on-primary hover:bg-primary transition-all duration-200 active:scale-[0.98] py-sm px-xl rounded-xl font-body-md text-body-md font-semibold shadow-md flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined filled">assignment_turned_in</span>
+                        Assign Task
+                    </button>
+<div class="clear-both"></div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple script to handle drawer overlay click
+        document.getElementById('drawer-overlay').addEventListener('click', function() {
+            document.getElementById('nav-drawer').classList.add('-translate-x-full');
+            this.classList.add('hidden');
+        });
+    </script>
+
+<!-- Nexus Suite Floating Interactive Launcher -->
+<div style="position:fixed;bottom:16px;right:16px;z-index:9999;background:#041627;color:#fff;padding:10px 16px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.3);font-family:sans-serif;font-size:13px;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,0.15);">
+  <span><strong>Nexus Retail Suite</strong> (Prototype View)</span>
+  <a href="../index.html#assign-task" style="background:#6cf8bb;color:#00714d;padding:6px 12px;border-radius:8px;font-weight:bold;text-decoration:none;font-size:12px;display:inline-flex;align-items:center;gap:4px;">
+    Launch Unified Suite &rarr;
+  </a>
+</div>
+
+</body></html>
