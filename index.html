@@ -123,18 +123,18 @@
       </a>
       <a href="#onboarding" data-view="onboarding" onclick="navigateTo('onboarding')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">punch_clock</span>
-        <span class="flex-1">Staff Onboarding</span>
+        <span class="flex-1">Staff Duty Station</span>
         <span class="font-mono text-[9px] bg-secondary-container text-on-secondary-container px-1.5 py-0.2 rounded-full font-bold">DUTY</span>
       </a>
       <a href="#profile" data-view="profile" onclick="navigateTo('profile')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">account_circle</span>
         <span>Associate Profile</span>
       </a>
-      <a href="#assign-task" data-view="assign-task" onclick="navigateTo('assign-task')" class="nav-link">
+      <a href="#assign-task" id="sidebar-nav-assign-task" data-view="assign-task" onclick="navigateTo('assign-task')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">assignment_add</span>
         <span>Assign New Task</span>
       </a>
-      <a href="#management" data-view="management" onclick="navigateTo('management')" class="nav-link">
+      <a href="#management" id="sidebar-nav-management" data-view="management" onclick="navigateTo('management')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
         <span class="flex-1">Manager Portal</span>
         <span id="manager-nav-lock" class="hidden font-mono text-[9px] bg-tertiary-container text-on-tertiary-container px-1.5 py-0.2 rounded-full font-bold flex items-center gap-0.5">
@@ -162,7 +162,7 @@
         </button>
         <button onclick="openModal('modal-switch-user')" class="flex items-center gap-1 text-xs font-semibold text-primary dark:text-primary-fixed hover:underline">
           <span class="material-symbols-outlined text-[16px]">switch_account</span>
-          <span>Switch User</span>
+          <span>Staff Login / Switch</span>
         </button>
       </div>
     </div>
@@ -179,17 +179,17 @@
         </button>
         <div>
           <h1 id="topbar-title" class="font-headline text-lg md:text-xl font-bold text-on-surface">Nexus Retail Management</h1>
-          <p class="text-xs text-on-surface-variant hidden sm:block">Operations, Staff RBAC &amp; Floor Intelligence</p>
+          <p class="text-xs text-on-surface-variant hidden sm:block">Operations, Multi-Staff Duties &amp; Floor Intelligence</p>
         </div>
       </div>
 
       <!-- Quick Action Buttons & Active Profile Session -->
       <div class="flex items-center gap-2.5 sm:gap-3">
-        <button onclick="openModal('modal-add-transaction')" class="hidden sm:flex items-center gap-1.5 bg-primary text-on-primary px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-primary-container transition-colors shadow-sm active:scale-95">
+        <button id="header-btn-add-sale" onclick="openModal('modal-add-transaction')" class="hidden sm:flex items-center gap-1.5 bg-primary text-on-primary px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-primary-container transition-colors shadow-sm active:scale-95">
           <span class="material-symbols-outlined text-[16px]">add</span>
           <span>Add Sale</span>
         </button>
-        <button onclick="navigateTo('assign-task')" class="flex items-center gap-1.5 bg-secondary-container text-on-secondary-container px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-secondary-fixed-dim transition-colors shadow-sm active:scale-95">
+        <button id="header-btn-new-task" onclick="navigateTo('assign-task')" class="hidden sm:flex items-center gap-1.5 bg-secondary-container text-on-secondary-container px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-secondary-fixed-dim transition-colors shadow-sm active:scale-95">
           <span class="material-symbols-outlined text-[16px]">task_alt</span>
           <span>New Task</span>
         </button>
@@ -198,6 +198,31 @@
         <button onclick="toggleCommandPalette()" class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors" title="Quick Search (Ctrl+K)">
           <span class="material-symbols-outlined text-[20px]">search</span>
         </button>
+
+        <!-- Notification Center Bell -->
+        <div class="relative">
+          <button id="header-notifications-btn" onclick="toggleNotificationDropdown()" class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative" title="Operational Alerts & Dispatches">
+            <span class="material-symbols-outlined text-[20px]">notifications</span>
+            <span id="header-notification-count" class="hidden absolute top-1 right-1 w-4 h-4 bg-error text-white font-mono text-[9px] font-bold rounded-full flex items-center justify-center alert-pulse">0</span>
+          </button>
+          
+          <!-- Notification Dropdown Flyout -->
+          <div id="header-notifications-dropdown" class="notification-dropdown hidden">
+            <div class="p-3 border-b border-outline-variant/50 bg-surface-container-low flex items-center justify-between">
+              <div class="flex items-center gap-1.5 font-bold text-xs text-on-surface">
+                <span class="material-symbols-outlined text-primary text-[18px]">notifications_active</span>
+                <span>Operational Alerts &amp; Attendance</span>
+              </div>
+              <button onclick="markAllNotificationsRead()" class="text-[10px] text-primary dark:text-primary-fixed hover:underline font-semibold">Mark all read</button>
+            </div>
+            <div id="notifications-list" class="flex-1 overflow-y-auto p-2 space-y-1.5 max-h-[360px]">
+              <!-- Populated by app.js -->
+            </div>
+            <div class="p-2 border-t border-outline-variant/40 bg-surface-container-low text-center">
+              <span class="text-[10px] text-on-surface-variant">Real-time floor telemetry</span>
+            </div>
+          </div>
+        </div>
 
         <!-- Active User Session Pill (Clickable to switch or authenticate) -->
         <div onclick="openModal('modal-switch-user')" class="flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-surface-container border border-outline-variant/60 cursor-pointer hover:border-primary transition-all">
@@ -1183,43 +1208,268 @@
         <!-- Management Overview KPI Cards -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div class="nexus-card p-5">
-            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Total Provisioned Staff</span>
-            <div id="mgmt-total-staff" class="font-headline text-3xl font-extrabold text-primary dark:text-primary-fixed mt-1">6</div>
-            <p class="text-xs text-on-surface-variant mt-1">Across 4 retail zones</p>
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Total Active Staff</span>
+            <div id="mgmt-total-staff" class="font-headline text-3xl font-extrabold text-primary dark:text-primary-fixed mt-1">200</div>
+            <p class="text-xs text-on-surface-variant mt-1">Full enterprise roster across 10 depts</p>
           </div>
 
           <div class="nexus-card p-5">
-            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Elevated Managers (Rank 4+)</span>
-            <div id="mgmt-managers-count" class="font-headline text-3xl font-extrabold text-secondary mt-1">1</div>
-            <p class="text-xs text-on-surface-variant mt-1">Has staff &amp; override clearance</p>
+            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Clocked In on Shift</span>
+            <div id="mgmt-clocked-in-count" class="font-headline text-3xl font-extrabold text-secondary mt-1">--</div>
+            <p class="text-xs text-on-surface-variant mt-1">Floor personnel currently at stations</p>
+          </div>
+
+          <div class="nexus-card p-5 border-2 border-amber-500/40 bg-amber-500/5">
+            <span class="font-mono text-[11px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-amber-500 alert-pulse"></span>
+              <span>Pending Sign-Offs</span>
+            </span>
+            <div id="mgmt-pending-approvals-count" class="font-headline text-3xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">0</div>
+            <p class="text-xs text-on-surface-variant mt-1">Duties completed by Leads awaiting review</p>
           </div>
 
           <div class="nexus-card p-5">
-            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Active Policy Rules</span>
-            <div class="font-headline text-3xl font-extrabold text-on-surface mt-1">18</div>
-            <p class="text-xs text-on-surface-variant mt-1">Role-based security gates</p>
-          </div>
-
-          <div class="nexus-card p-5">
-            <span class="font-mono text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Audit Trail State</span>
-            <div class="font-headline text-2xl font-extrabold text-secondary mt-1">Immutable</div>
-            <p class="text-xs text-on-surface-variant mt-1">All changes logged locally</p>
+            <span class="font-mono text-[11px] font-semibold text-error uppercase tracking-wider flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">warning</span>
+              <span>Active Escalations</span>
+            </span>
+            <div id="mgmt-open-escalations-count" class="font-headline text-3xl font-extrabold text-error mt-1">0</div>
+            <p class="text-xs text-on-surface-variant mt-1">Staff incidents requiring manager action</p>
           </div>
         </section>
 
-        <!-- Permissions Matrix Table -->
+        <!-- SECTION 1: DUTIES PENDING MANAGER SIGN-OFF (CRITICAL WORKFLOW) -->
+        <section class="nexus-card p-6 border-2 border-amber-500/30">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/40">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="badge-pill bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold">Action Required</span>
+                <h3 class="font-headline text-lg font-bold text-on-surface">Duties Awaiting Manager Sign-Off</h3>
+              </div>
+              <p class="text-xs text-on-surface-variant mt-0.5">When Team Leads mark duties completed, review them here and execute formal operational sign-off.</p>
+            </div>
+            <span class="text-xs font-mono text-on-surface-variant">Real-time status synchronization</span>
+          </div>
+
+          <div id="mgmt-pending-approvals-list" class="space-y-3">
+            <!-- Populated by app.js: renderPendingApprovals() -->
+          </div>
+        </section>
+
+        <!-- SECTION 2: LIVE SHIFT ATTENDANCE FEED & CLOCK-IN STREAM -->
+        <section class="nexus-card p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/40">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="badge-pill bg-secondary-container/50 text-secondary text-xs font-bold">Floor Telemetry</span>
+                <h3 class="font-headline text-lg font-bold text-on-surface">Live Shift Attendance &amp; Clock-In Feed</h3>
+              </div>
+              <p class="text-xs text-on-surface-variant mt-0.5">Managers receive alerts when employees punch in. Assign duties directly to on-shift personnel.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="mgmt-attendance-search" oninput="renderShiftAttendanceFeed()" type="text" placeholder="Search on-duty staff (e.g. 'Elena', 'Apparel')..." class="px-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none w-56 sm:w-64"/>
+            </div>
+          </div>
+
+          <div id="mgmt-attendance-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto pr-1">
+            <!-- Populated by app.js: renderShiftAttendanceFeed() -->
+          </div>
+        </section>
+
+        <!-- SECTION 3: DUTY DISPATCHER (INDIVIDUAL & GROUP WITH TEAM LEAD) -->
+        <section class="nexus-card p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/40">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="badge-pill bg-primary/10 text-primary dark:text-primary-fixed text-xs font-bold">Task Orchestration</span>
+                <h3 class="font-headline text-lg font-bold text-on-surface">Dispatch Duty to Staff or Multi-Person Team</h3>
+              </div>
+              <p class="text-xs text-on-surface-variant mt-0.5">Assign duties to an individual staff member or an entire group with a designated Team Lead.</p>
+            </div>
+            <div class="flex items-center gap-1 bg-surface-container p-1 rounded-xl text-xs font-semibold">
+              <button type="button" id="btn-mode-new-duty" onclick="setDutyDispatchMode('new')" class="px-3 py-1 rounded-lg bg-surface-lowest text-primary shadow-sm font-bold">New Duty</button>
+              <button type="button" id="btn-mode-append-duty" onclick="setDutyDispatchMode('append')" class="px-3 py-1 rounded-lg text-on-surface-variant hover:text-on-surface">Add to Existing Duty</button>
+            </div>
+          </div>
+
+          <!-- NEW DUTY FORM -->
+          <form id="form-dispatch-duty" onsubmit="handleDispatchDutySubmit(event)" class="space-y-4">
+            <!-- Mode Selector: Individual vs Group -->
+            <div class="p-3.5 bg-surface-container-low/60 rounded-xl border border-outline-variant/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span class="text-xs font-bold text-on-surface">Assignment Structure:</span>
+              <div class="flex items-center gap-4 text-xs font-semibold">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="dispatch_type" value="individual" checked onchange="toggleDutyAssignmentType(this.value)" class="text-primary focus:ring-primary"/>
+                  <span>Individual Staff Member</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="dispatch_type" value="group" onchange="toggleDutyAssignmentType(this.value)" class="text-primary focus:ring-primary"/>
+                  <span class="flex items-center gap-1">
+                    <span>Group / Team Duty</span>
+                    <span class="badge-pill text-[9px] team-lead-badge">Team Lead Required</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Existing Duty Target (Visible when mode == append) -->
+            <div id="dispatch-existing-duty-container" class="hidden p-3 bg-secondary-container/20 rounded-xl border border-secondary/30 space-y-2">
+              <label class="block text-xs font-bold text-secondary">Select Existing Active Duty to Append To *</label>
+              <select id="dispatch-existing-duty-select" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-semibold">
+                <!-- Injected by app.js -->
+              </select>
+              <p class="text-[11px] text-on-surface-variant">Adding tasks or team members will update the duty across all assigned associates' stations immediately.</p>
+            </div>
+
+            <!-- Standard Duty Fields -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div class="sm:col-span-8">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Duty Title / Scope *</label>
+                <input id="dispatch-duty-title" name="duty_title" type="text" placeholder="e.g. Storage Bay B Full Inventory Sorting & Cycle Count" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium"/>
+              </div>
+              <div class="sm:col-span-4">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Quick Duty Template</label>
+                <select onchange="applyDutyTemplate(this.value)" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+                  <option value="">-- Choose Preset --</option>
+                  <option value="Floor Register Cash Balancing|East Promenade|High">Register Cash Balancing</option>
+                  <option value="Storage Bay B Inventory Sorting|Storage Bay B|High">Storage Bay B Sorting</option>
+                  <option value="Window Display Fall Fashion Restyle|North Wing #42|Medium">Window Display Restyle</option>
+                  <option value="VIP Client Styling Session|North Wing #42|High">VIP Client Styling</option>
+                  <option value="Loss Prevention Floor Walk|West Gallery|Urgent">Loss Prevention Sweep</option>
+                  <option value="POS Terminal Firmware & Device Audit|South Atrium|Medium">POS Terminal Audit</option>
+                  <option value="Emergency Spill & Safety Clearance|Food Court Deck|Urgent">Spill & Safety Clearance</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Zone / Station</label>
+                <select id="dispatch-duty-zone" name="duty_zone" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+                  <option>North Wing #42</option>
+                  <option>South Atrium</option>
+                  <option>East Promenade</option>
+                  <option>West Gallery</option>
+                  <option>Storage Bay B</option>
+                  <option>Central Mall HQ</option>
+                  <option>Food Court Deck</option>
+                  <option>Service Core A</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Priority</label>
+                <select id="dispatch-duty-priority" name="duty_priority" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-semibold">
+                  <option value="Medium">Medium Priority</option>
+                  <option value="High">High Priority</option>
+                  <option value="Urgent">Urgent Floor Priority</option>
+                  <option value="Low">Low Priority</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Target Completion</label>
+                <input id="dispatch-duty-due" name="duty_due" type="text" value="Today, 4:30 PM" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-mono"/>
+              </div>
+            </div>
+
+            <!-- Single Staff Selector (Visible when individual) -->
+            <div id="dispatch-individual-assignee-container">
+              <label class="block text-xs font-semibold text-on-surface-variant mb-1">Assign to Staff Member (Search 200 Personnel) *</label>
+              <select id="dispatch-single-staff-select" name="duty_single_staff" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+                <!-- Populated dynamically by app.js -->
+              </select>
+            </div>
+
+            <!-- Group Staff Selector (Visible when group) -->
+            <div id="dispatch-group-assignee-container" class="hidden space-y-3 p-4 bg-surface-container-low/50 rounded-xl border border-outline-variant/50">
+              <div class="flex items-center justify-between">
+                <div>
+                  <label class="block text-xs font-bold text-on-surface">Select Team Members for this Duty</label>
+                  <p class="text-[11px] text-on-surface-variant">Check multiple staff members. The designated Team Lead will submit the duty for your final sign-off.</p>
+                </div>
+                <span id="group-selected-count-badge" class="badge-pill bg-secondary-container/40 text-secondary text-xs">0 Selected</span>
+              </div>
+
+              <!-- Filter within 200 staff -->
+              <div class="flex gap-2">
+                <input id="dispatch-group-search" oninput="filterGroupPicker(this.value)" type="text" placeholder="Search staff to add to team..." class="w-full px-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+              </div>
+
+              <div id="dispatch-group-members-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
+                <!-- Populated by app.js: checkboxes across employees -->
+              </div>
+
+              <!-- DESIGNATE TEAM LEAD SELECTOR -->
+              <div class="pt-2 border-t border-outline-variant/40">
+                <label class="block text-xs font-bold text-amber-600 dark:text-amber-400 mb-1 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">stars</span>
+                  <span>Designate Team Lead (Submits Duty for Sign-off) *</span>
+                </label>
+                <select id="dispatch-team-lead-select" name="duty_team_lead" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-amber-500/50 rounded-xl focus:ring-1 focus:ring-amber-500 focus:outline-none font-bold text-on-surface">
+                  <option value="">-- Choose Lead from Selected Team Members --</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Subtasks / Checklist Builder -->
+            <div>
+              <label class="block text-xs font-semibold text-on-surface-variant mb-1">Checklist Milestones &amp; Subtasks</label>
+              <div class="flex gap-2 mb-2">
+                <input id="dispatch-new-task-step" type="text" placeholder="Add milestone step (e.g. 'Verify seal count', 'Sort Bay B items')..." class="flex-1 px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+                <button type="button" onclick="addDispatchStep()" class="px-4 py-2 bg-surface-container hover:bg-surface-highest text-primary text-xs font-bold rounded-xl transition-colors">
+                  + Add Step
+                </button>
+              </div>
+              <div id="dispatch-checklist-items" class="space-y-1.5">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/40">
+              <button type="reset" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Clear Form</button>
+              <button type="submit" class="px-6 py-2.5 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary-container shadow-md active:scale-95 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px]">send</span>
+                <span>Dispatch Duty to Floor</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- SECTION 4: FLOOR ESCALATIONS QUEUE -->
+        <section class="nexus-card p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/40">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="badge-pill bg-error-container/40 text-error text-xs font-bold">Emergency &amp; Incident Desk</span>
+                <h3 class="font-headline text-lg font-bold text-on-surface">Staff Floor Escalations Queue</h3>
+              </div>
+              <p class="text-xs text-on-surface-variant mt-0.5">Floor associates escalate emergencies, stock blockages, and safety hazards directly to management.</p>
+            </div>
+            <button onclick="renderManagerEscalations(); toast.info('Refreshed', 'Escalation queue synchronized');" class="text-xs font-semibold text-primary dark:text-primary-fixed hover:underline flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">sync</span>
+              <span>Refresh Queue</span>
+            </button>
+          </div>
+
+          <div id="mgmt-escalations-list" class="space-y-2.5">
+            <!-- Populated by app.js: renderManagerEscalations() -->
+          </div>
+        </section>
+
+        <!-- SECTION 5: STAFF CLEARANCE & PERMISSIONS MATRIX TABLE -->
         <section class="nexus-card overflow-hidden">
           <div class="p-5 border-b border-outline-variant/50 bg-surface-container-low/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 class="font-headline text-lg font-bold text-primary dark:text-primary-fixed">Staff Clearance &amp; Granular Permission Matrix</h3>
-              <p class="text-xs text-on-surface-variant">Toggle specific authorizations per employee. Super Administrator retains all clearances.</p>
+              <h3 class="font-headline text-lg font-bold text-primary dark:text-primary-fixed">Enterprise Staff Clearance Matrix (200 Personnel)</h3>
+              <p class="text-xs text-on-surface-variant">Toggle granular clearance per associate. Ranks 4–5 retain managerial clearance.</p>
             </div>
-            <span class="badge-pill bg-surface-container text-on-surface-variant text-[11px]">Real-time synchronization</span>
+            <div class="flex items-center gap-2">
+              <input id="mgmt-perms-search" oninput="renderPermissionsMatrix()" type="text" placeholder="Filter 200 staff by name, ID or department..." class="px-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none w-64"/>
+            </div>
           </div>
 
-          <div class="overflow-x-auto">
+          <div class="overflow-x-auto max-h-[500px]">
             <table class="table-nexus w-full text-left border-collapse">
-              <thead class="sticky top-0 bg-surface-container-low/90 backdrop-blur-sm z-10">
+              <thead class="sticky top-0 bg-surface-container-low/95 backdrop-blur-md z-10">
                 <tr>
                   <th>Employee</th>
                   <th>Assigned Rank / Role</th>
@@ -1279,23 +1529,31 @@
             <p id="onboard-user-role" class="text-xs text-on-surface-variant font-medium mt-1">Senior Sales Associate &amp; Floor Lead • Apparel &amp; Styling</p>
           </div>
 
-          <!-- Digital Punch Clock Card -->
-          <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container border border-outline-variant/60 shadow-sm">
-            <div>
-              <span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider block font-semibold">Station Time</span>
-              <div id="live-digital-clock" class="font-mono text-lg font-bold text-primary dark:text-primary-fixed mt-0.5">--:--:-- --</div>
-              <div id="punch-clock-status" class="badge-pill bg-secondary-container/40 text-secondary border border-secondary/30 text-xs mt-1">
-                <span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span>
-                <span>CLOCKED IN</span>
-              </div>
-            </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- Escalate Floor Issue Button -->
+            <button onclick="openModal('modal-escalate-issue')" class="px-4 py-2.5 bg-error/10 text-error hover:bg-error/20 border border-error/30 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
+              <span class="material-symbols-outlined text-[18px]">report_problem</span>
+              <span>Escalate Floor Issue</span>
+            </button>
 
-            <div class="border-l border-outline-variant/60 pl-4 flex flex-col gap-1">
-              <button id="punch-clock-btn" onclick="handleStaffClockToggle()" class="px-4 py-2 bg-error text-white font-bold text-xs rounded-xl hover:bg-error/90 transition-all shadow-sm active:scale-95 flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[18px]">logout</span>
-                <span>Clock Out</span>
-              </button>
-              <span id="punch-clock-last-time" class="text-[10px] text-on-surface-variant font-mono text-center">Started at 08:45 AM</span>
+            <!-- Digital Punch Clock Card -->
+            <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container border border-outline-variant/60 shadow-sm">
+              <div>
+                <span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider block font-semibold">Station Time</span>
+                <div id="live-digital-clock" class="font-mono text-lg font-bold text-primary dark:text-primary-fixed mt-0.5">--:--:-- --</div>
+                <div id="punch-clock-status" class="badge-pill bg-secondary-container/40 text-secondary border border-secondary/30 text-xs mt-1">
+                  <span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span>
+                  <span>CLOCKED IN</span>
+                </div>
+              </div>
+
+              <div class="border-l border-outline-variant/60 pl-4 flex flex-col gap-1">
+                <button id="punch-clock-btn" onclick="handleStaffClockToggle()" class="px-4 py-2 bg-error text-white font-bold text-xs rounded-xl hover:bg-error/90 transition-all shadow-sm active:scale-95 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px]">logout</span>
+                  <span>Clock Out</span>
+                </button>
+                <span id="punch-clock-last-time" class="text-[10px] text-on-surface-variant font-mono text-center">Started at 08:45 AM</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1304,35 +1562,53 @@
       <!-- Grid Split: My Duties Checklist (7 cols) & Orientation / Quick Actions (5 cols) -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- My Duties Checklist (7 cols) -->
+        <!-- My Duties Checklist & Team Workspaces (7 cols) -->
         <section class="lg:col-span-7 nexus-card p-6 flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/40">
               <div>
-                <h3 class="font-headline text-lg font-bold text-on-surface">My Assigned Shift Duties</h3>
-                <p class="text-xs text-on-surface-variant">Check off duties as you execute them across your floor zone</p>
+                <div class="flex items-center gap-2">
+                  <span class="badge-pill bg-primary/10 text-primary dark:text-primary-fixed text-xs font-bold">Duty Cockpit</span>
+                  <h3 class="font-headline text-lg font-bold text-on-surface">My Assigned Shift Duties &amp; Team Workspaces</h3>
+                </div>
+                <p class="text-xs text-on-surface-variant mt-0.5">Track individual and team duties. Designated Team Leads submit completed duties for Manager sign-off.</p>
               </div>
-              <button onclick="renderMyDutiesList(); toast.info('Refreshed', 'Duty roster synchronized');" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant">
+              <button onclick="renderMyDutiesList(); toast.info('Refreshed', 'Duty roster synchronized');" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant" title="Refresh Duties">
                 <span class="material-symbols-outlined text-[18px]">sync</span>
               </button>
             </div>
 
-            <div id="my-duties-container" class="space-y-3">
-              <!-- Populated by app.js -->
+            <div id="my-duties-container" class="space-y-4">
+              <!-- Populated by app.js: renderMyDutiesList() -->
             </div>
           </div>
 
           <div class="mt-6 pt-4 border-t border-outline-variant/40 flex items-center justify-between text-xs">
-            <span class="text-on-surface-variant">Completed duties notify floor supervisor</span>
-            <button onclick="toast.success('Shift Signed', 'All station checks validated for today')" class="text-primary dark:text-primary-fixed font-semibold hover:underline">
-              Submit Shift Summary &rarr;
+            <span class="text-on-surface-variant">Team Lead reviews subtasks &bull; Manager signs off upon completion</span>
+            <button onclick="toast.success('Station Validated', 'All assigned operational checks recorded')" class="text-primary dark:text-primary-fixed font-semibold hover:underline">
+              Daily Shift Report &rarr;
             </button>
           </div>
         </section>
 
-        <!-- Right Side: New Hire Onboarding Steps & Floor Assistance (5 cols) -->
+        <!-- Right Side: Active Escalations, Onboarding & Quick Triggers (5 cols) -->
         <section class="lg:col-span-5 flex flex-col gap-6">
           
+          <!-- Active Floor Escalations Tracker -->
+          <div class="nexus-card p-5">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant/40">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-error text-[18px]">emergency</span>
+                <h3 class="font-headline text-base font-bold text-on-surface">My Escalated Issues</h3>
+              </div>
+              <span id="onboard-escalations-count" class="badge-pill bg-surface-container text-on-surface-variant text-[11px]">0 Active</span>
+            </div>
+
+            <div id="onboard-escalations-container" class="space-y-2.5">
+              <!-- Populated by app.js: renderMyEscalationsList() -->
+            </div>
+          </div>
+
           <!-- Onboarding Checklist -->
           <div class="nexus-card p-6">
             <div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant/40">
@@ -1388,7 +1664,7 @@
                 <div class="text-[10px] text-on-surface-variant">Alert warehouse lead</div>
               </button>
 
-              <button onclick="toast.error('Security Dispatched', 'Level 1 hazard team sent to your station');" class="p-3 bg-surface-container hover:bg-surface-highest rounded-xl text-left border border-outline-variant/40 transition-colors">
+              <button onclick="openModal('modal-escalate-issue')" class="p-3 bg-surface-container hover:bg-surface-highest rounded-xl text-left border border-outline-variant/40 transition-colors">
                 <span class="material-symbols-outlined text-error text-[22px] mb-1">warning</span>
                 <div class="font-bold text-xs text-on-surface">Report Hazard</div>
                 <div class="text-[10px] text-on-surface-variant">Spill / safety alert</div>
@@ -1584,38 +1860,209 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL: SWITCH ACTIVE USER SESSION -->
+  <!-- MODAL: STAFF AUTHENTICATION & 200-EMPLOYEE DIRECTORY -->
   <!-- ========================================================================= -->
   <div id="modal-switch-user" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] flex flex-col">
+    <div class="modal-content w-full max-w-xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between pb-3 border-b border-outline-variant/50">
         <div>
-          <h3 class="font-headline text-lg font-bold text-on-surface">Switch Active Staff Session</h3>
-          <p class="text-xs text-on-surface-variant">Simulate role-based access control across employee ranks</p>
+          <h3 class="font-headline text-lg font-bold text-on-surface">Staff Terminal Authentication</h3>
+          <p class="text-xs text-on-surface-variant">Log in to personal employee station or test across 200 staff profiles</p>
         </div>
         <button onclick="closeModal('modal-switch-user')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
-      <div class="py-3 flex items-center justify-between">
-        <span class="text-xs text-on-surface-variant font-medium">Select a profile to authenticate:</span>
-        <button onclick="quickElevateToManager()" class="text-xs font-semibold text-primary dark:text-primary-fixed hover:underline flex items-center gap-1">
-          <span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
-          <span>Switch to Admin (Rank 5)</span>
+      <!-- Tabs: Credential Login vs 200-Staff Directory -->
+      <div class="flex items-center border-b border-outline-variant/40 mt-2 mb-3">
+        <button id="tab-btn-auth" onclick="switchLoginModalTab('auth')" class="px-4 py-2 text-xs font-bold border-b-2 border-primary text-primary transition-colors">
+          Personal Login (PIN / ID)
+        </button>
+        <button id="tab-btn-directory" onclick="switchLoginModalTab('directory')" class="px-4 py-2 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5">
+          <span>200-Staff Directory</span>
+          <span class="badge-pill bg-surface-container text-[10px]">Instant Switch</span>
         </button>
       </div>
 
-      <div id="switch-user-list" class="flex-1 overflow-y-auto space-y-2.5 pr-1 max-h-[50vh]">
-        <!-- Injected by renderSwitchUserModalList() in app.js -->
+      <!-- TAB 1: DIRECT CREDENTIAL LOGIN -->
+      <div id="tab-content-auth" class="space-y-4 py-2">
+        <form onsubmit="handleStaffLoginSubmit(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Employee ID or Corporate Email *</label>
+            <input id="login-emp-identifier" type="text" placeholder="e.g. NEX-8492 or e.rodriguez@nexusretail.com" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Terminal Security PIN *</label>
+            <input id="login-emp-pin" type="password" placeholder="1234" value="1234" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-mono"/>
+            <p class="text-[11px] text-outline mt-1">Default test PIN for all associates: <span class="font-mono text-secondary font-bold">1234</span> (Admin: <span class="font-mono text-secondary font-bold">nexus2026</span>)</p>
+          </div>
+
+          <button type="submit" class="w-full py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-sm active:scale-95 flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]">login</span>
+            <span>Authenticate Session</span>
+          </button>
+        </form>
+
+        <!-- 1-Click Role Presets for Testing -->
+        <div class="pt-3 border-t border-outline-variant/40">
+          <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">1-Click Test Personas:</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <button onclick="switchUser('NEX-0001')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+              <span class="badge-pill text-[9px] rank-badge-5">Rank 5</span>
+              <div>
+                <div class="font-bold text-on-surface">Marcus Vance</div>
+                <div class="text-[10px] text-on-surface-variant">Global Administrator</div>
+              </div>
+            </button>
+            <button onclick="switchUser('NEX-2001')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+              <span class="badge-pill text-[9px] rank-badge-4">Rank 4</span>
+              <div>
+                <div class="font-bold text-on-surface">Sophia Bennett</div>
+                <div class="text-[10px] text-on-surface-variant">Operations Manager</div>
+              </div>
+            </button>
+            <button onclick="switchUser('NEX-8492')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+              <span class="badge-pill text-[9px] rank-badge-3">Rank 3</span>
+              <div>
+                <div class="font-bold text-on-surface">Elena Rodriguez</div>
+                <div class="text-[10px] text-on-surface-variant">Floor Lead (Apparel)</div>
+              </div>
+            </button>
+            <button onclick="switchUser('NEX-3401')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+              <span class="badge-pill text-[9px] rank-badge-2">Rank 2</span>
+              <div>
+                <div class="font-bold text-on-surface">David Chen</div>
+                <div class="text-[10px] text-on-surface-variant">Inventory Specialist</div>
+              </div>
+            </button>
+            <button onclick="switchUser('NEX-1044')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+              <span class="badge-pill text-[9px] rank-badge-1">Rank 1</span>
+              <div>
+                <div class="font-bold text-on-surface">Anita Jones</div>
+                <div class="text-[10px] text-on-surface-variant">Retail Associate</div>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="pt-4 mt-2 border-t border-outline-variant/40 flex items-center justify-between text-xs">
+      <!-- TAB 2: 200-STAFF SEARCHABLE DIRECTORY -->
+      <div id="tab-content-directory" class="hidden flex-1 flex flex-col min-h-0 space-y-2.5 pt-1">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+          <input id="directory-search-input" oninput="renderSwitchUserModalList()" type="text" placeholder="Search 200 staff by name, ID or role..." class="sm:col-span-7 px-3 py-1.5 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          <select id="directory-dept-filter" onchange="renderSwitchUserModalList()" class="sm:col-span-5 px-3 py-1.5 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+            <option value="">All Departments</option>
+            <option>Apparel &amp; Fashion</option>
+            <option>Electronics &amp; Gadgets</option>
+            <option>Logistics &amp; Bay Storage</option>
+            <option>Customer Relations</option>
+            <option>Security &amp; Safety</option>
+            <option>Facilities &amp; Maintenance</option>
+            <option>Food &amp; Beverage</option>
+            <option>Cashier &amp; Front End</option>
+            <option>Beauty &amp; Cosmetics</option>
+            <option>Home Goods &amp; Furniture</option>
+            <option>Executive Operations</option>
+          </select>
+        </div>
+
+        <div id="switch-user-list" class="flex-1 overflow-y-auto space-y-2 pr-1 max-h-[45vh]">
+          <!-- Populated by app.js: renderSwitchUserModalList() across 200 staff -->
+        </div>
+      </div>
+
+      <div class="pt-3 mt-1 border-t border-outline-variant/40 flex items-center justify-between text-xs">
         <span class="text-on-surface-variant">Need to provision a new hire?</span>
         <button onclick="closeModal('modal-switch-user'); openModal('modal-add-employee');" class="font-bold text-primary dark:text-primary-fixed hover:underline">
-          + Add New Staff Member
+          + Provision Staff Member
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ESCALATE FLOOR ISSUE (TO TEAM LEAD OR MANAGER) -->
+  <!-- ========================================================================= -->
+  <div id="modal-escalate-issue" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-error/10 text-error flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">report_problem</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">Escalate Floor Issue</h3>
+            <p class="text-xs text-on-surface-variant">Direct operational incident or block to leadership</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-escalate-issue')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleEscalateIssueSubmit(event)" class="space-y-4">
+        <!-- Target Selector: Team Lead vs Operations Manager -->
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1.5">Escalate Directly To *</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-outline-variant/60 hover:border-primary cursor-pointer bg-surface-container-low/40">
+              <input type="radio" name="esc_target" value="team_lead" checked class="text-primary focus:ring-primary"/>
+              <div>
+                <div class="font-bold text-xs text-on-surface">Shift Team Lead</div>
+                <div class="text-[10px] text-on-surface-variant">Break coverage, localized supplies, duty questions</div>
+              </div>
+            </label>
+            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-outline-variant/60 hover:border-primary cursor-pointer bg-surface-container-low/40">
+              <input type="radio" name="esc_target" value="manager" class="text-primary focus:ring-primary"/>
+              <div>
+                <div class="font-bold text-xs text-on-surface">Operations Manager</div>
+                <div class="text-[10px] text-on-surface-variant">Safety hazard, major dispute, theft, POS blackout</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Issue Category *</label>
+            <select name="esc_category" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+              <option>Safety / Floor Hazard</option>
+              <option>Stock Shortage / Replenishment</option>
+              <option>POS / Register Malfunction</option>
+              <option>Customer Dispute / Security Alert</option>
+              <option>Staff Coverage / Station Relief</option>
+              <option>Facilities &amp; Cleanup</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Urgency Level *</label>
+            <select name="esc_urgency" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-semibold">
+              <option value="Normal">Normal Floor Priority</option>
+              <option value="Urgent" selected>Urgent (Needs attention &lt; 15 mins)</option>
+              <option value="Critical">Critical Emergency (Immediate response)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Station / Zone Location</label>
+          <input name="esc_zone" type="text" value="North Wing #42" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Incident Description &amp; Details *</label>
+          <textarea name="esc_description" rows="3" placeholder="Describe the operational obstacle, missing inventory, safety spill, or customer incident..." required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-escalate-issue')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button type="submit" class="px-6 py-2.5 bg-error text-white font-bold text-xs rounded-xl hover:bg-error/90 shadow-md active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]">send</span>
+            <span>Dispatch Escalation Alert</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

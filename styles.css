@@ -459,3 +459,58 @@ input:checked + .slider:before {
   background: radial-gradient(circle at 50% 30%, rgba(26, 47, 71, 0.9) 0%, rgba(8, 18, 30, 0.98) 100%);
 }
 
+/* Team Lead Badge & Duty Workspace */
+.team-lead-badge {
+  background: linear-gradient(135deg, rgba(202, 129, 0, 0.15), rgba(255, 180, 0, 0.25));
+  color: #ca8100;
+  border: 1px solid rgba(202, 129, 0, 0.35);
+}
+.dark .team-lead-badge {
+  background: linear-gradient(135deg, rgba(255, 180, 0, 0.15), rgba(255, 200, 50, 0.2));
+  color: #ffc247;
+  border: 1px solid rgba(255, 194, 71, 0.4);
+}
+
+/* Duty Progress Bar */
+.duty-progress-bar {
+  height: 6px;
+  background-color: var(--surface-container-high);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.duty-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #006c49 0%, #4edea3 100%);
+  border-radius: 9999px;
+  transition: width 240ms var(--ease-out);
+}
+
+/* Notification Dropdown Flyout */
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  max-height: 520px;
+  background-color: var(--surface-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(4, 22, 39, 0.18);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-enter 180ms var(--ease-out);
+}
+
+/* Live Alert Pulse Animation */
+@keyframes alert-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+.alert-pulse {
+  animation: alert-pulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
