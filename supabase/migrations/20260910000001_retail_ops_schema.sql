@@ -62,6 +62,9 @@ CREATE TABLE IF NOT EXISTS nexus_employees (
   permissions TEXT[] DEFAULT '{}',
   is_clocked_in BOOLEAN DEFAULT FALSE,
   clock_in_time TIME,
+  status TEXT DEFAULT 'Active' CHECK (status IN ('Active', 'On Leave', 'Terminated')),
+  termination_reason TEXT,
+  terminated_at TIMESTAMPTZ,
   hire_date DATE DEFAULT CURRENT_DATE,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -70,6 +73,7 @@ CREATE INDEX IF NOT EXISTS idx_nexus_employees_auth ON nexus_employees(auth_user
 CREATE INDEX IF NOT EXISTS idx_nexus_employees_rank ON nexus_employees(rank);
 CREATE INDEX IF NOT EXISTS idx_nexus_employees_dept ON nexus_employees(department_id);
 CREATE INDEX IF NOT EXISTS idx_nexus_employees_clocked ON nexus_employees(is_clocked_in);
+CREATE INDEX IF NOT EXISTS idx_nexus_employees_status ON nexus_employees(status);
 
 -- 3. SHIFT ATTENDANCE LOGS
 CREATE TABLE IF NOT EXISTS nexus_attendance_logs (
@@ -89,7 +93,7 @@ CREATE TABLE IF NOT EXISTS nexus_duties (
   title TEXT NOT NULL,
   zone TEXT NOT NULL,
   department_id UUID REFERENCES nexus_departments(id) ON DELETE SET NULL,
-  team_lead_id UUID NOT NULL REFERENCES nexus_employees(id) ON DELETE RESTRICT,
+  team_lead_id UUID REFERENCES nexus_employees(id) ON DELETE SET NULL,
   priority nexus_duty_priority_enum DEFAULT 'Normal',
   status nexus_duty_status_enum DEFAULT 'Assigned',
   due_at TIMESTAMPTZ,

@@ -587,6 +587,7 @@ const toast = {
   },
   success(title, message) { this.show('success', title, message); },
   error(title, message) { this.show('error', title, message); },
+  warning(title, message) { this.show('warning', title, message); },
   info(title, message) { this.show('info', title, message); }
 };
 
@@ -1375,7 +1376,17 @@ function exportSalesReport() {
 // 11. HR & TEAM PERFORMANCE
 // =========================================================================
 
+// =========================================================================
+// 11. HR & TEAM PERFORMANCE & WORKFORCE LIFECYCLE
+// =========================================================================
+
 function renderHR() {
+  renderHRDutiesTable();
+  renderHRDepartmentCrews();
+  renderHRStaffRoster();
+}
+
+function renderHRDutiesTable() {
   const tbody = document.getElementById('hr-assignments-body');
   if (!tbody) return;
 
@@ -1420,6 +1431,444 @@ function renderHR() {
       </tr>
     `;
   }).join('');
+}
+
+function renderHRDepartmentCrews() {
+  const container = document.getElementById('hr-department-crews-grid');
+  if (!container) return;
+
+  const depts = [
+    { name: "Apparel & Fashion", zone: "North Wing #42", icon: "styler" },
+    { name: "Electronics & Gadgets", zone: "South Atrium", icon: "devices" },
+    { name: "Logistics & Bay Storage", zone: "Storage Bay B", icon: "warehouse" },
+    { name: "Customer Relations", zone: "Central Mall HQ", icon: "support_agent" },
+    { name: "Security & Safety", zone: "West Gallery", icon: "security" },
+    { name: "Facilities & Maintenance", zone: "Service Core A", icon: "build" },
+    { name: "Food & Beverage", zone: "Food Court Deck", icon: "restaurant" },
+    { name: "Cashier & Front End", zone: "East Promenade", icon: "point_of_sale" },
+    { name: "Beauty & Cosmetics", zone: "North Wing #42", icon: "spa" },
+    { name: "Home Goods & Furniture", zone: "Upper Mezzanine", icon: "chair" }
+  ];
+
+  container.innerHTML = depts.map(dept => {
+    const activeStaff = AppState.employees.filter(e => e.department === dept.name && e.status !== 'Terminated');
+    const clockedCount = activeStaff.filter(e => e.clockedIn).length;
+    const lead = activeStaff.find(e => e.rank >= 3)?.name || 'Unassigned';
+
+    return `
+      <div class="p-4 rounded-2xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all">
+        <div>
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <span class="material-symbols-outlined text-[18px]">${dept.icon}</span>
+              </div>
+              <div>
+                <h4 class="font-bold text-xs text-on-surface leading-tight">${dept.name}</h4>
+                <p class="text-[10px] text-on-surface-variant font-mono">${dept.zone}</p>
+              </div>
+            </div>
+            <span class="badge-pill bg-surface-container text-on-surface font-mono text-[10px] font-bold">
+              ${activeStaff.length} Staff
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 my-3 p-2.5 rounded-xl bg-surface-container-low/60 text-[11px]">
+            <div>
+              <span class="text-on-surface-variant text-[10px] block">On Shift:</span>
+              <span class="font-bold text-secondary font-mono flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full ${clockedCount > 0 ? 'bg-secondary' : 'bg-outline'}"></span>
+                ${clockedCount} Active
+              </span>
+            </div>
+            <div>
+              <span class="text-on-surface-variant text-[10px] block">Team Lead:</span>
+              <span class="font-bold text-on-surface truncate block" title="${lead}">${lead}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-1.5 pt-2 border-t border-outline-variant/40">
+          <button onclick="openDissolveTeamModal('${dept.name}')" class="flex-1 py-1.5 px-2 bg-surface-container hover:bg-surface-container-high text-on-surface text-[11px] font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 active:scale-95" title="Disband active shift assignments and return associates to reserve">
+            <span class="material-symbols-outlined text-[14px]">cancel</span>
+            <span>Dissolve Crew</span>
+          </button>
+          <button onclick="openSackTeamModal('${dept.name}')" class="py-1.5 px-2.5 bg-error/10 hover:bg-error/20 text-error text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1 active:scale-95" title="Mass terminate all associates in this department">
+            <span class="material-symbols-outlined text-[14px]">gavel</span>
+            <span>Sack Team</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHRStaffRoster(filteredList) {
+  const tbody = document.getElementById('hr-full-roster-body');
+  if (!tbody) return;
+
+  const list = filteredList || AppState.employees.filter(e => e.status !== 'Terminated');
+  const countBadge = document.getElementById('hr-roster-count-badge');
+  if (countBadge) countBadge.textContent = `${list.length} Associates`;
+
+  if (list.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="p-8 text-center text-on-surface-variant">
+          <span class="material-symbols-outlined text-4xl mb-1 text-outline">group_off</span>
+          <p class="font-bold text-xs text-on-surface">No associates match filter criteria</p>
+          <p class="text-[11px]">Adjust your search query or department filter above.</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  tbody.innerHTML = list.slice(0, 100).map(emp => {
+    let avatarHtml = emp.avatar
+      ? `<img src="${emp.avatar}" class="w-8 h-8 rounded-full object-cover border border-outline-variant shadow-sm" alt="${emp.name}"/>`
+      : `<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">${emp.initials || 'EM'}</div>`;
+
+    const rankPillClass = `rank-badge-${emp.rank || 1}`;
+
+    return `
+      <tr class="hover:bg-surface-container transition-colors">
+        <td>
+          <div class="flex items-center gap-3">
+            ${avatarHtml}
+            <div>
+              <div class="font-bold text-xs text-on-surface">${emp.name}</div>
+              <div class="text-[10px] text-outline font-mono">${emp.id} • ${emp.email}</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          <div class="text-xs font-semibold text-on-surface">${emp.department}</div>
+          <div class="text-[10px] text-on-surface-variant font-mono">${emp.zone}</div>
+        </td>
+        <td>
+          <div class="text-xs font-medium text-on-surface">${emp.role}</div>
+          <span class="badge-pill text-[9px] ${rankPillClass} mt-0.5">Rank ${emp.rank} Clearance</span>
+        </td>
+        <td>
+          ${emp.clockedIn
+            ? `<span class="badge-pill bg-secondary-container text-secondary text-[10px] font-bold flex items-center gap-1 w-fit">
+                <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                <span>On Shift (${emp.clockInTime || 'Active'})</span>
+               </span>`
+            : `<span class="badge-pill bg-surface-container text-outline text-[10px] font-medium w-fit">Off Duty</span>`
+          }
+        </td>
+        <td class="text-right">
+          <div class="flex items-center justify-end gap-1">
+            <button onclick="openTransferModal('${emp.id}')" class="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-semibold" title="Transfer to another team/department">
+              <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+              <span class="hidden sm:inline">Transfer</span>
+            </button>
+            ${emp.rank < 5 ? `
+              <button onclick="openTerminateModal('${emp.id}')" class="p-1.5 text-error hover:bg-error/10 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-bold" title="Terminate / Sack Associate">
+                <span class="material-symbols-outlined text-[16px]">person_remove</span>
+                <span class="hidden sm:inline">Sack</span>
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterHRStaffRoster() {
+  const searchInput = document.getElementById('hr-staff-search');
+  const deptFilter = document.getElementById('hr-dept-filter');
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  const dept = deptFilter ? deptFilter.value : 'ALL';
+
+  const filtered = AppState.employees.filter(emp => {
+    if (emp.status === 'Terminated') return false;
+    const matchDept = dept === 'ALL' || emp.department === dept;
+    const matchQuery = !query || 
+      emp.name.toLowerCase().includes(query) ||
+      emp.role.toLowerCase().includes(query) ||
+      emp.id.toLowerCase().includes(query);
+    return matchDept && matchQuery;
+  });
+
+  renderHRStaffRoster(filtered);
+}
+
+// --- MODAL CONTROLS & HANDLERS ---
+
+function openTransferModal(empId) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp) return;
+
+  document.getElementById('transfer-emp-id').value = emp.id;
+  document.getElementById('transfer-emp-name').textContent = `${emp.name} (${emp.id})`;
+  document.getElementById('transfer-emp-current').textContent = `Current: ${emp.department} • ${emp.zone}`;
+  
+  const avatar = document.getElementById('transfer-emp-avatar');
+  if (avatar) avatar.textContent = emp.initials || 'NA';
+
+  const deptSelect = document.getElementById('transfer-target-dept');
+  if (deptSelect) deptSelect.value = emp.department;
+
+  const roleInput = document.getElementById('transfer-target-role');
+  if (roleInput) roleInput.value = emp.role;
+
+  autoUpdateTransferZone(deptSelect.value);
+  openModal('modal-transfer-employee');
+}
+
+function autoUpdateTransferZone(deptName) {
+  const zoneMap = {
+    "Apparel & Fashion": "North Wing #42",
+    "Electronics & Gadgets": "South Atrium",
+    "Logistics & Bay Storage": "Storage Bay B",
+    "Customer Relations": "Central Mall HQ",
+    "Security & Safety": "West Gallery",
+    "Facilities & Maintenance": "Service Core A",
+    "Food & Beverage": "Food Court Deck",
+    "Cashier & Front End": "East Promenade",
+    "Beauty & Cosmetics": "North Wing #42",
+    "Home Goods & Furniture": "Upper Mezzanine"
+  };
+  const zoneInput = document.getElementById('transfer-target-zone');
+  if (zoneInput && zoneMap[deptName]) {
+    zoneInput.value = zoneMap[deptName];
+  }
+}
+
+function handleTransferEmployeeSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const empId = form.emp_id.value;
+  const targetDept = form.target_dept.value;
+  const targetZone = form.target_zone.value;
+  const targetRole = form.target_role.value.trim();
+
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp) return;
+
+  const oldDept = emp.department;
+  emp.department = targetDept;
+  emp.zone = targetZone;
+  if (targetRole) emp.role = targetRole;
+
+  // Supabase sync
+  if (window.RetailSupabase && typeof window.RetailSupabase.transferEmployee === 'function') {
+    window.RetailSupabase.transferEmployee(emp.id, targetDept, targetZone, targetRole);
+  }
+
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${AppState.currentUser.name} (Manager)`,
+    action: 'Associate Transferred',
+    target: emp.name,
+    detail: `Transferred from ${oldDept} to ${targetDept} [${targetZone}]`
+  });
+
+  AppState.saveState();
+  closeModal('modal-transfer-employee');
+  toast.success('Associate Transferred!', `${emp.name} moved to ${targetDept}.`);
+  renderHR();
+  renderManagement();
+  renderShiftAttendanceFeed();
+}
+
+function openTerminateModal(empId) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp) return;
+
+  document.getElementById('terminate-emp-id').value = emp.id;
+  document.getElementById('terminate-emp-name').textContent = emp.name;
+  document.getElementById('terminate-emp-role').textContent = emp.role;
+  document.getElementById('terminate-emp-meta').textContent = `${emp.id} • ${emp.department} • Rank ${emp.rank}`;
+
+  const avatar = document.getElementById('terminate-emp-avatar');
+  if (avatar) avatar.textContent = emp.initials || 'NA';
+
+  openModal('modal-terminate-employee');
+}
+
+function handleTerminateEmployeeSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const empId = form.emp_id.value;
+  const reason = form.terminate_reason.value;
+  const notes = form.terminate_notes.value.trim();
+
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp) return;
+
+  // Mark as terminated & clocked out
+  emp.status = 'Terminated';
+  emp.clockedIn = false;
+  emp.clockInTime = null;
+  emp.terminationReason = reason;
+  emp.terminatedAt = new Date().toISOString();
+
+  // Remove associate from any active tasks/crews
+  AppState.tasks.forEach(task => {
+    if (task.teamLeadId === emp.id) {
+      task.teamLeadId = null;
+      task.teamLeadName = 'Reassignment Pending';
+    }
+    if (Array.isArray(task.assignees)) {
+      task.assignees = task.assignees.filter(a => a.id !== emp.id);
+    }
+  });
+
+  // Supabase sync
+  if (window.RetailSupabase && typeof window.RetailSupabase.terminateEmployee === 'function') {
+    window.RetailSupabase.terminateEmployee(emp.id, reason, notes);
+  }
+
+  // Audit log
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${AppState.currentUser.name} (Manager)`,
+    action: 'Associate Sacked / Terminated',
+    target: emp.name,
+    detail: `Terminated from ${emp.department}. Reason: ${reason}. Notes: ${notes || 'None'}`
+  });
+
+  // Add Notification
+  AppState.notifications.unshift({
+    id: `notif-${Date.now()}`,
+    title: `Staff Terminated: ${emp.name}`,
+    message: `${emp.role} was terminated by ${AppState.currentUser.name} (${reason})`,
+    timestamp: 'Just now',
+    read: false,
+    type: 'staff_terminated'
+  });
+
+  AppState.saveState();
+  closeModal('modal-terminate-employee');
+  toast.error('Staff Member Terminated', `${emp.name} has been sacked and removed from the active roster.`);
+  renderHR();
+  renderManagement();
+  renderShiftAttendanceFeed();
+  renderSwitchUserModalList();
+  updateNotificationBadge();
+}
+
+function openDissolveTeamModal(deptName) {
+  const staff = AppState.employees.filter(e => e.department === deptName && e.status !== 'Terminated');
+  document.getElementById('team-action-dept').value = deptName;
+  document.getElementById('team-action-type').value = 'dissolve';
+  document.getElementById('team-action-title').textContent = `Dissolve ${deptName} Shift Crew`;
+  document.getElementById('team-action-subtitle').textContent = 'Disband active shift assignments and return associates to reserve';
+  document.getElementById('team-action-dept-name').textContent = deptName;
+  document.getElementById('team-action-count').textContent = `${staff.length} Active Members`;
+  document.getElementById('team-action-count').className = 'badge-pill bg-amber-500/10 text-amber-600 font-mono text-[10px] font-bold';
+  document.getElementById('team-action-desc').textContent = 'This action unassigns all team members from current shift duties in this department. Team members remain active in the workforce reserve pool.';
+  document.getElementById('team-action-warning').className = 'p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-700 dark:text-amber-300 space-y-1';
+  document.getElementById('team-action-warning').innerHTML = '<p class="font-bold flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">info</span><span>Operational Crew Reallocation</span></p><p>Active duties in this department will be reset to pending unassigned. Associates will be ready for new assignments.</p>';
+  document.getElementById('team-action-submit-btn').className = 'px-5 py-2 bg-amber-600 text-white text-xs font-bold rounded-xl hover:bg-amber-700 shadow-md active:scale-95 flex items-center gap-1.5';
+  document.getElementById('team-action-submit-btn').innerHTML = '<span class="material-symbols-outlined text-[16px]">cancel</span><span>Confirm Crew Dissolution</span>';
+
+  openModal('modal-sack-team');
+}
+
+function openSackTeamModal(deptName) {
+  const staff = AppState.employees.filter(e => e.department === deptName && e.status !== 'Terminated' && e.rank < 5);
+  document.getElementById('team-action-dept').value = deptName;
+  document.getElementById('team-action-type').value = 'sack';
+  document.getElementById('team-action-title').textContent = `Outrightly Sack ${deptName} Team`;
+  document.getElementById('team-action-subtitle').textContent = 'Mass termination of all associates in this department';
+  document.getElementById('team-action-dept-name').textContent = deptName;
+  document.getElementById('team-action-count').textContent = `${staff.length} Associates Sacked`;
+  document.getElementById('team-action-count').className = 'badge-pill bg-error/10 text-error font-mono text-[10px] font-bold';
+  document.getElementById('team-action-desc').textContent = `Warning: This action will sack all ${staff.length} non-manager associates in ${deptName} immediately.`;
+  document.getElementById('team-action-warning').className = 'p-3 bg-error/10 border border-error/20 rounded-xl text-[11px] text-error space-y-1';
+  document.getElementById('team-action-warning').innerHTML = '<p class="font-bold flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">warning</span><span>Irreversible Mass Termination</span></p><p>All associates in this team will have terminal clearance revoked, clocked out, and removed from the active roster in the database.</p>';
+  document.getElementById('team-action-submit-btn').className = 'px-5 py-2 bg-error text-white text-xs font-bold rounded-xl hover:bg-error/90 shadow-md active:scale-95 flex items-center gap-1.5';
+  document.getElementById('team-action-submit-btn').innerHTML = '<span class="material-symbols-outlined text-[16px]">gavel</span><span>Execute Mass Team Sack</span>';
+
+  openModal('modal-sack-team');
+}
+
+function handleTeamActionSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const deptName = form.dept_name.value;
+  const actionType = form.action_type.value;
+  const reason = form.team_reason.value.trim();
+
+  if (actionType === 'dissolve') {
+    // Unassign duties in this department
+    AppState.tasks.forEach(t => {
+      if (t.department === deptName && t.status !== 'Approved') {
+        t.status = 'Assigned';
+        t.assignees = [];
+      }
+    });
+
+    if (window.RetailSupabase && typeof window.RetailSupabase.dissolveTeam === 'function') {
+      window.RetailSupabase.dissolveTeam(deptName);
+    }
+
+    AppState.auditLogs.unshift({
+      timestamp: 'Just now',
+      actor: `${AppState.currentUser.name} (Manager)`,
+      action: 'Team Crew Dissolved',
+      target: deptName,
+      detail: `Dissolved shift crew in ${deptName}. Reason: ${reason}`
+    });
+
+    toast.warning('Team Dissolved', `${deptName} crew disbanded. Associates returned to reserve.`);
+  } else {
+    // Outright sack entire team
+    const sackedList = [];
+    AppState.employees.forEach(emp => {
+      if (emp.department === deptName && emp.rank < 5 && emp.status !== 'Terminated') {
+        emp.status = 'Terminated';
+        emp.clockedIn = false;
+        emp.terminationReason = reason;
+        emp.terminatedAt = new Date().toISOString();
+        sackedList.push(emp.name);
+      }
+    });
+
+    // Remove from duties
+    AppState.tasks.forEach(t => {
+      if (t.department === deptName) {
+        t.status = 'Cancelled';
+      }
+    });
+
+    if (window.RetailSupabase && typeof window.RetailSupabase.sackTeam === 'function') {
+      window.RetailSupabase.sackTeam(deptName, reason);
+    }
+
+    AppState.auditLogs.unshift({
+      timestamp: 'Just now',
+      actor: `${AppState.currentUser.name} (Manager)`,
+      action: 'Department Team Outright Sacked',
+      target: deptName,
+      detail: `Sacked ${sackedList.length} associates in ${deptName}. Reason: ${reason}`
+    });
+
+    AppState.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      title: `Team Terminated: ${deptName}`,
+      message: `${sackedList.length} associates sacked in ${deptName} by ${AppState.currentUser.name} (${reason})`,
+      timestamp: 'Just now',
+      read: false,
+      type: 'team_sacked'
+    });
+
+    toast.error('Team Sacked', `All ${sackedList.length} associates in ${deptName} have been permanently terminated.`);
+  }
+
+  AppState.saveState();
+  closeModal('modal-sack-team');
+  renderHR();
+  renderManagement();
+  renderShiftAttendanceFeed();
+  renderSwitchUserModalList();
+  updateNotificationBadge();
 }
 
 function updateTaskStatus(taskId, newStatus) {
@@ -2572,12 +3021,16 @@ function handleAddNewEmployee(e) {
   });
 
   AppState.saveState();
+  if (window.RetailSupabase && typeof window.RetailSupabase.employEmployee === 'function') {
+    window.RetailSupabase.employEmployee(newEmployee);
+  }
   renderSwitchUserModalList();
   closeModal('modal-add-employee');
   form.reset();
 
   toast.success('Staff Member Provisioned!', `${name} (${newId}) added with PIN "${pin}"`);
   renderManagement();
+  renderHR();
 }
 
 function renderAuditLogs() {

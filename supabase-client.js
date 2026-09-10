@@ -202,6 +202,105 @@
       }).eq('id', dutyId);
     }
 
+    // Employ new associate into nexus_employees
+    async employEmployee(newEmp) {
+      if (!this.isConnected) return;
+      try {
+        await this.client.from('nexus_employees').insert({
+          employee_code: newEmp.id,
+          name: newEmp.name,
+          email: newEmp.email,
+          role_title: newEmp.role,
+          rank: newEmp.rank,
+          zone: newEmp.zone,
+          initials: newEmp.initials,
+          pin_hash: newEmp.pin || '1234',
+          permissions: newEmp.permissions || [],
+          is_clocked_in: false,
+          status: 'Active'
+        });
+        console.log('[Supabase] Inserted new employee:', newEmp.id);
+      } catch(e) {
+        console.error('[Supabase] employEmployee failed:', e);
+      }
+    }
+
+    // Terminate/Sack employee in nexus_employees
+    async terminateEmployee(employeeCode, reason, notes) {
+      if (!this.isConnected) return;
+      try {
+        await this.client.from('nexus_employees').update({
+          status: 'Terminated',
+          is_clocked_in: false,
+          clock_in_time: null,
+          termination_reason: reason || 'Manager Termination',
+          terminated_at: new Date().toISOString()
+        }).eq('employee_code', employeeCode);
+
+        await this.client.from('nexus_audit_logs').insert({
+          actor_name: AppState.currentUser?.name || 'Operations Manager',
+          action: 'Associate Sacked / Terminated',
+          target_entity: employeeCode,
+          detail: `Terminated associate (${reason})`
+        });
+        console.log('[Supabase] Sacked employee in database:', employeeCode);
+      } catch(e) {
+        console.error('[Supabase] terminateEmployee failed:', e);
+      }
+    }
+
+    // Transfer associate to a new team/department & zone
+    async transferEmployee(employeeCode, newDept, newZone, newRole) {
+      if (!this.isConnected) return;
+      try {
+        const updatePayload = { zone: newZone };
+        if (newRole) updatePayload.role_title = newRole;
+
+        await this.client.from('nexus_employees').update(updatePayload).eq('employee_code', employeeCode);
+
+        await this.client.from('nexus_audit_logs').insert({
+          actor_name: AppState.currentUser?.name || 'Operations Manager',
+          action: 'Associate Transferred',
+          target_entity: employeeCode,
+          detail: `Transferred to ${newDept} [${newZone}]`
+        });
+        console.log('[Supabase] Transferred employee in database:', employeeCode);
+      } catch(e) {
+        console.error('[Supabase] transferEmployee failed:', e);
+      }
+    }
+
+    // Dissolve shift crew
+    async dissolveTeam(departmentName) {
+      if (!this.isConnected) return;
+      try {
+        await this.client.from('nexus_audit_logs').insert({
+          actor_name: AppState.currentUser?.name || 'Operations Manager',
+          action: 'Team Dissolved',
+          target_entity: departmentName,
+          detail: `Disbanded shift crew in ${departmentName}. Associates returned to reserve pool.`
+        });
+      } catch(e) {
+        console.error('[Supabase] dissolveTeam failed:', e);
+      }
+    }
+
+    // Outrightly sack entire team / department
+    async sackTeam(departmentName, reason) {
+      if (!this.isConnected) return;
+      try {
+        await this.client.from('nexus_audit_logs').insert({
+          actor_name: AppState.currentUser?.name || 'Operations Manager',
+          action: 'Department Team Outright Sacked',
+          target_entity: departmentName,
+          detail: `Mass termination of department crew: ${reason}`
+        });
+        console.log('[Supabase] Sacked entire department crew in database:', departmentName);
+      } catch(e) {
+        console.error('[Supabase] sackTeam failed:', e);
+      }
+    }
+
     updateUI() {
       const dot = document.getElementById('supabase-status-dot');
       const text = document.getElementById('supabase-status-text');

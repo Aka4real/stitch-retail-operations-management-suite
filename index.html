@@ -727,13 +727,94 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 class="font-headline text-2xl font-bold text-primary dark:text-primary-fixed">Human Resources &amp; Team Performance</h2>
-          <p class="text-xs text-on-surface-variant">Organizational hierarchy, staff dispatch workloads, and live duty rosters.</p>
+          <p class="text-xs text-on-surface-variant">Organizational hierarchy, staff dispatch workloads, team transfers, and live duty rosters.</p>
         </div>
-        <button onclick="navigateTo('assign-task')" class="px-3.5 py-2 bg-primary text-on-primary rounded-xl text-xs font-semibold hover:bg-primary-container transition-colors flex items-center gap-1.5 shadow-sm active:scale-95">
-          <span class="material-symbols-outlined text-[16px]">assignment_add</span>
-          <span>Assign New Duty</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="openModal('modal-add-employee')" class="px-3.5 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:bg-primary-container transition-all shadow-sm active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">person_add</span>
+            <span>+ Employ Associate</span>
+          </button>
+          <button onclick="navigateTo('assign-task')" class="px-3.5 py-2 bg-surface dark:bg-surface-low border border-outline-variant text-on-surface rounded-xl text-xs font-semibold hover:bg-surface-container transition-colors flex items-center gap-1.5 shadow-sm active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">assignment_add</span>
+            <span>Assign Shift Duty</span>
+          </button>
+        </div>
       </div>
+
+      <!-- Department Teams & Shift Crews Command Console -->
+      <section class="nexus-card p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/40">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-xl">groups</span>
+              <h3 class="font-headline text-lg font-bold text-on-surface">Department Teams &amp; Crew Operations</h3>
+            </div>
+            <p class="text-xs text-on-surface-variant">Manage department crews, transfer associates across departments, dissolve shift teams, or execute team restructuring.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-mono text-[11px] text-on-surface-variant font-semibold">10 Enterprise Crews Active</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Grid of Department Crews -->
+        <div id="hr-department-crews-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <!-- Populated by app.js -->
+        </div>
+      </section>
+
+      <!-- Full Workforce Directory & Action Table -->
+      <section class="nexus-card overflow-hidden">
+        <div class="p-5 border-b border-outline-variant/50 flex flex-col md:flex-row justify-between md:items-center gap-4 bg-surface-container-low/40">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-headline text-lg font-bold text-primary dark:text-primary-fixed">Workforce Directory (200 Associates)</h3>
+              <span id="hr-roster-count-badge" class="badge-pill bg-primary/10 text-primary text-[10px] font-bold">200 Total</span>
+            </div>
+            <p class="text-xs text-on-surface-variant">Employ, transfer between teams, or sack associates with immediate database synchronization.</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Search Input -->
+            <div class="relative min-w-[200px]">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-outline">search</span>
+              <input id="hr-staff-search" oninput="filterHRStaffRoster()" type="text" placeholder="Search associate or role..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+            </div>
+
+            <!-- Department Filter Dropdown -->
+            <select id="hr-dept-filter" onchange="filterHRStaffRoster()" class="px-3 py-1.5 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium">
+              <option value="ALL">All Departments (10)</option>
+              <option value="Apparel & Fashion">Apparel &amp; Fashion</option>
+              <option value="Electronics & Gadgets">Electronics &amp; Gadgets</option>
+              <option value="Logistics & Bay Storage">Logistics &amp; Bay Storage</option>
+              <option value="Customer Relations">Customer Relations</option>
+              <option value="Security & Safety">Security &amp; Safety</option>
+              <option value="Facilities & Maintenance">Facilities &amp; Maintenance</option>
+              <option value="Food & Beverage">Food &amp; Beverage</option>
+              <option value="Cashier & Front End">Cashier &amp; Front End</option>
+              <option value="Beauty & Cosmetics">Beauty &amp; Cosmetics</option>
+              <option value="Home Goods & Furniture">Home Goods &amp; Furniture</option>
+              <option value="Executive Operations">Executive Operations</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto max-h-[520px]">
+          <table class="table-nexus w-full text-left border-collapse">
+            <thead class="sticky top-0 bg-surface-container-low/95 backdrop-blur-sm z-10">
+              <tr>
+                <th>Associate</th>
+                <th>Department &amp; Zone</th>
+                <th>Role &amp; Clearance</th>
+                <th>Shift Status</th>
+                <th class="text-right">Management Actions</th>
+              </tr>
+            </thead>
+            <tbody id="hr-full-roster-body">
+              <!-- Populated by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <!-- Organizational Hierarchy Tree (Node Cards with connecting lines) -->
       <section class="nexus-card p-6">
@@ -2270,6 +2351,198 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: TERMINATE / SACK EMPLOYEE -->
+  <!-- ========================================================================= -->
+  <div id="modal-terminate-employee" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-error/40 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-error/10 text-error flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">person_remove</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-error">Terminate Associate</h3>
+            <p class="text-xs text-on-surface-variant">Sack employee &amp; revoke terminal clearance</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-terminate-employee')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleTerminateEmployeeSubmit(event)" class="space-y-4">
+        <input type="hidden" id="terminate-emp-id" name="emp_id" value=""/>
+
+        <div class="p-3.5 bg-surface-container rounded-xl border border-outline-variant/50 flex items-center gap-3">
+          <div id="terminate-emp-avatar" class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">NA</div>
+          <div class="flex-1 min-w-0">
+            <h4 id="terminate-emp-name" class="font-bold text-xs text-on-surface truncate">Employee Name</h4>
+            <p id="terminate-emp-role" class="text-[11px] text-on-surface-variant truncate">Role Title</p>
+            <p id="terminate-emp-meta" class="text-[10px] font-mono text-outline">NEX-0000 • Department</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1">Termination Reason *</label>
+          <select name="terminate_reason" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-error focus:outline-none font-medium">
+            <option value="Attendance / Shift Abandonment">Attendance / Shift Abandonment</option>
+            <option value="Policy Violation / Disciplinary">Policy Violation / Disciplinary</option>
+            <option value="Departmental Restructuring / Downsizing">Departmental Restructuring / Downsizing</option>
+            <option value="Gross Misconduct / Loss Prevention">Gross Misconduct / Loss Prevention</option>
+            <option value="Voluntary Resignation / Separation">Voluntary Resignation / Separation</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1">Internal Separation Notes</label>
+          <textarea name="terminate_notes" rows="2" placeholder="Record mandatory HR incident or justification..." class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-error focus:outline-none"></textarea>
+        </div>
+
+        <div class="p-3 bg-error/10 border border-error/20 rounded-xl text-[11px] text-error space-y-1">
+          <p class="font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px]">warning</span>
+            <span>Critical Security Notice</span>
+          </p>
+          <p>Terminating this associate immediately revokes all POS/terminal passkeys, cancels uncompleted duty assignments, and synchronizes to the <code>nexus_employees</code> database table.</p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-terminate-employee')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-error text-white text-xs font-bold rounded-xl hover:bg-error/90 shadow-md active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">gavel</span>
+            <span>Confirm Termination</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: TRANSFER EMPLOYEE TO TEAM / DEPARTMENT -->
+  <!-- ========================================================================= -->
+  <div id="modal-transfer-employee" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">swap_horiz</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">Transfer Associate Team</h3>
+            <p class="text-xs text-on-surface-variant">Reassign department, zone &amp; operational role</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-transfer-employee')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleTransferEmployeeSubmit(event)" class="space-y-4">
+        <input type="hidden" id="transfer-emp-id" name="emp_id" value=""/>
+
+        <div class="p-3.5 bg-surface-container rounded-xl border border-outline-variant/50 flex items-center gap-3">
+          <div id="transfer-emp-avatar" class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">NA</div>
+          <div class="flex-1 min-w-0">
+            <h4 id="transfer-emp-name" class="font-bold text-xs text-on-surface truncate">Employee Name</h4>
+            <p id="transfer-emp-current" class="text-[11px] text-on-surface-variant truncate">Current: Apparel &amp; Fashion • North Wing</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1">Target Department Team *</label>
+          <select id="transfer-target-dept" name="target_dept" onchange="autoUpdateTransferZone(this.value)" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium">
+            <option value="Apparel & Fashion">Apparel &amp; Fashion</option>
+            <option value="Electronics & Gadgets">Electronics &amp; Gadgets</option>
+            <option value="Logistics & Bay Storage">Logistics &amp; Bay Storage</option>
+            <option value="Customer Relations">Customer Relations</option>
+            <option value="Security & Safety">Security &amp; Safety</option>
+            <option value="Facilities & Maintenance">Facilities &amp; Maintenance</option>
+            <option value="Food & Beverage">Food &amp; Beverage</option>
+            <option value="Cashier & Front End">Cashier &amp; Front End</option>
+            <option value="Beauty & Cosmetics">Beauty &amp; Cosmetics</option>
+            <option value="Home Goods & Furniture">Home Goods &amp; Furniture</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface mb-1">Assigned Station Zone *</label>
+            <input id="transfer-target-zone" name="target_zone" type="text" value="North Wing #42" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface mb-1">New Role Title</label>
+            <input id="transfer-target-role" name="target_role" type="text" placeholder="Keep current or enter new..." class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-transfer-employee')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary-container shadow-sm active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">sync_alt</span>
+            <span>Execute Transfer</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: DISSOLVE OR SACK ENTIRE TEAM -->
+  <!-- ========================================================================= -->
+  <div id="modal-sack-team" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-error/40 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2">
+          <div id="team-action-icon" class="w-9 h-9 rounded-xl bg-error/10 text-error flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">group_remove</span>
+          </div>
+          <div>
+            <h3 id="team-action-title" class="font-headline text-lg font-bold text-error">Outrightly Sack Entire Team</h3>
+            <p id="team-action-subtitle" class="text-xs text-on-surface-variant">Mass termination across department crew</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-sack-team')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleTeamActionSubmit(event)" class="space-y-4">
+        <input type="hidden" id="team-action-dept" name="dept_name" value=""/>
+        <input type="hidden" id="team-action-type" name="action_type" value="sack"/>
+
+        <div class="p-4 bg-surface-container rounded-xl border border-outline-variant/50">
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-xs font-bold text-on-surface" id="team-action-dept-name">Department Name</span>
+            <span id="team-action-count" class="badge-pill bg-error/10 text-error font-mono text-[10px] font-bold">20 Associates</span>
+          </div>
+          <p id="team-action-desc" class="text-xs text-on-surface-variant mt-1">This operation will affect all associates assigned to this team.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1">Manager Authorization Reason *</label>
+          <input name="team_reason" type="text" placeholder="e.g. Departmental reorganization, performance review, or crew dissolution" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-error focus:outline-none"/>
+        </div>
+
+        <div id="team-action-warning" class="p-3 bg-error/10 border border-error/20 rounded-xl text-[11px] text-error space-y-1">
+          <p class="font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px]">warning</span>
+            <span>Irreversible Action</span>
+          </p>
+          <p>Every employee in this team will be permanently sacked from the enterprise roster, duty assignments cancelled, and security tokens invalidated in <code>nexus_employees</code>.</p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-sack-team')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button id="team-action-submit-btn" type="submit" class="px-5 py-2 bg-error text-white text-xs font-bold rounded-xl hover:bg-error/90 shadow-md active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">gavel</span>
+            <span>Confirm Action</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
