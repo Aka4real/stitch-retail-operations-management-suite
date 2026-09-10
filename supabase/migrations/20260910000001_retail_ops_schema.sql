@@ -411,3 +411,65 @@ CREATE POLICY "nexus_inventory_manage" ON nexus_inventory FOR ALL USING (nexus_i
 -- Cloaked Tables (Non-managers get 0 rows)
 CREATE POLICY "nexus_financials_manager_only" ON nexus_financial_transactions FOR SELECT USING (nexus_is_manager());
 CREATE POLICY "nexus_audit_manager_only" ON nexus_audit_logs FOR SELECT USING (nexus_is_manager());
+
+-- =========================================================================
+-- TABLE 12: nexus_shift_schedules (Weekly Workforce Roster)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS nexus_shift_schedules (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  employee_id UUID NOT NULL REFERENCES nexus_employees(id) ON DELETE CASCADE,
+  department_name TEXT NOT NULL,
+  day_of_week TEXT NOT NULL CHECK (day_of_week IN ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')),
+  shift_type TEXT NOT NULL CHECK (shift_type IN ('Morning', 'Midday', 'Evening')),
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  status TEXT NOT NULL DEFAULT 'Scheduled' CHECK (status IN ('Scheduled', 'Swap Requested', 'Trade Approved', 'Completed', 'Absent')),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE nexus_shift_schedules ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "nexus_shift_schedules_view" ON nexus_shift_schedules FOR SELECT USING (true);
+CREATE POLICY "nexus_shift_schedules_manage" ON nexus_shift_schedules FOR ALL USING (nexus_is_manager());
+
+-- =========================================================================
+-- TABLE 13: nexus_shift_swaps (Peer-to-Peer Trades with Manager Sign-off)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS nexus_shift_swaps (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  requester_id UUID NOT NULL REFERENCES nexus_employees(id) ON DELETE CASCADE,
+  target_coworker_id UUID NOT NULL REFERENCES nexus_employees(id) ON DELETE CASCADE,
+  shift_date TEXT NOT NULL,
+  shift_description TEXT NOT NULL,
+  trade_reason TEXT NOT NULL,
+  additional_notes TEXT,
+  status TEXT NOT NULL DEFAULT 'Pending Coworker' CHECK (status IN ('Pending Coworker', 'Pending Manager', 'Approved', 'Declined')),
+  approved_by UUID REFERENCES nexus_employees(id) ON DELETE SET NULL,
+  authorized_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE nexus_shift_swaps ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "nexus_shift_swaps_view" ON nexus_shift_swaps FOR SELECT USING (true);
+CREATE POLICY "nexus_shift_swaps_insert" ON nexus_shift_swaps FOR INSERT WITH CHECK (true);
+CREATE POLICY "nexus_shift_swaps_update" ON nexus_shift_swaps FOR UPDATE USING (true);
+
+-- =========================================================================
+-- TABLE 14: nexus_break_compliance_logs (Meal & Rest Labor Law Tracker)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS nexus_break_compliance_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  employee_id UUID NOT NULL REFERENCES nexus_employees(id) ON DELETE CASCADE,
+  break_type TEXT NOT NULL CHECK (break_type IN ('15m Rest', '30m Meal')),
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  ended_at TIMESTAMPTZ,
+  allocated_duration_mins INT NOT NULL,
+  actual_duration_mins INT,
+  compliance_status TEXT NOT NULL DEFAULT 'Compliant' CHECK (compliance_status IN ('Compliant', 'Overstay', '5h Meal Breach', 'Unrecorded')),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE nexus_break_compliance_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "nexus_breaks_view" ON nexus_break_compliance_logs FOR SELECT USING (true);
+CREATE POLICY "nexus_breaks_manage" ON nexus_break_compliance_logs FOR ALL USING (true);

@@ -513,4 +513,82 @@ input:checked + .slider:before {
   animation: alert-pulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Barcode Scanner Laser Animation */
+@keyframes laser-sweep {
+  0% { top: 6%; opacity: 0.8; }
+  50% { top: 92%; opacity: 1; }
+  100% { top: 6%; opacity: 0.8; }
+}
+.scanner-laser {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  height: 2.5px;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0) 0%, rgba(239, 68, 68, 1) 50%, rgba(239, 68, 68, 0) 100%);
+  box-shadow: 0 0 12px 2px rgba(239, 68, 68, 0.8);
+  animation: laser-sweep 2.2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* SVG Radar Ping for Floor Map Escalation Beacons */
+@keyframes svg-radar-ping {
+  0% { r: 6; opacity: 1; stroke-width: 3; }
+  70% { r: 28; opacity: 0.15; stroke-width: 1.5; }
+  100% { r: 36; opacity: 0; stroke-width: 0.5; }
+}
+.beacon-ping {
+  animation: svg-radar-ping 1.8s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+/* AI Operations Copilot Floating Window */
+.copilot-floating-drawer {
+  position: fixed;
+  bottom: 5.5rem;
+  right: 1.5rem;
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  height: 600px;
+  max-height: calc(100vh - 120px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(4, 22, 39, 0.15);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px -12px rgba(4, 22, 39, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.8);
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 220ms var(--ease-out), opacity 220ms var(--ease-out);
+}
+.dark .copilot-floating-drawer {
+  background: rgba(7, 19, 34, 0.94);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Print Formatting for Shift Handover Report */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #modal-handover-report, #modal-handover-report * {
+    visibility: visible;
+  }
+  #modal-handover-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
 

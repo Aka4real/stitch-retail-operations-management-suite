@@ -301,6 +301,54 @@
       }
     }
 
+    // Request peer-to-peer shift swap
+    async requestShiftSwap(swapData) {
+      if (!this.isConnected) return;
+      try {
+        await this.client.from('nexus_shift_swaps').insert({
+          shift_date: swapData.shiftDate,
+          shift_description: swapData.shiftDescription,
+          trade_reason: swapData.reason,
+          additional_notes: swapData.notes || '',
+          status: 'Pending Coworker'
+        });
+        console.log('[Supabase] Logged shift swap request');
+      } catch(e) {
+        console.error('[Supabase] requestShiftSwap failed:', e);
+      }
+    }
+
+    // Approve shift swap by Manager
+    async approveShiftSwap(swapId, approverCode) {
+      if (!this.isConnected) return;
+      try {
+        await this.client.from('nexus_shift_swaps').update({
+          status: 'Approved',
+          authorized_at: new Date().toISOString()
+        }).eq('id', swapId);
+        console.log('[Supabase] Approved shift swap:', swapId);
+      } catch(e) {
+        console.error('[Supabase] approveShiftSwap failed:', e);
+      }
+    }
+
+    // Log break event and compliance status
+    async logBreakCompliance(breakData) {
+      if (!this.isConnected) return;
+      try {
+        await this.client.from('nexus_break_compliance_logs').insert({
+          break_type: breakData.breakType === 'meal' ? '30m Meal' : '15m Rest',
+          allocated_duration_mins: breakData.allocatedDurationMins,
+          actual_duration_mins: breakData.actualDurationMins || breakData.allocatedDurationMins,
+          compliance_status: breakData.complianceStatus || 'Compliant',
+          notes: breakData.notes || ''
+        });
+        console.log('[Supabase] Logged break compliance event');
+      } catch(e) {
+        console.error('[Supabase] logBreakCompliance failed:', e);
+      }
+    }
+
     updateUI() {
       const dot = document.getElementById('supabase-status-dot');
       const text = document.getElementById('supabase-status-text');

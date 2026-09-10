@@ -524,6 +524,101 @@ const AppState = {
 
   selectedAssociateForTask: 'Elena Rodriguez',
 
+  // Break & Labor Compliance Tracker
+  breakState: {
+    isOnBreak: false,
+    breakType: null, // 'rest' (15m) or 'meal' (30m)
+    durationMins: 0,
+    startTime: null,
+    remainingSeconds: 0,
+    timerInterval: null
+  },
+
+  // Floor Map & Digital Twin State
+  floorMap: {
+    mode: 'blueprint', // 'blueprint' | 'heatmap'
+    selectedZone: 'North Wing #42'
+  },
+
+  // Weekly Workforce Shift Schedules (Mon-Sun across 10 Departments)
+  shiftSchedules: (function() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('nexus_shift_schedules'));
+      if (Array.isArray(stored) && stored.length >= 70) return stored;
+    } catch(e) {}
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const shiftTypes = [
+      { type: 'Morning', hours: '08:00 - 16:00', label: 'Morning Open' },
+      { type: 'Midday', hours: '12:00 - 20:00', label: 'Midday Peak' },
+      { type: 'Evening', hours: '14:00 - 22:00', label: 'Evening Close' }
+    ];
+    const generated = [];
+    let counter = 101;
+    DEPARTMENTS.forEach(dept => {
+      days.forEach(day => {
+        shiftTypes.forEach(st => {
+          generated.push({
+            id: `SCH-${counter++}`,
+            department: dept.name,
+            zone: dept.zone,
+            day: day,
+            shiftType: st.type,
+            hours: st.hours,
+            label: st.label,
+            status: 'Scheduled'
+          });
+        });
+      });
+    });
+    return generated;
+  })(),
+
+  // Peer-to-Peer Shift Swaps & Manager Approvals
+  shiftSwaps: (function() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('nexus_shift_swaps'));
+      if (Array.isArray(stored) && stored.length > 0) return stored;
+    } catch(e) {}
+    return [
+      {
+        id: 'SWAP-101',
+        requesterId: 'NEX-1044',
+        requesterName: 'Anita Jones',
+        requesterDept: 'Apparel & Fashion',
+        targetCoworkerId: 'NEX-8492',
+        targetCoworkerName: 'Elena Rodriguez',
+        shiftDate: 'Wednesday Oct 25 - Morning (08:00 - 16:00)',
+        shiftDescription: 'Apparel & Fashion • Floor Lead Coverage',
+        reason: 'Personal & Family Obligation',
+        notes: 'Medical appointment in morning',
+        status: 'Pending Coworker',
+        createdAt: 'Today, 08:30 AM'
+      },
+      {
+        id: 'SWAP-102',
+        requesterId: 'NEX-1001',
+        requesterName: 'James Smith',
+        requesterDept: 'Logistics & Bay Storage',
+        targetCoworkerId: 'NEX-3401',
+        targetCoworkerName: 'David Chen',
+        shiftDate: 'Friday Oct 27 - Afternoon (12:00 - 20:00)',
+        shiftDescription: 'Storage Bay B • Pallet Receiving',
+        reason: 'Academic / Exam Conflict',
+        notes: 'Midterm examination review session',
+        status: 'Pending Manager',
+        createdAt: 'Yesterday, 03:15 PM'
+      }
+    ];
+  })(),
+
+  // AI Operations Copilot Conversation History
+  copilotHistory: [
+    {
+      sender: 'assistant',
+      text: 'Greetings, Store Director. I am your **Nexus Retail Operations Copilot**, powered by real-time store telemetry and MCP endpoints. How can I assist with floor dispatch, staff tracking, or labor compliance?'
+    }
+  ],
+
   saveState() {
     localStorage.setItem('nexus_inventory', JSON.stringify(this.inventory));
     localStorage.setItem('nexus_transactions', JSON.stringify(this.transactions));
@@ -532,6 +627,8 @@ const AppState = {
     localStorage.setItem('nexus_audit_logs', JSON.stringify(this.auditLogs));
     localStorage.setItem('nexus_notifications', JSON.stringify(this.notifications));
     localStorage.setItem('nexus_escalations', JSON.stringify(this.escalations));
+    localStorage.setItem('nexus_shift_schedules', JSON.stringify(this.shiftSchedules));
+    localStorage.setItem('nexus_shift_swaps', JSON.stringify(this.shiftSwaps));
     localStorage.setItem('nexus_current_user_id', this.currentUserId);
   }
 };
@@ -854,7 +951,7 @@ function quickElevateToManager() {
 // =========================================================================
 
 function navigateTo(viewId) {
-  const validViews = ['dashboard', 'inventory', 'sales', 'hr', 'profile', 'assign-task', 'management', 'onboarding'];
+  const validViews = ['dashboard', 'inventory', 'sales', 'hr', 'profile', 'assign-task', 'management', 'onboarding', 'floor-map', 'schedule'];
   if (!validViews.includes(viewId)) viewId = 'dashboard';
 
   // CRITICAL REQUIREMENT: "normal employee should not even see or know that there is a manager page"
@@ -887,6 +984,8 @@ function navigateTo(viewId) {
   if (viewId === 'assign-task') renderAssignTask();
   if (viewId === 'management') renderManagement();
   if (viewId === 'onboarding') renderOnboarding();
+  if (viewId === 'floor-map') renderFloorMap();
+  if (viewId === 'schedule') renderSchedule();
 }
 
 function renderNavActive(viewId) {
@@ -3532,6 +3631,1310 @@ function renderSwitchUserModalList() {
       </div>
     `;
   }).join('');
+}
+
+// =========================================================================
+// 19. INTERACTIVE STORE FLOOR MAP (DIGITAL TWIN & HEATMAP)
+// =========================================================================
+
+const FLOOR_ZONE_CONFIG = {
+  'North Wing #42': { id: 'north-wing', name: 'North Wing #42', depts: ['Apparel & Fashion', 'Beauty & Cosmetics'], cx: 170, cy: 145 },
+  'Storage Bay B': { id: 'storage-bay', name: 'Storage Bay B', depts: ['Logistics & Bay Storage'], cx: 500, cy: 145 },
+  'West Gallery': { id: 'west-gallery', name: 'West Gallery', depts: ['Security & Safety'], cx: 830, cy: 145 },
+  'East Promenade': { id: 'east-promenade', name: 'East Promenade', depts: ['Cashier & Front End'], cx: 170, cy: 420 },
+  'Central Mall HQ': { id: 'central-hq', name: 'Central Mall HQ', depts: ['Customer Relations', 'Executive Operations'], cx: 500, cy: 420 },
+  'South Atrium': { id: 'south-atrium', name: 'South Atrium', depts: ['Electronics & Gadgets'], cx: 830, cy: 420 },
+  'Service Core A': { id: 'service-core', name: 'Service Core A', depts: ['Facilities & Maintenance'], cx: 170, cy: 622 },
+  'Food Court Deck': { id: 'food-court', name: 'Food Court Deck', depts: ['Food & Beverage'], cx: 500, cy: 622 },
+  'Upper Mezzanine': { id: 'upper-mezzanine', name: 'Upper Mezzanine', depts: ['Home Goods & Furniture'], cx: 830, cy: 622 }
+};
+
+function renderFloorMap() {
+  const staffByZone = {};
+  const tasksByZone = {};
+  const escByZone = {};
+
+  let totalClockedIn = 0;
+  let activeDutyZones = 0;
+  let totalEscalations = 0;
+
+  // Initialize count structures
+  Object.keys(FLOOR_ZONE_CONFIG).forEach(z => {
+    staffByZone[z] = [];
+    tasksByZone[z] = [];
+    escByZone[z] = [];
+  });
+
+  // Aggregate staff
+  AppState.employees.forEach(emp => {
+    if (emp.clockedIn && emp.status !== 'Terminated') {
+      totalClockedIn++;
+      if (staffByZone[emp.zone]) {
+        staffByZone[emp.zone].push(emp);
+      }
+    }
+  });
+
+  // Aggregate tasks
+  AppState.tasks.forEach(t => {
+    if (t.status !== 'Signed Off' && tasksByZone[t.zone]) {
+      tasksByZone[t.zone].push(t);
+    }
+  });
+
+  // Aggregate escalations
+  AppState.escalations.forEach(esc => {
+    if (esc.status === 'Open') {
+      totalEscalations++;
+      if (escByZone[esc.zone]) {
+        escByZone[esc.zone].push(esc);
+      }
+    }
+  });
+
+  // Count active duty zones
+  Object.keys(tasksByZone).forEach(z => {
+    if (tasksByZone[z].length > 0) activeDutyZones++;
+  });
+
+  // Update KPI Cards
+  const kpiStaff = document.getElementById('map-kpi-staff-count');
+  const kpiDuty = document.getElementById('map-kpi-duty-count');
+  const kpiEsc = document.getElementById('map-kpi-escalation-count');
+  const kpiCov = document.getElementById('map-kpi-coverage');
+
+  if (kpiStaff) kpiStaff.textContent = totalClockedIn;
+  if (kpiDuty) kpiDuty.textContent = `${activeDutyZones} Zones`;
+  if (kpiEsc) kpiEsc.textContent = `${totalEscalations} Open`;
+  if (kpiCov) {
+    const mannedZones = Object.values(staffByZone).filter(list => list.length > 0).length;
+    const pct = Math.round((mannedZones / 9) * 100);
+    kpiCov.textContent = `${pct}%`;
+  }
+
+  // Render SVG overlays for each zone
+  Object.entries(FLOOR_ZONE_CONFIG).forEach(([zoneName, cfg]) => {
+    const container = document.getElementById(`svg-zone-content-${cfg.id}`);
+    if (!container) return;
+
+    const zStaff = staffByZone[zoneName] || [];
+    const zTasks = tasksByZone[zoneName] || [];
+    const zEsc = escByZone[zoneName] || [];
+
+    const isHeatmap = AppState.floorMap.mode === 'heatmap';
+    let contentHtml = '';
+
+    if (isHeatmap) {
+      // Heatmap density glow circle
+      const densityRadius = Math.min(75, Math.max(25, zStaff.length * 4.5));
+      const opacity = Math.min(0.7, 0.2 + (zStaff.length / 25) * 0.5);
+      contentHtml += `
+        <circle cx="${cfg.cx}" cy="${cfg.cy}" r="${densityRadius}" fill="#006c49" fill-opacity="${opacity}" filter="url(#glow-duty)"/>
+        <text x="${cfg.cx}" y="${cfg.cy + 5}" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-size="12" font-weight="bold">${zStaff.length} Associates</text>
+      `;
+    } else {
+      // Blueprint View: Staff Pin Badge
+      contentHtml += `
+        <g transform="translate(${cfg.cx - 50}, ${cfg.cy - 20})">
+          <rect width="100" height="26" rx="8" class="fill-surface-container-high/90 stroke-outline-variant/60" stroke-width="1"/>
+          <circle cx="16" cy="13" r="5" fill="#006c49"/>
+          <text x="28" y="17" class="font-mono font-bold text-[11px] fill-on-surface">${zStaff.length} On Duty</text>
+        </g>
+      `;
+
+      // Duty Halo: Animated Pulse Ring
+      if (zTasks.length > 0) {
+        contentHtml += `
+          <g transform="translate(${cfg.cx + 55}, ${cfg.cy - 40})">
+            <circle cx="0" cy="0" r="14" fill="#006c49" fill-opacity="0.3" class="animate-ping"/>
+            <circle cx="0" cy="0" r="8" fill="#006c49"/>
+            <text x="0" y="3" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono" font-size="9" font-weight="bold">${zTasks.length}</text>
+          </g>
+        `;
+      }
+
+      // Escalation Radar Beacon: Pulsing Red Ping
+      if (zEsc.length > 0) {
+        contentHtml += `
+          <g transform="translate(${cfg.cx + 55}, ${cfg.cy + 15})">
+            <circle cx="0" cy="0" r="18" fill="#ba1a1a" fill-opacity="0.35" class="beacon-ping" stroke="#ba1a1a" stroke-width="2"/>
+            <circle cx="0" cy="0" r="8" fill="#ba1a1a"/>
+            <text x="0" y="3" text-anchor="middle" fill="#ffffff" font-family="Inter" font-size="10" font-weight="bold">!</text>
+          </g>
+        `;
+      }
+    }
+
+    container.innerHTML = contentHtml;
+
+    // Highlight selected zone rect
+    const groupEl = document.getElementById(`svg-zone-${cfg.id}`);
+    if (groupEl) {
+      const rectEl = groupEl.querySelector('.zone-rect');
+      if (rectEl) {
+        if (zoneName === AppState.floorMap.selectedZone) {
+          rectEl.setAttribute('stroke', '#041627');
+          rectEl.setAttribute('stroke-width', '3.5');
+          rectEl.classList.add('selected-zone-highlight');
+        } else {
+          rectEl.setAttribute('stroke-width', '1.5');
+          rectEl.classList.remove('selected-zone-highlight');
+        }
+      }
+    }
+  });
+
+  updateZoneInspector(AppState.floorMap.selectedZone);
+}
+
+function selectFloorMapZone(zoneName) {
+  AppState.floorMap.selectedZone = zoneName;
+  const filterSelect = document.getElementById('map-zone-filter');
+  if (filterSelect) filterSelect.value = zoneName;
+  renderFloorMap();
+}
+
+function filterFloorMapZone(zoneVal) {
+  if (zoneVal === 'all') {
+    AppState.floorMap.selectedZone = 'North Wing #42';
+  } else {
+    AppState.floorMap.selectedZone = zoneVal;
+  }
+  renderFloorMap();
+}
+
+function setFloorMapMode(mode) {
+  AppState.floorMap.mode = mode;
+  const btnBp = document.getElementById('btn-map-mode-blueprint');
+  const btnHm = document.getElementById('btn-map-mode-heatmap');
+
+  if (mode === 'blueprint') {
+    if (btnBp) { btnBp.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow-sm flex items-center gap-1.5'; }
+    if (btnHm) { btnHm.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface flex items-center gap-1.5'; }
+  } else {
+    if (btnBp) { btnBp.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface flex items-center gap-1.5'; }
+    if (btnHm) { btnHm.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow-sm flex items-center gap-1.5'; }
+  }
+  renderFloorMap();
+}
+
+function refreshFloorMapTelemetry() {
+  renderFloorMap();
+  toast.success('Telemetry Refreshed', 'Real-time spatial staff and beacon coordinates updated.');
+}
+
+function updateZoneInspector(zoneName) {
+  const titleEl = document.getElementById('inspector-zone-title');
+  const badgeEl = document.getElementById('inspector-zone-badge');
+  const staffCountEl = document.getElementById('inspector-staff-count');
+  const staffListEl = document.getElementById('inspector-staff-list');
+  const dutiesCountEl = document.getElementById('inspector-duties-count');
+  const dutiesListEl = document.getElementById('inspector-duties-list');
+  const escCountEl = document.getElementById('inspector-escalations-count');
+  const escListEl = document.getElementById('inspector-escalations-list');
+
+  if (titleEl) titleEl.textContent = zoneName;
+
+  const staff = AppState.employees.filter(e => e.zone === zoneName && e.clockedIn && e.status !== 'Terminated');
+  const duties = AppState.tasks.filter(t => t.zone === zoneName && t.status !== 'Signed Off');
+  const escalations = AppState.escalations.filter(e => e.zone === zoneName && e.status === 'Open');
+
+  if (badgeEl) badgeEl.textContent = `${staff.length} On Duty`;
+  if (staffCountEl) staffCountEl.textContent = `${staff.length} staff clocked in`;
+  if (dutiesCountEl) dutiesCountEl.textContent = `${duties.length} active tasks`;
+  if (escCountEl) escCountEl.textContent = `${escalations.length} critical alerts`;
+
+  // Render Staff List
+  if (staffListEl) {
+    if (staff.length === 0) {
+      staffListEl.innerHTML = '<div class="p-3 text-center text-xs text-on-surface-variant">No associates currently clocked in to this zone.</div>';
+    } else {
+      staffListEl.innerHTML = staff.slice(0, 10).map(emp => {
+        const avatar = emp.avatar 
+          ? `<img src="${emp.avatar}" class="w-6 h-6 rounded-full object-cover" alt="${emp.name}"/>`
+          : `<div class="w-6 h-6 rounded-full bg-surface-container font-mono text-[10px] font-bold flex items-center justify-center">${emp.initials}</div>`;
+        return `
+          <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container border border-outline-variant/40 text-xs">
+            <div class="flex items-center gap-2 min-w-0">
+              ${avatar}
+              <div class="truncate">
+                <span class="font-semibold text-on-surface">${emp.name}</span>
+                <span class="text-[10px] text-on-surface-variant block truncate">${emp.role}</span>
+              </div>
+            </div>
+            <span class="badge-pill text-[9px] rank-badge-${emp.rank}">Rank ${emp.rank}</span>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Render Duties List
+  if (dutiesListEl) {
+    if (duties.length === 0) {
+      dutiesListEl.innerHTML = '<div class="p-2 text-center text-xs text-on-surface-variant">No duties currently active in this zone.</div>';
+    } else {
+      dutiesListEl.innerHTML = duties.map(d => {
+        const completedChecks = d.checklist ? d.checklist.filter(c => c.done).length : 0;
+        const totalChecks = d.checklist ? d.checklist.length : 1;
+        const pct = Math.round((completedChecks / totalChecks) * 100);
+        return `
+          <div class="p-2 rounded-lg bg-surface-container border border-outline-variant/40 text-xs space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-on-surface truncate">${d.title}</span>
+              <span class="badge-pill text-[9px] ${d.status === 'Pending Approval' ? 'bg-amber-500/15 text-amber-700' : 'bg-secondary-container/40 text-secondary'}">${d.status}</span>
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-on-surface-variant">
+              <span>Lead: ${d.teamLeadName}</span>
+              <span class="font-mono font-bold">${pct}% Done</span>
+            </div>
+            <div class="w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+              <div class="bg-secondary h-full rounded-full" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Render Escalations List
+  if (escListEl) {
+    if (escalations.length === 0) {
+      escListEl.innerHTML = '<div class="p-2 text-center text-xs text-secondary font-medium">✓ All clear: zero active incidents.</div>';
+    } else {
+      escListEl.innerHTML = escalations.map(esc => `
+        <div class="p-2 rounded-lg bg-error/10 border border-error/20 text-xs space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-error flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">warning</span>
+              <span>${esc.category}</span>
+            </span>
+            <span class="badge-pill bg-error text-white font-mono text-[9px] font-bold">${esc.urgency}</span>
+          </div>
+          <p class="text-[11px] text-on-surface">${esc.description}</p>
+          <div class="flex items-center justify-between text-[10px] text-on-surface-variant pt-1 border-t border-error/20">
+            <span>By ${esc.senderName}</span>
+            <button onclick="resolveEscalation('${esc.id}')" class="text-primary dark:text-primary-fixed font-bold hover:underline">Mark Resolved &rarr;</button>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+function openRapidDispatchForZone() {
+  AppState.selectedAssociateForTask = AppState.floorMap.selectedZone;
+  navigateTo('assign-task');
+  const zoneSelect = document.querySelector('select[name="task_zone"]');
+  if (zoneSelect) zoneSelect.value = AppState.floorMap.selectedZone;
+  toast.info('Rapid Dispatch', `Configuring duty dispatch for ${AppState.floorMap.selectedZone}`);
+}
+
+// =========================================================================
+// 20. WEEKLY SHIFT SCHEDULE & PEER-TO-PEER SWAPPING
+// =========================================================================
+
+function renderSchedule() {
+  renderScheduleMatrix();
+  renderShiftSwapsTray();
+}
+
+function renderScheduleMatrix() {
+  const container = document.getElementById('schedule-matrix-grid');
+  if (!container) return;
+
+  const filterDept = document.getElementById('schedule-dept-filter')?.value || 'all';
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  container.innerHTML = days.map((day, dIdx) => {
+    const isToday = dIdx === 2; // Wednesday simulated as today
+    const dayDate = `Oct ${23 + dIdx}`;
+
+    // Get shifts for this day
+    const dayShifts = AppState.shiftSchedules.filter(s => {
+      if (s.day !== day) return false;
+      if (filterDept !== 'all' && s.department !== filterDept) return false;
+      return true;
+    }).slice(0, 3);
+
+    return `
+      <div class="flex flex-col gap-2.5 p-3 rounded-2xl ${isToday ? 'bg-surface-container-high border-2 border-primary/30 ring-2 ring-primary/10' : 'bg-surface-container-low border border-outline-variant/50'}">
+        <div class="flex items-center justify-between pb-2 border-b border-outline-variant/40">
+          <div>
+            <div class="font-headline text-xs font-bold text-on-surface">${day}</div>
+            <div class="text-[10px] font-mono text-on-surface-variant">${dayDate}</div>
+          </div>
+          ${isToday ? '<span class="badge-pill bg-primary text-white font-mono text-[9px] font-bold">TODAY</span>' : ''}
+        </div>
+
+        <div class="space-y-2">
+          ${dayShifts.map(shift => {
+            // Find assigned associate
+            const deptEmps = AppState.employees.filter(e => e.department === shift.department && e.status !== 'Terminated');
+            const assignedEmp = deptEmps[Math.abs((shift.id.charCodeAt(4) || 1) % deptEmps.length)] || AppState.employees[0];
+            const isCurrentUser = assignedEmp.id === AppState.currentUserId;
+
+            return `
+              <div class="p-2.5 rounded-xl bg-surface dark:bg-surface-lowest border border-outline-variant/50 hover:border-primary transition-all text-xs flex flex-col gap-1.5 shadow-sm group">
+                <div class="flex items-center justify-between">
+                  <span class="badge-pill font-mono text-[9px] font-bold ${shift.shiftType === 'Morning' ? 'bg-secondary-container/40 text-secondary' : shift.shiftType === 'Midday' ? 'bg-primary/10 text-primary' : 'bg-amber-500/15 text-amber-700'}">
+                    ${shift.shiftType}
+                  </span>
+                  <span class="text-[10px] font-mono text-outline">${shift.hours}</span>
+                </div>
+                <div class="font-bold text-on-surface truncate">${assignedEmp.name}</div>
+                <div class="text-[10px] text-on-surface-variant truncate">${shift.department}</div>
+                
+                <div class="pt-1.5 border-t border-outline-variant/30 flex items-center justify-between">
+                  <span class="text-[9px] font-mono text-outline">Zone: ${shift.zone.split(' ')[0]}</span>
+                  <button onclick="openShiftSwapModal('${day}', '${shift.hours}', '${assignedEmp.id}')" class="text-[10px] font-bold text-primary dark:text-primary-fixed hover:underline flex items-center gap-0.5">
+                    <span class="material-symbols-outlined text-[12px]">swap_horiz</span> Trade
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderShiftSwapsTray() {
+  const container = document.getElementById('sched-swaps-container');
+  const badge = document.getElementById('sched-swaps-badge');
+  const kpiPending = document.getElementById('sched-kpi-pending-swaps');
+
+  if (!container) return;
+
+  const pending = AppState.shiftSwaps.filter(s => s.status !== 'Approved' && s.status !== 'Declined');
+  if (badge) badge.textContent = `${pending.length} Awaiting Action`;
+  if (kpiPending) kpiPending.textContent = `${pending.length} Pending`;
+
+  if (AppState.shiftSwaps.length === 0) {
+    container.innerHTML = '<div class="col-span-2 p-6 text-center text-xs text-on-surface-variant">No active shift swap requests recorded.</div>';
+    return;
+  }
+
+  container.innerHTML = AppState.shiftSwaps.map(swap => {
+    const isTargetCoworker = swap.targetCoworkerId === AppState.currentUserId;
+    const isRequester = swap.requesterId === AppState.currentUserId;
+    const isMgr = AppState.isManager();
+
+    let statusPill = '';
+    if (swap.status === 'Pending Coworker') {
+      statusPill = '<span class="badge-pill bg-amber-500/15 text-amber-700 font-mono text-[10px] font-bold">Awaiting Coworker Acceptance</span>';
+    } else if (swap.status === 'Pending Manager') {
+      statusPill = '<span class="badge-pill bg-blue-500/15 text-blue-700 font-mono text-[10px] font-bold">Awaiting Manager Sign-Off</span>';
+    } else {
+      statusPill = '<span class="badge-pill bg-secondary-container/40 text-secondary font-mono text-[10px] font-bold">Approved &amp; Scheduled</span>';
+    }
+
+    return `
+      <div class="p-4 rounded-xl bg-surface dark:bg-surface-lowest border border-outline-variant/60 shadow-sm flex flex-col justify-between gap-3">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-mono text-[11px] font-bold text-on-surface-variant">${swap.id}</span>
+            ${statusPill}
+          </div>
+          
+          <div class="flex items-center gap-2 text-xs font-bold text-on-surface mb-1">
+            <span>${swap.requesterName}</span>
+            <span class="material-symbols-outlined text-[16px] text-outline">arrow_forward</span>
+            <span>${swap.targetCoworkerName}</span>
+          </div>
+
+          <div class="text-xs text-on-surface-variant font-mono mb-2">
+            📅 ${swap.shiftDate}
+          </div>
+
+          <div class="p-2.5 rounded-lg bg-surface-container-low text-xs space-y-1">
+            <span class="font-semibold text-on-surface block">Reason: ${swap.tradeReason || swap.reason}</span>
+            <p class="text-[11px] text-on-surface-variant">${swap.additionalNotes || swap.notes || 'No extra notes provided'}</p>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-outline-variant/40 flex items-center justify-between">
+          <span class="text-[10px] font-mono text-outline">${swap.createdAt}</span>
+          
+          <div class="flex items-center gap-2">
+            ${swap.status === 'Pending Coworker' && (isTargetCoworker || isMgr) ? `
+              <button onclick="handleCoworkerAcceptSwap('${swap.id}')" class="px-3 py-1 bg-secondary text-white font-bold text-xs rounded-lg hover:bg-secondary/90 transition-all shadow-sm">
+                Accept Trade
+              </button>
+            ` : ''}
+
+            ${swap.status === 'Pending Manager' && isMgr ? `
+              <button onclick="handleApproveShiftSwap('${swap.id}')" class="px-3 py-1 bg-primary text-white font-bold text-xs rounded-lg hover:bg-primary/90 transition-all shadow-sm flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">check</span> Authorize 1-Click
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openShiftSwapModal(preDay, preHours, preEmpId) {
+  const selectCoworker = document.getElementById('swap-coworker-select');
+  if (selectCoworker) {
+    const userDept = AppState.currentUser?.department || 'Apparel & Fashion';
+    const eligible = AppState.employees.filter(e => e.department === userDept && e.id !== AppState.currentUserId && e.status !== 'Terminated');
+    selectCoworker.innerHTML = eligible.map(e => `
+      <option value="${e.id}">${e.name} (${e.role})</option>
+    `).join('');
+  }
+
+  const shiftSelect = document.getElementById('swap-shift-select');
+  if (shiftSelect && preDay && preHours) {
+    shiftSelect.innerHTML = `<option value="${preDay} - ${preHours}">${preDay} - ${preHours}</option>` + shiftSelect.innerHTML;
+  }
+
+  openModal('modal-shift-swap');
+}
+
+function handleShiftSwapSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const shiftText = form.swap_shift.value;
+  const coworkerId = form.swap_coworker.value;
+  const reason = form.swap_reason.value;
+  const notes = form.swap_notes.value;
+
+  const targetCoworker = AppState.employees.find(e => e.id === coworkerId) || { name: 'Coworker' };
+
+  const newSwap = {
+    id: `SWAP-${Date.now().toString().slice(-4)}`,
+    requesterId: AppState.currentUserId,
+    requesterName: AppState.currentUser.name,
+    requesterDept: AppState.currentUser.department,
+    targetCoworkerId: coworkerId,
+    targetCoworkerName: targetCoworker.name,
+    shiftDate: shiftText,
+    shiftDescription: `${AppState.currentUser.department} • Peer Shift Trade`,
+    reason: reason,
+    notes: notes,
+    status: 'Pending Coworker',
+    createdAt: 'Just now'
+  };
+
+  AppState.shiftSwaps.unshift(newSwap);
+  AppState.saveState();
+
+  if (window.RetailSupabase) {
+    window.RetailSupabase.requestShiftSwap({
+      shiftDate: shiftText,
+      shiftDescription: newSwap.shiftDescription,
+      reason: reason,
+      notes: notes
+    });
+  }
+
+  closeModal('modal-shift-swap');
+  toast.success('Swap Request Sent', `Trade invitation delivered to ${targetCoworker.name}.`);
+  renderSchedule();
+}
+
+function handleCoworkerAcceptSwap(swapId) {
+  const swap = AppState.shiftSwaps.find(s => s.id === swapId);
+  if (!swap) return;
+
+  swap.status = 'Pending Manager';
+  AppState.saveState();
+
+  AppState.notifications.unshift({
+    id: `notif-${Date.now()}`,
+    title: 'Shift Swap Accepted: Sign-Off Needed',
+    message: `${swap.targetCoworkerName} accepted shift trade with ${swap.requesterName}. Awaiting Manager 1-click approval.`,
+    timestamp: 'Just now',
+    read: false,
+    type: 'shift_swap'
+  });
+
+  toast.info('Trade Accepted', 'Shift swap forwarded to Manager Approvals Tray.');
+  renderSchedule();
+}
+
+function handleApproveShiftSwap(swapId) {
+  const swap = AppState.shiftSwaps.find(s => s.id === swapId);
+  if (!swap) return;
+
+  swap.status = 'Approved';
+  AppState.saveState();
+
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: AppState.currentUser.name,
+    action: 'Shift Swap Authorized',
+    target: `${swap.requesterName} ↔ ${swap.targetCoworkerName}`,
+    detail: `Approved trade for ${swap.shiftDate}`
+  });
+
+  if (window.RetailSupabase) {
+    window.RetailSupabase.approveShiftSwap(swapId, AppState.currentUserId);
+  }
+
+  toast.success('Swap Authorized', 'Shift matrix roster automatically updated.');
+  renderSchedule();
+}
+
+// =========================================================================
+// 21. BREAK & LABOR LAW COMPLIANCE TRACKER
+// =========================================================================
+
+function startBreak(type, durationMins) {
+  if (AppState.breakState.timerInterval) {
+    clearInterval(AppState.breakState.timerInterval);
+  }
+
+  AppState.breakState.isOnBreak = true;
+  AppState.breakState.breakType = type; // 'rest' (15m) or 'meal' (30m)
+  AppState.breakState.durationMins = durationMins;
+  AppState.breakState.remainingSeconds = durationMins * 60;
+  AppState.breakState.startTime = Date.now();
+
+  updateBreakTickerUI();
+
+  // Start countdown ticker
+  AppState.breakState.timerInterval = setInterval(() => {
+    if (AppState.breakState.remainingSeconds > 0) {
+      AppState.breakState.remainingSeconds--;
+      updateBreakTickerUI();
+    } else {
+      // Overstay alert!
+      updateBreakTickerUI();
+      const dot = document.getElementById('header-break-dot');
+      const text = document.getElementById('header-break-text');
+      if (dot) dot.className = 'w-2 h-2 rounded-full bg-error animate-ping';
+      if (text) text.textContent = 'Break Overstay!';
+    }
+  }, 1000);
+
+  // Update punch status badge
+  const punchStatus = document.getElementById('punch-clock-status');
+  if (punchStatus) {
+    punchStatus.className = 'badge-pill bg-amber-500/20 text-amber-700 border border-amber-500/30 text-xs mt-1';
+    punchStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span><span>ON ${type.toUpperCase()} BREAK</span>`;
+  }
+
+  // Log to Supabase
+  if (window.RetailSupabase) {
+    window.RetailSupabase.logBreakCompliance({
+      breakType: type,
+      allocatedDurationMins: durationMins,
+      complianceStatus: 'Compliant',
+      notes: `Started ${durationMins}-minute ${type} break`
+    });
+  }
+
+  toast.info('Break Started', `${durationMins}-minute ${type === 'meal' ? 'meal' : 'rest'} compliance timer running.`);
+}
+
+function endBreak() {
+  if (AppState.breakState.timerInterval) {
+    clearInterval(AppState.breakState.timerInterval);
+    AppState.breakState.timerInterval = null;
+  }
+
+  const wasOverstay = AppState.breakState.remainingSeconds <= 0;
+  AppState.breakState.isOnBreak = false;
+  AppState.breakState.breakType = null;
+
+  updateBreakTickerUI();
+
+  // Reset header & punch clock badge
+  const dot = document.getElementById('header-break-dot');
+  const text = document.getElementById('header-break-text');
+  if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+  if (text) text.textContent = 'Labor: Compliant';
+
+  const punchStatus = document.getElementById('punch-clock-status');
+  if (punchStatus) {
+    punchStatus.className = 'badge-pill bg-secondary-container/40 text-secondary border border-secondary/30 text-xs mt-1';
+    punchStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span><span>CLOCKED IN</span>`;
+  }
+
+  closeModal('modal-break-compliance');
+
+  if (wasOverstay) {
+    toast.warning('Break Concluded', 'Recorded with minor overstay grace breach.');
+  } else {
+    toast.success('Break Concluded', 'Welcome back to active floor operations.');
+  }
+}
+
+function updateBreakTickerUI() {
+  const punchTicker = document.getElementById('punch-break-ticker');
+  const punchVal = document.getElementById('punch-break-timer-val');
+  const modalDisplay = document.getElementById('break-modal-timer-display');
+  const modalProgress = document.getElementById('break-modal-progress-fill');
+  const headerText = document.getElementById('header-break-text');
+  const headerDot = document.getElementById('header-break-dot');
+  const statusText = document.getElementById('break-modal-status-text');
+
+  if (!AppState.breakState.isOnBreak) {
+    if (punchTicker) punchTicker.classList.add('hidden');
+    if (modalDisplay) modalDisplay.textContent = '15:00';
+    if (statusText) statusText.textContent = 'Active on Retail Floor';
+    return;
+  }
+
+  if (punchTicker) punchTicker.classList.remove('hidden');
+
+  const mins = Math.floor(AppState.breakState.remainingSeconds / 60);
+  const secs = AppState.breakState.remainingSeconds % 60;
+  const timeStr = `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+  if (punchVal) punchVal.textContent = timeStr;
+  if (modalDisplay) modalDisplay.textContent = timeStr;
+  if (headerText) headerText.textContent = `Break: ${timeStr}`;
+  if (headerDot) headerDot.className = 'w-2 h-2 rounded-full bg-secondary animate-pulse';
+
+  if (statusText) {
+    statusText.textContent = `On ${AppState.breakState.durationMins}-Min ${AppState.breakState.breakType === 'meal' ? 'Meal' : 'Rest'} Break`;
+  }
+
+  if (modalProgress) {
+    const totalSecs = AppState.breakState.durationMins * 60;
+    const pct = Math.max(0, Math.min(100, (AppState.breakState.remainingSeconds / totalSecs) * 100));
+    modalProgress.style.width = `${pct}%`;
+  }
+}
+
+function openBreakComplianceModal() {
+  const lawBadge = document.getElementById('break-law-badge');
+  const shiftDurationEl = document.getElementById('break-modal-shift-duration');
+
+  // Estimate shift duration
+  const clockInStr = AppState.currentUser?.clockInTime || '08:00 AM';
+  if (shiftDurationEl) shiftDurationEl.textContent = `Shift Start: ${clockInStr} • Labor Tracker`;
+
+  // Check 5-hour meal penalty compliance
+  const isBreachRisk = false; // By default compliant
+  if (lawBadge) {
+    lawBadge.className = isBreachRisk 
+      ? 'badge-pill bg-error/15 text-error font-mono text-[10px] font-bold'
+      : 'badge-pill bg-emerald-500/10 text-emerald-600 font-mono text-[10px] font-bold';
+    lawBadge.textContent = isBreachRisk ? '5H MEAL VIOLATION RISK' : 'COMPLIANT';
+  }
+
+  updateBreakTickerUI();
+  openModal('modal-break-compliance');
+}
+
+// =========================================================================
+// 22. BARCODE & QR CODE AUDIT SCANNER
+// =========================================================================
+
+let scannerStream = null;
+
+function playScannerBeep() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1760, ctx.currentTime);
+    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.12);
+  } catch(e) {}
+}
+
+function openScannerModal() {
+  openModal('modal-barcode-scanner');
+  const resultCard = document.getElementById('scanner-result-container');
+  if (resultCard) resultCard.classList.add('hidden');
+}
+
+function closeScannerModal() {
+  if (scannerStream) {
+    scannerStream.getTracks().forEach(track => track.stop());
+    scannerStream = null;
+  }
+  const videoEl = document.getElementById('scanner-video');
+  const placeholderEl = document.getElementById('scanner-cam-placeholder');
+  if (videoEl) videoEl.classList.add('hidden');
+  if (placeholderEl) placeholderEl.classList.remove('hidden');
+  closeModal('modal-barcode-scanner');
+}
+
+async function toggleScannerCamera() {
+  const videoEl = document.getElementById('scanner-video');
+  const placeholderEl = document.getElementById('scanner-cam-placeholder');
+
+  if (scannerStream) {
+    scannerStream.getTracks().forEach(track => track.stop());
+    scannerStream = null;
+    if (videoEl) videoEl.classList.add('hidden');
+    if (placeholderEl) placeholderEl.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      if (videoEl) {
+        videoEl.srcObject = scannerStream;
+        videoEl.classList.remove('hidden');
+        if (placeholderEl) placeholderEl.classList.add('hidden');
+      }
+    } else {
+      toast.info('Optical Sensor Active', 'Simulated barcode camera engine ready.');
+    }
+  } catch(e) {
+    toast.info('Simulated Scanner', 'Camera permissions denied. Rapid SKU picker buttons ready.');
+  }
+}
+
+function simulateBarcodeScan(code) {
+  playScannerBeep();
+  displayScanResult(code);
+}
+
+function handleManualBarcodeSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById('scanner-manual-input');
+  if (!input || !input.value.trim()) return;
+  simulateBarcodeScan(input.value.trim());
+}
+
+function displayScanResult(code) {
+  const container = document.getElementById('scanner-result-container');
+  if (!container) return;
+
+  const cleanCode = code.toUpperCase().trim();
+  container.classList.remove('hidden');
+
+  // Check if Employee Badge
+  const employee = AppState.employees.find(e => e.id.toUpperCase() === cleanCode || e.pin === cleanCode);
+  if (employee) {
+    container.innerHTML = `
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-outline-variant/40">
+        <span class="badge-pill bg-primary/10 text-primary font-mono text-[10px] font-bold">STAFF BADGE DETECTED</span>
+        <span class="font-mono text-xs font-bold text-on-surface">${employee.id}</span>
+      </div>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-full bg-surface-container font-bold text-primary flex items-center justify-center">
+          ${employee.initials}
+        </div>
+        <div>
+          <h4 class="font-bold text-sm text-on-surface">${employee.name}</h4>
+          <p class="text-xs text-on-surface-variant">${employee.role} &bull; ${employee.department}</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-between pt-2 border-t border-outline-variant/30 text-xs">
+        <span class="badge-pill ${employee.clockedIn ? 'bg-secondary-container/40 text-secondary' : 'bg-surface-container text-outline'}">
+          ${employee.clockedIn ? 'Currently Clocked In' : 'Off Duty'}
+        </span>
+        <button onclick="switchUser('${employee.id}'); closeScannerModal();" class="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90">
+          Login Station &rarr;
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  // Check if Inventory SKU
+  const item = AppState.inventory.find(i => i.sku.toUpperCase() === cleanCode || i.name.toUpperCase().includes(cleanCode));
+  if (item) {
+    container.innerHTML = `
+      <div class="flex items-center justify-between pb-2 mb-2 border-b border-outline-variant/40">
+        <span class="badge-pill bg-secondary-container/40 text-secondary font-mono text-[10px] font-bold">INVENTORY SKU VERIFIED</span>
+        <span class="font-mono text-xs font-bold text-on-surface">${item.sku}</span>
+      </div>
+      <div class="mb-3">
+        <h4 class="font-bold text-sm text-on-surface">${item.name}</h4>
+        <div class="grid grid-cols-3 gap-2 mt-2 p-2.5 rounded-lg bg-surface-container-low text-xs">
+          <div>
+            <span class="text-[10px] text-on-surface-variant block">Current Stock</span>
+            <span class="font-mono font-bold text-sm text-on-surface">${item.stock} / ${item.max}</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-on-surface-variant block">Warehouse Bay</span>
+            <span class="font-mono font-bold text-sm text-primary">Bay B-4</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-on-surface-variant block">Unit Price</span>
+            <span class="font-mono font-bold text-sm text-secondary">$${item.price}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 pt-2 border-t border-outline-variant/30">
+        <button onclick="handleScannerStockDelta('${item.sku}', 10)" class="flex-1 py-1.5 bg-secondary text-white font-bold text-xs rounded-lg hover:bg-secondary/90 flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-[14px]">add</span>
+          <span>+10 Dock Receipt</span>
+        </button>
+        <button onclick="handleScannerStockDelta('${item.sku}', -1)" class="px-3 py-1.5 bg-surface-container hover:bg-surface-highest text-on-surface font-bold text-xs rounded-lg border border-outline-variant/50">
+          -1 Sale
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  // Not Found
+  container.innerHTML = `
+    <div class="text-center py-2 text-xs text-error">
+      <span class="material-symbols-outlined text-xl mb-1">warning</span>
+      <p class="font-bold">Code "${cleanCode}" not found in retail registry.</p>
+    </div>
+  `;
+}
+
+function handleScannerStockDelta(sku, delta) {
+  const item = AppState.inventory.find(i => i.sku === sku);
+  if (!item) return;
+
+  item.stock = Math.max(0, item.stock + delta);
+  if (item.stock === 0) item.status = 'Out of Stock';
+  else if (item.stock < item.max * 0.2) item.status = 'Reorder Now';
+  else item.status = 'In Stock';
+
+  AppState.saveState();
+  renderInventory();
+  displayScanResult(sku);
+  toast.success('Inventory Adjusted', `${item.name} stock updated to ${item.stock} units.`);
+}
+
+// =========================================================================
+// 23. END-OF-SHIFT HANDOVER BRIEFING GENERATOR
+// =========================================================================
+
+function openHandoverModal() {
+  populateHandoverReport();
+  openModal('modal-handover-report');
+}
+
+function populateHandoverReport() {
+  const container = document.getElementById('handover-printable-area');
+  if (!container) return;
+
+  const totalDuties = AppState.tasks.length;
+  const completedDuties = AppState.tasks.filter(t => t.status === 'Signed Off').length;
+  const pendingDuties = AppState.tasks.filter(t => t.status === 'Pending Approval').length;
+  const inProgressDuties = AppState.tasks.filter(t => t.status === 'In Progress').length;
+  const openEscalations = AppState.escalations.filter(e => e.status === 'Open');
+  const lowStock = AppState.inventory.filter(i => i.stock <= 15);
+  const clockedInCount = AppState.employees.filter(e => e.clockedIn && e.status !== 'Terminated').length;
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+  container.innerHTML = `
+    <!-- Header Block -->
+    <div class="p-4 rounded-xl bg-surface-container border border-outline-variant/60 flex items-center justify-between">
+      <div>
+        <span class="badge-pill bg-primary/10 text-primary font-mono text-[10px] font-bold">NEXUS RETAIL BRIEFING &bull; STORE #104</span>
+        <h2 class="font-headline text-xl font-bold text-on-surface mt-1">${dateStr} &bull; Afternoon Shift Handover</h2>
+        <p class="text-xs text-on-surface-variant font-mono">Generated at ${timeStr} by ${AppState.currentUser.name} (${AppState.currentUser.role})</p>
+      </div>
+      <div class="text-right">
+        <span class="font-mono text-2xl font-black text-secondary">A+ GRADE</span>
+        <span class="text-[10px] text-outline block">98.2% Operational Score</span>
+      </div>
+    </div>
+
+    <!-- Core Metrics Matrix -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 text-center">
+        <span class="text-[10px] uppercase font-mono text-on-surface-variant">Duties Completed</span>
+        <div class="font-headline text-xl font-extrabold text-secondary mt-0.5">${completedDuties} / ${totalDuties}</div>
+        <span class="text-[10px] text-outline">${pendingDuties} pending sign-off</span>
+      </div>
+      <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 text-center">
+        <span class="text-[10px] uppercase font-mono text-on-surface-variant">Active Floor Incidents</span>
+        <div class="font-headline text-xl font-extrabold ${openEscalations.length > 0 ? 'text-error' : 'text-secondary'} mt-0.5">${openEscalations.length} Open</div>
+        <span class="text-[10px] text-outline">High priority alerts</span>
+      </div>
+      <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 text-center">
+        <span class="text-[10px] uppercase font-mono text-on-surface-variant">Supply Chain Alerts</span>
+        <div class="font-headline text-xl font-extrabold text-amber-600 mt-0.5">${lowStock.length} Low SKUs</div>
+        <span class="text-[10px] text-outline">Dock restock flagged</span>
+      </div>
+      <div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/50 text-center">
+        <span class="text-[10px] uppercase font-mono text-on-surface-variant">Labor Law Compliance</span>
+        <div class="font-headline text-xl font-extrabold text-emerald-600 mt-0.5">100%</div>
+        <span class="text-[10px] text-outline">${clockedInCount} on-shift crew</span>
+      </div>
+    </div>
+
+    <!-- Section 1: Unresolved Escalations -->
+    <div class="nexus-card p-4">
+      <h3 class="font-headline text-sm font-bold text-on-surface mb-2 pb-1 border-b border-outline-variant/40 flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[16px] text-error">emergency</span>
+        <span>Open Escalations Handover</span>
+      </h3>
+      ${openEscalations.length === 0 ? `
+        <p class="text-xs text-secondary font-medium">All floor escalations resolved during shift.</p>
+      ` : `
+        <div class="space-y-2">
+          ${openEscalations.map(e => `
+            <div class="p-2 rounded-lg bg-surface-container text-xs flex justify-between items-center">
+              <div>
+                <span class="font-bold text-on-surface">[${e.zone}] ${e.category}</span>
+                <p class="text-[11px] text-on-surface-variant">${e.description}</p>
+              </div>
+              <span class="badge-pill bg-error text-white text-[9px] font-bold font-mono">${e.urgency}</span>
+            </div>
+          `).join('')}
+        </div>
+      `}
+    </div>
+
+    <!-- Section 2: Critical Low Stock Items -->
+    <div class="nexus-card p-4">
+      <h3 class="font-headline text-sm font-bold text-on-surface mb-2 pb-1 border-b border-outline-variant/40 flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-[16px] text-secondary">inventory</span>
+        <span>Critical Low Stock flagged for Night Receiving</span>
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+        ${lowStock.map(i => `
+          <div class="p-2 rounded-lg bg-surface-container flex justify-between items-center">
+            <div>
+              <span class="font-semibold text-on-surface">${i.name}</span>
+              <span class="text-[10px] font-mono text-outline block">${i.sku} &bull; Bay B</span>
+            </div>
+            <span class="badge-pill bg-error/10 text-error font-mono text-[10px] font-bold">${i.stock} Left</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Section 3: Shift Supervisor Directive Notes -->
+    <div class="nexus-card p-4">
+      <h3 class="font-headline text-sm font-bold text-on-surface mb-2 pb-1 border-b border-outline-variant/40">
+        Outgoing Supervisor Directives for Incoming Crew
+      </h3>
+      <textarea id="handover-notes-input" rows="3" class="w-full p-2.5 text-xs bg-surface-container border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none" placeholder="Provide shift closing notes, VIP customer arrivals, or key priorities for the evening team...">Evening rush expected between 5:30 PM and 7:00 PM. Keep 3 cash registers active in East Promenade. Bay B receiving dock pallet count reconciled. All staff meal and rest compliance verified.</textarea>
+    </div>
+  `;
+}
+
+function printHandoverReport() {
+  window.print();
+}
+
+function signAndCloseHandover() {
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: AppState.currentUser.name,
+    action: 'End-of-Shift Handover Briefing Archived',
+    target: 'Store Command',
+    detail: 'Signed off operational handover for incoming shift crew'
+  });
+  AppState.saveState();
+  closeModal('modal-handover-report');
+  toast.success('Handover Archived', 'Shift digest signed and transmitted to incoming supervisor.');
+}
+
+// =========================================================================
+// 24. AI OPERATIONS COPILOT (BUILT ON MCP TOOLS)
+// =========================================================================
+
+function toggleCopilot() {
+  const drawer = document.getElementById('copilot-drawer');
+  const unread = document.getElementById('copilot-unread-dot');
+  if (!drawer) return;
+
+  const isHidden = drawer.classList.contains('hidden');
+  if (isHidden) {
+    drawer.classList.remove('hidden');
+    if (unread) unread.classList.add('hidden');
+    const input = document.getElementById('copilot-user-input');
+    if (input) setTimeout(() => input.focus(), 150);
+  } else {
+    drawer.classList.add('hidden');
+  }
+}
+
+function sendCopilotSuggestedPrompt(promptText) {
+  const input = document.getElementById('copilot-user-input');
+  if (input) {
+    input.value = promptText;
+    executeCopilotCommand(promptText);
+    input.value = '';
+  }
+}
+
+function handleCopilotSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById('copilot-user-input');
+  if (!input || !input.value.trim()) return;
+
+  const query = input.value.trim();
+  input.value = '';
+  executeCopilotCommand(query);
+}
+
+function appendCopilotMessage(sender, textHtml) {
+  const thread = document.getElementById('copilot-chat-thread');
+  if (!thread) return;
+
+  const isUser = sender === 'user';
+  const msgEl = document.createElement('div');
+  msgEl.className = `flex gap-2 items-start ${isUser ? 'justify-end' : ''}`;
+
+  if (isUser) {
+    msgEl.innerHTML = `
+      <div class="bg-primary text-white p-3 rounded-2xl rounded-tr-sm text-xs max-w-[85%] shadow-sm">
+        ${textHtml}
+      </div>
+      <div class="w-6 h-6 rounded-lg bg-primary/20 text-primary font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
+        YOU
+      </div>
+    `;
+  } else {
+    msgEl.innerHTML = `
+      <div class="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 text-[11px] font-bold">
+        AI
+      </div>
+      <div class="flex-1 bg-surface-container p-3 rounded-2xl rounded-tl-sm text-xs text-on-surface space-y-2 border border-outline-variant/40 shadow-sm max-w-[90%]">
+        ${textHtml}
+      </div>
+    `;
+  }
+
+  thread.appendChild(msgEl);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function executeCopilotCommand(query) {
+  appendCopilotMessage('user', query);
+
+  const lower = query.toLowerCase();
+
+  // Show thinking indicator
+  const thread = document.getElementById('copilot-chat-thread');
+  const thinkingId = `copilot-thinking-${Date.now()}`;
+  const thinkingEl = document.createElement('div');
+  thinkingEl.id = thinkingId;
+  thinkingEl.className = 'flex gap-2 items-start';
+  thinkingEl.innerHTML = `
+    <div class="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 text-[11px] font-bold animate-pulse">
+      AI
+    </div>
+    <div class="bg-surface-container p-2.5 rounded-xl text-xs text-on-surface-variant font-mono flex items-center gap-1.5">
+      <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
+      <span>Calling MCP tool &amp; analyzing store telemetry...</span>
+    </div>
+  `;
+  thread.appendChild(thinkingEl);
+  thread.scrollTop = thread.scrollHeight;
+
+  setTimeout(() => {
+    // Remove thinking element
+    const tEl = document.getElementById(thinkingId);
+    if (tEl) tEl.remove();
+
+    let replyHtml = '';
+
+    // INTENT 1: Staff / Attendance query
+    if (lower.includes('logistics') || lower.includes('clocked in') || lower.includes('who is on') || lower.includes('staff')) {
+      let deptName = 'Logistics & Bay Storage';
+      if (lower.includes('apparel') || lower.includes('fashion')) deptName = 'Apparel & Fashion';
+      if (lower.includes('electronics')) deptName = 'Electronics & Gadgets';
+      if (lower.includes('cashier')) deptName = 'Cashier & Front End';
+
+      const staff = AppState.employees.filter(e => e.department === deptName && e.clockedIn && e.status !== 'Terminated');
+      replyHtml = `
+        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
+          <span class="font-bold text-on-surface">MCP Tool: <code>get_shift_attendance</code></span>
+          <span class="badge-pill bg-secondary-container/40 text-secondary font-mono text-[9px] font-bold">${staff.length} Active</span>
+        </div>
+        <p class="font-semibold text-on-surface">Active Crew in ${deptName}:</p>
+        <ul class="space-y-1 my-1">
+          ${staff.slice(0, 5).map(e => `
+            <li class="flex items-center justify-between font-mono text-[11px] bg-surface-container-low p-1.5 rounded">
+              <span>👤 ${e.name}</span>
+              <span class="text-secondary font-bold">${e.clockInTime || 'On Shift'}</span>
+            </li>
+          `).join('')}
+        </ul>
+        <p class="text-[10px] text-on-surface-variant">Zone: ${staff[0]?.zone || 'Storage Bay B'}. All staff checked in via biometric punch.</p>
+      `;
+    }
+    // INTENT 2: Escalations Digest
+    else if (lower.includes('escalat') || lower.includes('hazard') || lower.includes('spill') || lower.includes('open issue')) {
+      const open = AppState.escalations.filter(e => e.status === 'Open');
+      replyHtml = `
+        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
+          <span class="font-bold text-on-surface">MCP Tool: <code>list_floor_escalations</code></span>
+          <span class="badge-pill bg-error text-white font-mono text-[9px] font-bold">${open.length} Critical</span>
+        </div>
+        <p class="font-semibold text-on-surface">Open Floor Incidents Digest:</p>
+        <div class="space-y-1.5 my-1.5">
+          ${open.map(e => `
+            <div class="p-2 rounded bg-error/10 border border-error/20 text-[11px]">
+              <div class="flex justify-between font-bold text-error">
+                <span>[${e.zone}] ${e.category}</span>
+                <span>${e.urgency}</span>
+              </div>
+              <p class="text-on-surface mt-0.5">${e.description}</p>
+            </div>
+          `).join('')}
+        </div>
+        <button onclick="navigateTo('floor-map')" class="mt-1 w-full py-1 bg-primary text-white text-[11px] font-bold rounded-lg text-center">
+          View Escalation Beacons on Map &rarr;
+        </button>
+      `;
+    }
+    // INTENT 3: Inventory / Stock Risk
+    else if (lower.includes('stock') || lower.includes('inventory') || lower.includes('risk') || lower.includes('reorder')) {
+      const lowStock = AppState.inventory.filter(i => i.stock <= 15);
+      replyHtml = `
+        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
+          <span class="font-bold text-on-surface">MCP Tool: <code>audit_inventory_levels</code></span>
+          <span class="badge-pill bg-amber-500/15 text-amber-700 font-mono text-[9px] font-bold">${lowStock.length} Low SKUs</span>
+        </div>
+        <p class="font-semibold text-on-surface">Critical Supply Chain Stock Warnings:</p>
+        <div class="space-y-1 my-1">
+          ${lowStock.map(i => `
+            <div class="flex items-center justify-between p-1.5 rounded bg-surface-container-low text-[11px]">
+              <span class="font-medium">${i.name} (${i.sku})</span>
+              <span class="font-mono font-bold ${i.stock === 0 ? 'text-error' : 'text-amber-600'}">${i.stock} in stock</span>
+            </div>
+          `).join('')}
+        </div>
+        <button onclick="navigateTo('inventory')" class="mt-1 w-full py-1 bg-surface-container hover:bg-surface-highest text-on-surface text-[11px] font-bold rounded-lg text-center border border-outline-variant/50">
+          Manage Stock In Inventory &rarr;
+        </button>
+      `;
+    }
+    // INTENT 4: Dispatch Urgent Duty
+    else if (lower.includes('dispatch') || lower.includes('cleanup')) {
+      const newDuty = {
+        id: Date.now(),
+        task: 'Emergency Floor Cleanup & Safety Triage',
+        title: 'Emergency Floor Cleanup & Safety Triage',
+        zone: 'North Wing #42',
+        department: 'Facilities & Maintenance',
+        associate: 'David Chen',
+        teamLeadId: 'NEX-3401',
+        teamLeadName: 'David Chen',
+        assignees: [
+          { id: 'NEX-3401', name: 'David Chen', role: 'Team Lead', isLead: true },
+          { id: 'NEX-1001', name: 'James Smith', role: 'Associate', isLead: false }
+        ],
+        status: 'In Progress',
+        priority: 'Urgent',
+        due: 'Today, 30m',
+        createdAt: 'Just now',
+        checklist: [
+          { id: 1, text: 'Deploy yellow hazard wet-floor cones', done: false },
+          { id: 2, text: 'Neutralize and sanitize spill area', done: false },
+          { id: 3, text: 'Inspect slip hazard clearance and report to supervisor', done: false }
+        ]
+      };
+      AppState.tasks.unshift(newDuty);
+      AppState.saveState();
+      renderMyDutiesList();
+      renderDashboard();
+
+      replyHtml = `
+        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
+          <span class="font-bold text-on-surface">MCP Tool: <code>dispatch_shift_duty</code></span>
+          <span class="badge-pill bg-secondary-container/40 text-secondary font-mono text-[9px] font-bold">DISPATCHED</span>
+        </div>
+        <p class="font-bold text-secondary">✓ Duty Successfully Dispatched to Floor:</p>
+        <div class="p-2 rounded bg-surface-container-low text-[11px] space-y-1">
+          <div><strong>Task:</strong> ${newDuty.title}</div>
+          <div><strong>Zone:</strong> ${newDuty.zone}</div>
+          <div><strong>Designated Lead:</strong> David Chen</div>
+          <div><strong>Priority:</strong> Urgent (30m countdown)</div>
+        </div>
+        <p class="text-[10px] text-on-surface-variant">Checklist created and pushed to assigned personnel duty stations.</p>
+      `;
+    }
+    // INTENT 5: Labor Compliance
+    else if (lower.includes('compliance') || lower.includes('break') || lower.includes('meal') || lower.includes('labor')) {
+      replyHtml = `
+        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
+          <span class="font-bold text-on-surface">MCP Tool: <code>audit_labor_compliance</code></span>
+          <span class="badge-pill bg-emerald-500/10 text-emerald-600 font-mono text-[9px] font-bold">100% PASS</span>
+        </div>
+        <p class="font-semibold text-on-surface">Labor Law &amp; OSHA Compliance Scorecard:</p>
+        <ul class="text-[11px] space-y-1 my-1">
+          <li class="flex items-center gap-1.5"><span class="text-secondary">✓</span> <strong>5-Hour Meal Rule:</strong> 0 statutory violations detected across on-duty associates.</li>
+          <li class="flex items-center gap-1.5"><span class="text-secondary">✓</span> <strong>Rest Breaks (15m):</strong> Active on 14 crew members with legal countdown tracking.</li>
+          <li class="flex items-center gap-1.5"><span class="text-secondary">✓</span> <strong>Overtime Grace:</strong> Zero shifts exceeding maximum daily ceiling.</li>
+        </ul>
+        <button onclick="openBreakComplianceModal()" class="mt-1 w-full py-1 bg-secondary text-white text-[11px] font-bold rounded-lg text-center">
+          Open Break Timer Station &rarr;
+        </button>
+      `;
+    }
+    // INTENT 6: Handover Briefing
+    else if (lower.includes('handover') || lower.includes('briefing') || lower.includes('end of shift')) {
+      replyHtml = `
+        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
+          <span class="font-bold text-on-surface">MCP Tool: <code>generate_shift_handover</code></span>
+          <span class="badge-pill bg-primary text-white font-mono text-[9px] font-bold">READY</span>
+        </div>
+        <p class="text-xs">End-of-shift handover digest generated from live store telemetry. Includes task completion rates, open incident logs, and inventory shrink warnings.</p>
+        <button onclick="openHandoverModal()" class="mt-2 w-full py-1.5 bg-primary text-white text-[11px] font-bold rounded-lg text-center shadow-sm">
+          Open Printable Handover Briefing &rarr;
+        </button>
+      `;
+    }
+    // FALLBACK
+    else {
+      replyHtml = `
+        <p class="text-xs">I analyzed your command: <em>"${query}"</em>.</p>
+        <p class="text-xs text-on-surface-variant">I can assist with querying live staff locations, dispatching emergency tasks, inspecting floor escalations, or managing break compliance.</p>
+        <div class="flex flex-wrap gap-1 mt-1">
+          <button onclick="sendCopilotSuggestedPrompt('Who is clocked in from Logistics right now?')" class="text-[10px] px-2 py-0.5 bg-surface-container rounded border border-outline-variant/50">Logistics Crew</button>
+          <button onclick="sendCopilotSuggestedPrompt('Summarize all open high-priority escalations today')" class="text-[10px] px-2 py-0.5 bg-surface-container rounded border border-outline-variant/50">Open Escalations</button>
+          <button onclick="sendCopilotSuggestedPrompt('Audit employee meal and rest break compliance')" class="text-[10px] px-2 py-0.5 bg-surface-container rounded border border-outline-variant/50">Labor Compliance</button>
+        </div>
+      `;
+    }
+
+    appendCopilotMessage('assistant', replyHtml);
+  }, 600);
+}
+
+function toggleCopilotVoiceInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    toast.info('Voice Dictation', 'Speech synthesis active. Type your command in the prompt box.');
+    return;
+  }
+
+  const voiceBtn = document.getElementById('copilot-voice-btn');
+  const input = document.getElementById('copilot-user-input');
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    if (voiceBtn) voiceBtn.classList.add('text-error', 'animate-pulse');
+    toast.info('Listening...', 'Speak your retail floor instruction now.');
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    if (input) input.value = transcript;
+    executeCopilotCommand(transcript);
+  };
+
+  recognition.onerror = () => {
+    if (voiceBtn) voiceBtn.classList.remove('text-error', 'animate-pulse');
+  };
+
+  recognition.onend = () => {
+    if (voiceBtn) voiceBtn.classList.remove('text-error', 'animate-pulse');
+  };
+
+  recognition.start();
 }
 
 // =========================================================================

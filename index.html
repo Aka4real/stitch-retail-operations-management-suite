@@ -109,6 +109,11 @@
         <span class="material-symbols-outlined fill text-[20px]">dashboard</span>
         <span>Dashboard</span>
       </a>
+      <a href="#floor-map" data-view="floor-map" onclick="navigateTo('floor-map')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">map</span>
+        <span class="flex-1">Floor Digital Twin</span>
+        <span class="font-mono text-[9px] bg-primary/10 text-primary dark:text-primary-fixed px-1.5 py-0.2 rounded-full font-bold">MAP</span>
+      </a>
       <a href="#inventory" data-view="inventory" onclick="navigateTo('inventory')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">inventory_2</span>
         <span>Inventory &amp; Stock</span>
@@ -120,6 +125,11 @@
       <a href="#hr" data-view="hr" onclick="navigateTo('hr')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">badge</span>
         <span>HR &amp; Team Roster</span>
+      </a>
+      <a href="#schedule" data-view="schedule" onclick="navigateTo('schedule')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+        <span class="flex-1">Shift Schedule</span>
+        <span class="font-mono text-[9px] bg-secondary-container text-on-secondary-container px-1.5 py-0.2 rounded-full font-bold">SWAP</span>
       </a>
       <a href="#onboarding" data-view="onboarding" onclick="navigateTo('onboarding')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">punch_clock</span>
@@ -192,6 +202,23 @@
         <button id="header-btn-new-task" onclick="navigateTo('assign-task')" class="hidden sm:flex items-center gap-1.5 bg-secondary-container text-on-secondary-container px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-secondary-fixed-dim transition-colors shadow-sm active:scale-95">
           <span class="material-symbols-outlined text-[16px]">task_alt</span>
           <span>New Task</span>
+        </button>
+
+        <!-- Barcode / QR Mobile Scanner Button -->
+        <button onclick="openScannerModal()" id="header-scanner-btn" class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative" title="Barcode & QR Scanner (SKU / Staff Badge Audit)">
+          <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+        </button>
+
+        <!-- Break & Labor Compliance Timer Pill -->
+        <button onclick="openBreakComplianceModal()" id="header-break-btn" class="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium border border-outline-variant/60 bg-surface-container hover:border-primary transition-all text-on-surface" title="Break & Labor Law Compliance Timer">
+          <span id="header-break-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span id="header-break-text">Labor: Compliant</span>
+        </button>
+
+        <!-- End-of-Shift Handover Briefing Button -->
+        <button onclick="openHandoverModal()" id="header-handover-btn" class="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border border-outline-variant/60 bg-surface-container hover:border-primary transition-all text-on-surface" title="Shift Handover Briefing Generator">
+          <span class="material-symbols-outlined text-[16px] text-primary">assignment_turned_in</span>
+          <span>Handover</span>
         </button>
 
         <!-- Command Palette Icon -->
@@ -1623,8 +1650,8 @@
               <span>Escalate Floor Issue</span>
             </button>
 
-            <!-- Digital Punch Clock Card -->
-            <div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container border border-outline-variant/60 shadow-sm">
+            <!-- Digital Punch Clock Card & Compliance Tracker -->
+            <div class="flex flex-wrap items-center gap-4 p-4 rounded-2xl bg-surface-container border border-outline-variant/60 shadow-sm">
               <div>
                 <span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider block font-semibold">Station Time</span>
                 <div id="live-digital-clock" class="font-mono text-lg font-bold text-primary dark:text-primary-fixed mt-0.5">--:--:-- --</div>
@@ -1634,6 +1661,24 @@
                 </div>
               </div>
 
+              <!-- Break / Meal Controls -->
+              <div class="border-l border-outline-variant/60 pl-3 flex flex-col gap-1.5">
+                <div class="flex items-center gap-1.5">
+                  <button id="btn-start-rest-break" onclick="startBreak('rest', 15)" class="px-2.5 py-1.5 bg-surface hover:bg-surface-lowest text-on-surface border border-outline-variant/60 rounded-lg text-[11px] font-semibold transition-all active:scale-95 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px] text-primary">coffee</span>
+                    <span>15m Rest</span>
+                  </button>
+                  <button id="btn-start-meal-break" onclick="startBreak('meal', 30)" class="px-2.5 py-1.5 bg-surface hover:bg-surface-lowest text-on-surface border border-outline-variant/60 rounded-lg text-[11px] font-semibold transition-all active:scale-95 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px] text-amber-500">restaurant</span>
+                    <span>30m Meal</span>
+                  </button>
+                </div>
+                <div id="punch-break-ticker" class="hidden font-mono text-[10px] text-primary dark:text-primary-fixed font-bold bg-primary/10 px-2 py-0.5 rounded text-center">
+                  Break Timer: <span id="punch-break-timer-val">15:00</span>
+                </div>
+              </div>
+
+              <!-- Clock In / Clock Out Main Action -->
               <div class="border-l border-outline-variant/60 pl-4 flex flex-col gap-1">
                 <button id="punch-clock-btn" onclick="handleStaffClockToggle()" class="px-4 py-2 bg-error text-white font-bold text-xs rounded-xl hover:bg-error/90 transition-all shadow-sm active:scale-95 flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[18px]">logout</span>
@@ -1762,6 +1807,446 @@
         </section>
 
       </div>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW: INTERACTIVE STORE FLOOR MAP (DIGITAL TWIN & HEATMAP) -->
+    <!-- ========================================================================= -->
+    <main id="view-floor-map" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 hidden">
+      
+      <!-- Header & Map Controls -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="badge-pill bg-primary/10 text-primary dark:text-primary-fixed text-xs font-bold">Digital Twin</span>
+            <span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span>
+            <span class="text-xs font-mono text-secondary font-bold">LIVE TELEMETRY</span>
+          </div>
+          <h2 class="font-headline text-2xl md:text-3xl font-bold text-primary dark:text-primary-fixed mt-1">
+            Store Floor Map &amp; Digital Twin
+          </h2>
+          <p class="text-xs text-on-surface-variant font-medium">Real-time store spatial blueprint, staff pins, duty pulse halos, and escalation radar beacons.</p>
+        </div>
+
+        <!-- Controls Toolbar -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- View Mode Toggle -->
+          <div class="flex items-center bg-surface-container p-1 rounded-xl border border-outline-variant/60">
+            <button id="btn-map-mode-blueprint" onclick="setFloorMapMode('blueprint')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-primary text-white shadow-sm flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">apartment</span>
+              <span>Blueprint</span>
+            </button>
+            <button id="btn-map-mode-heatmap" onclick="setFloorMapMode('heatmap')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-on-surface-variant hover:text-on-surface flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">local_fire_department</span>
+              <span>Heatmap</span>
+            </button>
+          </div>
+
+          <!-- Zone Quick Filter -->
+          <select id="map-zone-filter" onchange="filterFloorMapZone(this.value)" class="px-3 py-2 text-xs bg-surface-container border border-outline-variant/60 rounded-xl text-on-surface focus:ring-1 focus:ring-primary focus:outline-none">
+            <option value="all">All Store Zones (10)</option>
+            <option value="North Wing #42">North Wing #42 (Fashion / Beauty)</option>
+            <option value="South Atrium">South Atrium (Electronics)</option>
+            <option value="Storage Bay B">Storage Bay B (Logistics Dock)</option>
+            <option value="Central Mall HQ">Central Mall HQ (Customer Care)</option>
+            <option value="West Gallery">West Gallery (Security Hub)</option>
+            <option value="Service Core A">Service Core A (Facilities / HVAC)</option>
+            <option value="Food Court Deck">Food Court Deck (F&amp;B)</option>
+            <option value="East Promenade">East Promenade (Cash Wrap)</option>
+            <option value="Upper Mezzanine">Upper Mezzanine (Home Goods)</option>
+          </select>
+
+          <!-- Refresh Telemetry Button -->
+          <button onclick="refreshFloorMapTelemetry()" class="p-2 bg-surface-container hover:bg-surface-highest rounded-xl text-on-surface-variant transition-colors border border-outline-variant/60" title="Refresh Live Staff Telemetry">
+            <span class="material-symbols-outlined text-[18px]">sync</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Telemetry KPI Overview Strip -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="nexus-card p-4 flex items-center justify-between">
+          <div>
+            <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Active Floor Crew</span>
+            <div id="map-kpi-staff-count" class="font-headline text-2xl font-black text-primary dark:text-primary-fixed mt-0.5">134</div>
+            <span class="text-[10px] text-secondary font-semibold font-mono">67% on shift</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">group</span>
+          </div>
+        </div>
+
+        <div class="nexus-card p-4 flex items-center justify-between">
+          <div>
+            <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Active Duty Halos</span>
+            <div id="map-kpi-duty-count" class="font-headline text-2xl font-black text-secondary mt-0.5">6 Zones</div>
+            <span class="text-[10px] text-on-surface-variant font-mono">Multi-staff tasks active</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-secondary-container/40 text-secondary flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">radar</span>
+          </div>
+        </div>
+
+        <div class="nexus-card p-4 flex items-center justify-between">
+          <div>
+            <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Escalation Beacons</span>
+            <div id="map-kpi-escalation-count" class="font-headline text-2xl font-black text-error mt-0.5">2 Open</div>
+            <span class="text-[10px] text-error font-semibold font-mono">Pulsing radar ping</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-error-container/40 text-error flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px] animate-pulse">emergency</span>
+          </div>
+        </div>
+
+        <div class="nexus-card p-4 flex items-center justify-between">
+          <div>
+            <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Floor Coverage Index</span>
+            <div id="map-kpi-coverage" class="font-headline text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">97.4%</div>
+            <span class="text-[10px] text-on-surface-variant font-mono">All 10 zones manned</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">verified</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Map & Zone Inspector Grid -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        
+        <!-- Interactive Architectural SVG Store Canvas (8 cols) -->
+        <div class="xl:col-span-8 nexus-card p-5 flex flex-col justify-between overflow-hidden relative">
+          <!-- Layer Legend Pill -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 border-b border-outline-variant/40">
+            <div class="flex items-center gap-3 text-xs">
+              <span class="font-mono font-semibold text-on-surface-variant uppercase text-[10px]">Map Layers:</span>
+              <span class="flex items-center gap-1 text-[11px] font-medium text-on-surface">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Staff Pins
+              </span>
+              <span class="flex items-center gap-1 text-[11px] font-medium text-on-surface">
+                <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span> Duty Halos
+              </span>
+              <span class="flex items-center gap-1 text-[11px] font-medium text-on-surface">
+                <span class="w-2.5 h-2.5 rounded-full bg-error animate-ping"></span> Escalation Beacons
+              </span>
+            </div>
+            <div class="text-[11px] font-mono text-outline">Click any zone to inspect personnel &amp; duties</div>
+          </div>
+
+          <!-- SVG Canvas Container -->
+          <div class="w-full relative bg-surface-container-lowest dark:bg-[#071322] rounded-2xl border border-outline-variant/40 overflow-hidden shadow-inner flex items-center justify-center p-3">
+            <svg id="retail-floor-svg" viewBox="0 0 1000 680" class="w-full h-auto select-none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <!-- Grid background pattern -->
+                <pattern id="mall-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="0.5" class="text-outline-variant/30" />
+                </pattern>
+                <!-- Duty Halo Filter -->
+                <filter id="glow-duty" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="6" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+                <!-- Escalation Beacon Glow -->
+                <filter id="glow-alert" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="8" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+
+              <!-- Blueprint Grid Background -->
+              <rect width="1000" height="680" fill="url(#mall-grid)" />
+
+              <!-- Walkway / Hallways Corridor Outline -->
+              <path d="M 310 30 L 330 30 L 330 650 L 310 650 Z M 670 30 L 690 30 L 690 650 L 670 650 Z M 30 270 L 970 270 L 970 290 L 30 290 Z M 30 550 L 970 550 L 970 570 L 30 570 Z" fill="currentColor" class="text-outline-variant/20" />
+
+              <!-- Zone 1: North Wing #42 (Apparel & Beauty) -->
+              <g id="svg-zone-north-wing" onclick="selectFloorMapZone('North Wing #42')" class="cursor-pointer group transition-all">
+                <rect x="40" y="30" width="260" height="230" rx="16" class="zone-rect fill-surface-container/60 group-hover:fill-primary/15 stroke-outline-variant/60 group-hover:stroke-primary transition-all stroke-[1.5]" />
+                <rect x="48" y="38" width="130" height="24" rx="6" class="fill-primary/10" />
+                <text x="56" y="54" class="font-headline font-bold text-[12px] fill-primary dark:fill-primary-fixed">North Wing #42</text>
+                <text x="56" y="80" class="font-body text-[10px] fill-on-surface-variant font-medium">Apparel, Fashion &amp; Beauty</text>
+                
+                <!-- Dynamic Content injected by JS: staff pin, duty halo, beacon -->
+                <g id="svg-zone-content-north-wing"></g>
+              </g>
+
+              <!-- Zone 2: Storage Bay B (Logistics Dock) -->
+              <g id="svg-zone-storage-bay" onclick="selectFloorMapZone('Storage Bay B')" class="cursor-pointer group transition-all">
+                <rect x="340" y="30" width="320" height="230" rx="16" class="zone-rect fill-surface-container/60 group-hover:fill-primary/15 stroke-outline-variant/60 group-hover:stroke-primary transition-all stroke-[1.5]" />
+                <rect x="348" y="38" width="125" height="24" rx="6" class="fill-amber-500/10" />
+                <text x="356" y="54" class="font-headline font-bold text-[12px] fill-amber-700 dark:fill-amber-400">Storage Bay B</text>
+                <text x="356" y="80" class="font-body text-[10px] fill-on-surface-variant font-medium">Receiving Dock &amp; Warehousing</text>
+                
+                <g id="svg-zone-content-storage-bay"></g>
+              </g>
+
+              <!-- Zone 3: West Gallery (Security Hub) -->
+              <g id="svg-zone-west-gallery" onclick="selectFloorMapZone('West Gallery')" class="cursor-pointer group transition-all">
+                <rect x="700" y="30" width="260" height="230" rx="16" class="zone-rect fill-surface-container/60 group-hover:fill-primary/15 stroke-outline-variant/60 group-hover:stroke-primary transition-all stroke-[1.5]" />
+                <rect x="708" y="38" width="120" height="24" rx="6" class="fill-blue-500/10" />
+                <text x="716" y="54" class="font-headline font-bold text-[12px] fill-blue-700 dark:fill-blue-400">West Gallery</text>
+                <text x="716" y="80" class="font-body text-[10px] fill-on-surface-variant font-medium">Loss Prevention &amp; Safety Hub</text>
+                
+                <g id="svg-zone-content-west-gallery"></g>
+              </g>
+
+              <!-- Zone 4: East Promenade (Cashier / Front End) -->
+              <g id="svg-zone-east-promenade" onclick="selectFloorMapZone('East Promenade')" class="cursor-pointer group transition-all">
+                <rect x="40" y="300" width="260" height="240" rx="16" class="zone-rect fill-surface-container/60 group-hover:fill-primary/15 stroke-outline-variant/60 group-hover:stroke-primary transition-all stroke-[1.5]" />
+                <rect x="48" y="308" width="135" height="24" rx="6" class="fill-emerald-500/10" />
+                <text x="56" y="324" class="font-headline font-bold text-[12px] fill-emerald-700 dark:fill-emerald-400">East Promenade</text>
+                <text x="56" y="350" class="font-body text-[10px] fill-on-surface-variant font-medium">Cashier Wrap &amp; POS Registers</text>
+                
+                <g id="svg-zone-content-east-promenade"></g>
+              </g>
+
+              <!-- Zone 5: Central Mall HQ & Concierge -->
+              <g id="svg-zone-central-hq" onclick="selectFloorMapZone('Central Mall HQ')" class="cursor-pointer group transition-all">
+                <rect x="340" y="300" width="320" height="240" rx="16" class="zone-rect fill-surface-container/60 group-hover:fill-primary/15 stroke-outline-variant/60 group-hover:stroke-primary transition-all stroke-[1.5]" />
+                <rect x="348" y="308" width="135" height="24" rx="6" class="fill-purple-500/10" />
+                <text x="356" y="324" class="font-headline font-bold text-[12px] fill-purple-700 dark:fill-purple-400">Central Mall HQ</text>
+                <text x="356" y="350" class="font-body text-[10px] fill-on-surface-variant font-medium">Executive Suite &amp; Guest Services</text>
+                
+                <g id="svg-zone-content-central-hq"></g>
+              </g>
+
+              <!-- Zone 6: South Atrium (Electronics & Gadgets) -->
+              <g id="svg-zone-south-atrium" onclick="selectFloorMapZone('South Atrium')" class="cursor-pointer group transition-all">
+                <rect x="700" y="300" width="260" height="240" rx="16" class="zone-rect fill-surface-container/60 group-hover:fill-primary/15 stroke-outline-variant/60 group-hover:stroke-primary transition-all stroke-[1.5]" />
+                <rect x="708" y="308" width="125" height="24" rx="6" class="fill-cyan-500/10" />
+                <text x="716" y="324" class="font-headline font-bold text-[12px] fill-cyan-700 dark:fill-cyan-400">South Atrium</text>
+                <text x="716" y="350" class="font-body text-[10px] fill-on-surface-variant font-medium">Electronics &amp; Hardware Tech</text>
+                
+                <g id="svg-zone-content-south-atrium"></g>
+              </g>
+
+              <!-- Zone 7: Service Core A (Facilities & Maintenance) -->
+              <g id="svg-zone-service-core" onclick="selectFloorMapZone('Service Core A')" class="cursor-pointer group transition-all">
+                <rect x="40" y="580" width="260" height="85" rx="14" class="zone-rect fill-surface-container/60 group-hover:fill-primary/15 stroke-outline-variant/60 group-hover:stroke-primary transition-all stroke-[1.5]" />
+                <text x="56" y="612" class="font-headline font-bold text-[12px] fill-primary dark:fill-primary-fixed">Service Core A</text>
+                <text x="56" y="632" class="font-body text-[10px] fill-on-surface-variant font-medium">HVAC, Electrical &amp; Janitorial</text>
+                
+                <g id="svg-zone-content-service-core"></g>
+              </g>
+
+              <!-- Zone 8: Food Court Deck (F&B) -->
+              <g id="svg-zone-food-court" onclick="selectFloorMapZone('Food Court Deck')" class="cursor-pointer group transition-all">
+                <rect x="340" y="580" width="320" height="85" rx="14" class="zone-rect fill-surface-container/60 group-hover:fill-primary/15 stroke-outline-variant/60 group-hover:stroke-primary transition-all stroke-[1.5]" />
+                <text x="356" y="612" class="font-headline font-bold text-[12px] fill-orange-700 dark:fill-orange-400">Food Court Deck</text>
+                <text x="356" y="632" class="font-body text-[10px] fill-on-surface-variant font-medium">Concessions &amp; Beverage Kitchens</text>
+                
+                <g id="svg-zone-content-food-court"></g>
+              </g>
+
+              <!-- Zone 9: Upper Mezzanine (Home Goods) -->
+              <g id="svg-zone-upper-mezzanine" onclick="selectFloorMapZone('Upper Mezzanine')" class="cursor-pointer group transition-all">
+                <rect x="700" y="580" width="260" height="85" rx="14" class="zone-rect fill-surface-container/60 group-hover:fill-primary/15 stroke-outline-variant/60 group-hover:stroke-primary transition-all stroke-[1.5]" />
+                <text x="716" y="612" class="font-headline font-bold text-[12px] fill-indigo-700 dark:fill-indigo-400">Upper Mezzanine</text>
+                <text x="716" y="632" class="font-body text-[10px] fill-on-surface-variant font-medium">Home Goods &amp; Furniture Showroom</text>
+                
+                <g id="svg-zone-content-upper-mezzanine"></g>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Zone Telemetry Inspector Panel (4 cols) -->
+        <div class="xl:col-span-4 nexus-card p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-outline-variant/40">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[18px]">domain</span>
+                </div>
+                <div>
+                  <h3 id="inspector-zone-title" class="font-headline text-base font-bold text-on-surface">North Wing #42</h3>
+                  <p id="inspector-zone-subtitle" class="text-[11px] text-on-surface-variant font-mono">Zone Telemetry &bull; Level 1 Main</p>
+                </div>
+              </div>
+              <span id="inspector-zone-badge" class="badge-pill bg-secondary-container/40 text-secondary font-mono text-[10px] font-bold">18 On Duty</span>
+            </div>
+
+            <!-- Active Shift Associates in Zone -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-primary">group</span>
+                  <span>Stationed Personnel</span>
+                </span>
+                <span id="inspector-staff-count" class="text-[10px] font-mono text-on-surface-variant">18 staff clocked in</span>
+              </div>
+              <div id="inspector-staff-list" class="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+                <!-- Populated by app.js: updateZoneInspector() -->
+              </div>
+            </div>
+
+            <!-- Active Multi-Staff Duties in Zone -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-secondary">assignment</span>
+                  <span>Active Zone Duties</span>
+                </span>
+                <span id="inspector-duties-count" class="text-[10px] font-mono text-on-surface-variant">1 active task</span>
+              </div>
+              <div id="inspector-duties-list" class="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                <!-- Populated by app.js: updateZoneInspector() -->
+              </div>
+            </div>
+
+            <!-- Active Escalations in Zone -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-error">emergency</span>
+                  <span>Unresolved Floor Incidents</span>
+                </span>
+                <span id="inspector-escalations-count" class="text-[10px] font-mono text-error font-bold">0 critical</span>
+              </div>
+              <div id="inspector-escalations-list" class="space-y-2 max-h-[120px] overflow-y-auto pr-1">
+                <!-- Populated by app.js: updateZoneInspector() -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Dispatch Actions -->
+          <div class="mt-4 pt-3 border-t border-outline-variant/40 flex items-center gap-2">
+            <button onclick="openRapidDispatchForZone()" class="flex-1 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 shadow-sm active:scale-95 flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">add_task</span>
+              <span>Dispatch Task</span>
+            </button>
+            <button onclick="openModal('modal-escalate-issue')" class="py-2 px-3 bg-error/10 text-error hover:bg-error/20 border border-error/20 text-xs font-bold rounded-xl active:scale-95 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">warning</span>
+              <span>Hazard</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW: SHIFT SCHEDULE & PEER-TO-PEER SWAPPING BOARD -->
+    <!-- ========================================================================= -->
+    <main id="view-schedule" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 hidden">
+      
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="badge-pill bg-secondary-container text-on-secondary-container text-xs font-bold">Workforce Roster</span>
+            <span class="text-xs font-mono text-on-surface-variant">WEEK 43 &bull; OCT 2026</span>
+          </div>
+          <h2 class="font-headline text-2xl md:text-3xl font-bold text-primary dark:text-primary-fixed mt-1">
+            Weekly Schedule &amp; Shift Swapping
+          </h2>
+          <p class="text-xs text-on-surface-variant font-medium">Department shift matrix, peer-to-peer shift trading, and manager 1-click approvals.</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button onclick="openShiftSwapModal()" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 shadow-md active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
+            <span>Request Shift Swap</span>
+          </button>
+          <select id="schedule-dept-filter" onchange="renderScheduleMatrix()" class="px-3 py-2 text-xs bg-surface-container border border-outline-variant/60 rounded-xl text-on-surface focus:ring-1 focus:ring-primary focus:outline-none">
+            <option value="all">All Departments (10)</option>
+            <option value="Apparel & Fashion">Apparel &amp; Fashion</option>
+            <option value="Electronics & Gadgets">Electronics &amp; Gadgets</option>
+            <option value="Logistics & Bay Storage">Logistics &amp; Bay Storage</option>
+            <option value="Cashier & Front End">Cashier &amp; Front End</option>
+            <option value="Customer Relations">Customer Relations</option>
+            <option value="Security & Safety">Security &amp; Safety</option>
+            <option value="Facilities & Maintenance">Facilities &amp; Maintenance</option>
+            <option value="Food & Beverage">Food &amp; Beverage</option>
+            <option value="Beauty & Cosmetics">Beauty &amp; Cosmetics</option>
+            <option value="Home Goods & Furniture">Home Goods &amp; Furniture</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Schedule KPI Overview -->
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="nexus-card p-4 flex items-center justify-between">
+          <div>
+            <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Total Shifts This Week</span>
+            <div id="sched-kpi-total" class="font-headline text-2xl font-black text-primary dark:text-primary-fixed mt-0.5">350 Shifts</div>
+            <span class="text-[10px] text-secondary font-semibold font-mono">100% Stationed</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">calendar_month</span>
+          </div>
+        </div>
+
+        <div class="nexus-card p-4 flex items-center justify-between">
+          <div>
+            <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Pending Swap Requests</span>
+            <div id="sched-kpi-pending-swaps" class="font-headline text-2xl font-black text-amber-600 dark:text-amber-400 mt-0.5">2 Pending</div>
+            <span class="text-[10px] text-on-surface-variant font-mono">Requires authorization</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+          </div>
+        </div>
+
+        <div class="nexus-card p-4 flex items-center justify-between">
+          <div>
+            <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Shift Fill Reliability</span>
+            <div class="font-headline text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">99.4%</div>
+            <span class="text-[10px] text-on-surface-variant font-mono">Zero unstaffed blocks</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">check_circle</span>
+          </div>
+        </div>
+
+        <div class="nexus-card p-4 flex items-center justify-between">
+          <div>
+            <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Labor Law Compliance</span>
+            <div class="font-headline text-2xl font-black text-secondary mt-0.5">100% Pass</div>
+            <span class="text-[10px] text-secondary font-mono font-semibold">Meal &amp; rest mandated</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-secondary-container/40 text-secondary flex items-center justify-center">
+            <span class="material-symbols-outlined text-[20px]">gavel</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pending Swaps Tray & Manager Approvals -->
+      <section class="nexus-card p-5">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant/40">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-500 text-[20px]">swap_calls</span>
+            <h3 class="font-headline text-base font-bold text-on-surface">Peer Shift Swaps &amp; Manager Approvals Tray</h3>
+          </div>
+          <span id="sched-swaps-badge" class="badge-pill bg-amber-500/15 text-amber-700 dark:text-amber-400 text-[11px] font-bold">2 Awaiting Action</span>
+        </div>
+        <div id="sched-swaps-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Populated by app.js: renderShiftSwapsTray() -->
+        </div>
+      </section>
+
+      <!-- 7-Day Visual Schedule Grid (Monday - Sunday) -->
+      <section class="nexus-card p-5 flex flex-col gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-outline-variant/40">
+          <div>
+            <h3 class="font-headline text-base font-bold text-on-surface">Weekly Roster Matrix</h3>
+            <p class="text-xs text-on-surface-variant">Shifts: Morning (08:00–16:00), Midday (12:00–20:00), Evening Close (14:00–22:00)</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs font-mono text-on-surface-variant">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-secondary"></span> Morning</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-primary"></span> Midday</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-amber-500"></span> Evening</span>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <div id="schedule-matrix-grid" class="min-w-[900px] grid grid-cols-7 gap-3">
+            <!-- 7 columns (Mon-Sun) populated by app.js: renderScheduleMatrix() -->
+          </div>
+        </div>
+      </section>
 
     </main>
 
@@ -2544,6 +3029,364 @@
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: MOBILE FLOOR AUDIT & BARCODE / QR SCANNER -->
+  <!-- ========================================================================= -->
+  <div id="modal-barcode-scanner" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">qr_code_scanner</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">Barcode &amp; QR Audit Scanner</h3>
+            <p class="text-xs text-on-surface-variant">Live optical camera feed &bull; SKU inventory audit &bull; Staff badge punch</p>
+          </div>
+        </div>
+        <button onclick="closeScannerModal()" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Live Viewfinder Box -->
+      <div class="relative w-full h-52 bg-slate-950 rounded-xl overflow-hidden border-2 border-dashed border-outline-variant/50 flex items-center justify-center mb-4">
+        <video id="scanner-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+        <canvas id="scanner-canvas" class="hidden"></canvas>
+        
+        <!-- Animated Laser Scanning Line -->
+        <div id="scanner-laser-line" class="scanner-laser"></div>
+
+        <!-- Viewfinder Reticle Graphic -->
+        <div class="absolute inset-4 border border-white/20 rounded-lg pointer-events-none flex flex-col justify-between p-2">
+          <div class="flex justify-between">
+            <span class="w-4 h-4 border-t-2 border-l-2 border-secondary"></span>
+            <span class="w-4 h-4 border-t-2 border-r-2 border-secondary"></span>
+          </div>
+          <div class="text-center font-mono text-[11px] text-white/80 bg-black/50 px-2 py-1 rounded self-center">
+            Align barcode or QR badge inside frame
+          </div>
+          <div class="flex justify-between">
+            <span class="w-4 h-4 border-b-2 border-l-2 border-secondary"></span>
+            <span class="w-4 h-4 border-b-2 border-r-2 border-secondary"></span>
+          </div>
+        </div>
+
+        <!-- Fallback / Camera Inactive Banner -->
+        <div id="scanner-cam-placeholder" class="text-center p-4 text-white/70">
+          <span class="material-symbols-outlined text-3xl mb-1 text-secondary">videocam</span>
+          <p class="text-xs font-medium">Camera active / simulated optical reader ready</p>
+          <button onclick="toggleScannerCamera()" class="mt-2 px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-mono">
+            Toggle Video Feed
+          </button>
+        </div>
+      </div>
+
+      <!-- Rapid SKU / Badge Quick Picker Chips -->
+      <div class="mb-4">
+        <span class="block text-[11px] font-semibold text-on-surface-variant mb-1.5 uppercase font-mono">Simulate Scan From Floor / Shelf:</span>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" onclick="simulateBarcodeScan('EL-OM-27')" class="px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-lg font-mono text-[11px] text-on-surface border border-outline-variant/60 transition-colors">
+            📦 EL-OM-27 (Monitor)
+          </button>
+          <button type="button" onclick="simulateBarcodeScan('FA-WP-L')" class="px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-lg font-mono text-[11px] text-on-surface border border-outline-variant/60 transition-colors">
+            📦 FA-WP-L (Parka)
+          </button>
+          <button type="button" onclick="simulateBarcodeScan('EL-WE-P')" class="px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-lg font-mono text-[11px] text-on-surface border border-outline-variant/60 transition-colors">
+            📦 EL-WE-P (Earbuds)
+          </button>
+          <button type="button" onclick="simulateBarcodeScan('HG-EC-B')" class="px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-lg font-mono text-[11px] text-on-surface border border-outline-variant/60 transition-colors">
+            📦 HG-EC-B (Chair)
+          </button>
+          <button type="button" onclick="simulateBarcodeScan('NEX-0001')" class="px-2.5 py-1 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg font-mono text-[11px] font-bold border border-primary/20 transition-colors">
+            🪪 NEX-0001 (Admin)
+          </button>
+          <button type="button" onclick="simulateBarcodeScan('NEX-8492')" class="px-2.5 py-1 bg-secondary-container/40 hover:bg-secondary-container text-secondary rounded-lg font-mono text-[11px] font-bold border border-secondary/30 transition-colors">
+            🪪 NEX-8492 (Elena)
+          </button>
+        </div>
+      </div>
+
+      <!-- Manual Barcode Input Bar -->
+      <form onsubmit="handleManualBarcodeSubmit(event)" class="flex gap-2 mb-4">
+        <input id="scanner-manual-input" type="text" placeholder="Or enter SKU or Employee ID (e.g. EL-OM-27, NEX-1044)..." class="flex-1 px-3 py-2 text-xs font-mono bg-surface dark:bg-surface-low border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        <button type="submit" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 shadow-sm flex items-center gap-1">
+          <span class="material-symbols-outlined text-[16px]">search</span>
+          <span>Decode</span>
+        </button>
+      </form>
+
+      <!-- Decoded Scan Result Card (Dynamic) -->
+      <div id="scanner-result-container" class="hidden p-4 rounded-xl bg-surface-container border border-outline-variant/60">
+        <!-- Populated by app.js: displayScanResult() -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: REQUEST PEER-TO-PEER SHIFT SWAP -->
+  <!-- ========================================================================= -->
+  <div id="modal-shift-swap" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-secondary-container/50 text-secondary flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">swap_horiz</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">Request Shift Trade</h3>
+            <p class="text-xs text-on-surface-variant">Trade assigned shift hours with a qualified coworker</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-shift-swap')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleShiftSwapSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Your Shift to Trade *</label>
+          <select id="swap-shift-select" name="swap_shift" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-mono">
+            <option value="Wednesday - Morning (08:00 - 16:00)">Wednesday Oct 25 - Morning (08:00 - 16:00)</option>
+            <option value="Friday - Afternoon (12:00 - 20:00)">Friday Oct 27 - Afternoon (12:00 - 20:00)</option>
+            <option value="Saturday - Evening Close (14:00 - 22:00)">Saturday Oct 28 - Evening Close (14:00 - 22:00)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Target Department Coworker *</label>
+          <select id="swap-coworker-select" name="swap_coworker" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+            <!-- Populated dynamically based on user's department -->
+          </select>
+          <p class="text-[10px] text-on-surface-variant mt-1">Only active coworkers in your department are eligible for trade.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Trade Reason *</label>
+          <select name="swap_reason" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+            <option>Personal &amp; Family Obligation</option>
+            <option>Medical / Healthcare Appointment</option>
+            <option>Academic / Exam Conflict</option>
+            <option>Commute / Transit Disruption</option>
+            <option>Mutual Shift Balance</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Additional Notes</label>
+          <textarea name="swap_notes" rows="2" placeholder="Provide any details for your coworker and manager..." class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"></textarea>
+        </div>
+
+        <div class="p-3 bg-secondary-container/20 border border-secondary/20 rounded-xl text-[11px] text-on-surface-variant space-y-1">
+          <p class="font-bold text-secondary flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px]">verified</span>
+            <span>Two-Step Approval Protocol</span>
+          </p>
+          <p>Once you submit, your selected coworker receives a trade invitation. When accepted, it lands in the Shift Manager's tray for final 1-click authorization.</p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-shift-swap')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 shadow-md active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">send</span>
+            <span>Send Swap Request</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: END-OF-SHIFT HANDOVER BRIEFING REPORT -->
+  <!-- ========================================================================= -->
+  <div id="modal-handover-report" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-3xl max-h-[90vh] flex flex-col bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-outline-variant/50 no-print">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">assignment_turned_in</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">End-of-Shift Handover Briefing</h3>
+            <p class="text-xs text-on-surface-variant">Automated digest for incoming shift leads &bull; Live operational telemetry</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="printHandoverReport()" class="px-3 py-1.5 bg-surface-container hover:bg-surface-highest text-on-surface border border-outline-variant/60 rounded-xl text-xs font-bold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">print</span>
+            <span>Print / PDF</span>
+          </button>
+          <button onclick="closeModal('modal-handover-report')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Printable Area -->
+      <div id="handover-printable-area" class="flex-1 overflow-y-auto space-y-4 pr-1">
+        <!-- Generated by app.js: populateHandoverReport() -->
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="pt-4 mt-2 border-t border-outline-variant/40 flex items-center justify-between no-print">
+        <span class="text-[11px] text-on-surface-variant font-mono">Nexus Handover Protocol v2.4 &bull; Logged to Audit Trail</span>
+        <button onclick="signAndCloseHandover()" class="px-5 py-2 bg-secondary text-white text-xs font-bold rounded-xl hover:bg-secondary/90 shadow-md active:scale-95 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">check_circle</span>
+          <span>Sign Off &amp; Archive Handover</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: BREAK & LABOR LAW COMPLIANCE TIMER -->
+  <!-- ========================================================================= -->
+  <div id="modal-break-compliance" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">timer</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">Break &amp; Meal Compliance</h3>
+            <p class="text-xs text-on-surface-variant">OSHA &amp; retail labor law compliance tracker</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-break-compliance')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Status Header -->
+      <div class="p-4 rounded-xl bg-surface-container border border-outline-variant/50 mb-4 text-center">
+        <span class="text-[10px] uppercase font-mono tracking-wider text-on-surface-variant font-semibold">Current State</span>
+        <div id="break-modal-status-text" class="font-headline text-lg font-bold text-secondary mt-0.5">Active on Retail Floor</div>
+        <div id="break-modal-shift-duration" class="text-xs font-mono text-on-surface-variant mt-1">Shift Duration: 4h 15m</div>
+      </div>
+
+      <!-- Big Countdown Timer Display -->
+      <div class="p-6 rounded-2xl bg-surface-container-lowest dark:bg-[#071322] border border-outline-variant/50 mb-4 text-center">
+        <span class="text-[10px] font-mono text-outline uppercase block mb-1">Time Remaining</span>
+        <div id="break-modal-timer-display" class="font-mono text-5xl font-black text-primary dark:text-primary-fixed tracking-tight">15:00</div>
+        <div id="break-modal-progress-bar" class="w-full bg-surface-container rounded-full h-2 mt-4 overflow-hidden">
+          <div id="break-modal-progress-fill" class="bg-secondary h-full rounded-full transition-all duration-300" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Break Action Buttons -->
+      <div class="space-y-2 mb-4">
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btn-modal-15-rest" onclick="startBreak('rest', 15)" class="p-3 bg-surface hover:bg-surface-container border border-outline-variant/60 rounded-xl text-left transition-all active:scale-95">
+            <div class="flex items-center gap-1.5 font-bold text-xs text-on-surface">
+              <span class="material-symbols-outlined text-primary text-[18px]">coffee</span>
+              <span>15m Rest Break</span>
+            </div>
+            <p class="text-[10px] text-on-surface-variant mt-1">Mandated paid rest period</p>
+          </button>
+
+          <button id="btn-modal-30-meal" onclick="startBreak('meal', 30)" class="p-3 bg-surface hover:bg-surface-container border border-outline-variant/60 rounded-xl text-left transition-all active:scale-95">
+            <div class="flex items-center gap-1.5 font-bold text-xs text-on-surface">
+              <span class="material-symbols-outlined text-amber-500 text-[18px]">restaurant</span>
+              <span>30m Meal Break</span>
+            </div>
+            <p class="text-[10px] text-on-surface-variant mt-1">Unpaid meal compliance</p>
+          </button>
+        </div>
+
+        <button id="btn-modal-end-break" onclick="endBreak()" class="w-full py-2.5 bg-primary text-white font-bold text-xs rounded-xl hover:bg-primary/90 shadow-md active:scale-95 flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px]">play_arrow</span>
+          <span>End Break &bull; Return to Floor</span>
+        </button>
+      </div>
+
+      <!-- Labor Law Compliance Box -->
+      <div class="p-3 rounded-xl bg-surface-container border border-outline-variant/40 text-[11px] space-y-1">
+        <div class="flex items-center justify-between font-bold text-on-surface">
+          <span class="flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px] text-secondary">gavel</span>
+            <span>Labor Law 5-Hour Meal Rule:</span>
+          </span>
+          <span id="break-law-badge" class="badge-pill bg-emerald-500/10 text-emerald-600 font-mono text-[10px] font-bold">COMPLIANT</span>
+        </div>
+        <p class="text-on-surface-variant text-[10px]">Continuous shifts exceeding 5.0 hours require a minimum 30-minute off-duty meal punch to avoid statutory overtime penalties.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- FLOATING AI OPERATIONS COPILOT (BUILT ON MCP TOOLS) -->
+  <!-- ========================================================================= -->
+  <!-- Floating Launcher Button -->
+  <button id="floating-copilot-btn" onclick="toggleCopilot()" class="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-slate-800 text-white shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/20 group" title="Nexus AI Operations Copilot (Ctrl+/ or Click)">
+    <span class="material-symbols-outlined text-[26px] group-hover:rotate-12 transition-transform">smart_toy</span>
+    <span id="copilot-unread-dot" class="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-secondary border-2 border-white animate-pulse"></span>
+  </button>
+
+  <!-- Slide-Up Copilot Window -->
+  <div id="copilot-drawer" class="copilot-floating-drawer hidden">
+    <!-- Header -->
+    <div class="p-3.5 bg-surface-container-low border-b border-outline-variant/50 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">smart_toy</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h3 class="font-headline text-xs font-bold text-on-surface">AI Operations Copilot</h3>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          </div>
+          <p class="text-[10px] text-on-surface-variant font-mono">Retail MCP Tools Active &bull; Voice Enabled</p>
+        </div>
+      </div>
+      <button onclick="toggleCopilot()" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface" title="Minimize Copilot">
+        <span class="material-symbols-outlined text-[18px]">expand_more</span>
+      </button>
+    </div>
+
+    <!-- Suggested Quick Action Chips -->
+    <div class="p-2.5 bg-surface-container-lowest/60 border-b border-outline-variant/30 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+      <button onclick="sendCopilotSuggestedPrompt('Who is clocked in from Logistics right now?')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
+        📋 Logistics on shift?
+      </button>
+      <button onclick="sendCopilotSuggestedPrompt('Summarize all open high-priority escalations today')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
+        🚨 Open escalations
+      </button>
+      <button onclick="sendCopilotSuggestedPrompt('What items have critical low stock risk?')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
+        📦 Stock risk report
+      </button>
+      <button onclick="sendCopilotSuggestedPrompt('Audit employee meal and rest break compliance')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
+        ⚖️ Labor compliance
+      </button>
+    </div>
+
+    <!-- Messages Thread -->
+    <div id="copilot-chat-thread" class="flex-1 overflow-y-auto p-3 space-y-3">
+      <!-- Welcome message -->
+      <div class="flex gap-2 items-start">
+        <div class="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 text-[12px] font-bold">
+          AI
+        </div>
+        <div class="flex-1 bg-surface-container p-3 rounded-2xl rounded-tl-sm text-xs text-on-surface space-y-1 border border-outline-variant/40">
+          <p class="font-bold">Greetings, Store Director.</p>
+          <p>I am your <strong>Nexus Retail Operations Copilot</strong>. I can query real-time staff locations, dispatch emergency cleanups, audit break compliance, and analyze store inventory through our MCP tools.</p>
+          <p class="text-[10px] text-outline pt-1">Try saying: <em>"Who is on duty in Logistics?"</em> or <em>"Dispatch urgent spill cleanup in North Wing."</em></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input Form -->
+    <form onsubmit="handleCopilotSubmit(event)" class="p-3 border-t border-outline-variant/40 bg-surface-container-low flex items-center gap-2">
+      <button type="button" id="copilot-voice-btn" onclick="toggleCopilotVoiceInput()" class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors" title="Voice Dictation">
+        <span class="material-symbols-outlined text-[20px]">mic</span>
+      </button>
+      <input id="copilot-user-input" type="text" placeholder="Ask Copilot or dictate floor command..." class="flex-1 px-3 py-2 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+      <button type="submit" class="p-2 bg-primary text-white rounded-xl hover:bg-primary/90 shadow-sm active:scale-95 transition-all">
+        <span class="material-symbols-outlined text-[18px]">send</span>
+      </button>
+    </form>
   </div>
 
   <!-- Sonner Toast Container -->
