@@ -201,7 +201,60 @@
         approved_at: new Date().toISOString()
       }).eq('id', dutyId);
     }
+
+    updateUI() {
+      const dot = document.getElementById('supabase-status-dot');
+      const text = document.getElementById('supabase-status-text');
+      const modalStatus = document.getElementById('modal-supabase-status');
+      const keyInput = document.getElementById('input-supabase-anon-key');
+
+      if (keyInput && this.anonKey && !keyInput.value) {
+        keyInput.value = this.anonKey;
+      }
+
+      if (this.isConnected) {
+        if (dot) { dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse'; }
+        if (text) { text.textContent = 'Supabase: Live'; }
+        if (modalStatus) {
+          modalStatus.className = 'font-mono font-bold text-emerald-600 flex items-center gap-1.5 mt-0.5';
+          modalStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Connected (PostgreSQL Live)';
+        }
+      } else {
+        if (dot) { dot.className = 'w-2 h-2 rounded-full bg-amber-500'; }
+        if (text) { text.textContent = 'Supabase: Local'; }
+        if (modalStatus) {
+          modalStatus.className = 'font-mono font-bold text-secondary flex items-center gap-1.5 mt-0.5';
+          modalStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> Local Mock Mode (Offline Fallback)';
+        }
+      }
+    }
   }
 
   window.RetailSupabase = new RetailSupabaseService();
+
+  window.handleSaveSupabaseKey = async function() {
+    const input = document.getElementById('input-supabase-anon-key');
+    if (!input || !input.value.trim()) {
+      toast.warning('Key Required', 'Please enter your Supabase project public anon key.');
+      return;
+    }
+    window.RetailSupabase.setAnonKey(input.value.trim());
+    toast.info('Connecting...', 'Testing connection to msxzgkfgboeqxjajqtmh.supabase.co');
+    setTimeout(async () => {
+      const success = await window.RetailSupabase.syncAllFromDB();
+      if (success) {
+        toast.success('Supabase Connected!', 'Live PostgreSQL database synchronized.');
+        closeModal('modal-supabase-sync');
+      } else {
+        toast.info('Key Saved', 'Key recorded. Make sure migration is applied in your Supabase SQL editor.');
+      }
+      window.RetailSupabase.updateUI();
+    }, 500);
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      if (window.RetailSupabase) window.RetailSupabase.updateUI();
+    }, 100);
+  });
 })(window);

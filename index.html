@@ -199,6 +199,12 @@
           <span class="material-symbols-outlined text-[20px]">search</span>
         </button>
 
+        <!-- Supabase Database Sync Pill -->
+        <button onclick="openModal('modal-supabase-sync')" id="header-supabase-btn" class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium border border-outline-variant/60 bg-surface-container hover:border-primary transition-all text-on-surface" title="Supabase Database Status & Sync">
+          <span id="supabase-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="supabase-status-text">Supabase: msxzgkfg</span>
+        </button>
+
         <!-- Notification Center Bell -->
         <div class="relative">
           <button id="header-notifications-btn" onclick="toggleNotificationDropdown()" class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative" title="Operational Alerts & Dispatches">
@@ -2202,6 +2208,68 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: SUPABASE DATABASE SYNC & CREDENTIALS -->
+  <!-- ========================================================================= -->
+  <div id="modal-supabase-sync" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary text-2xl">database</span>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">Supabase Cloud Database</h3>
+            <p class="text-xs text-on-surface-variant font-mono">Project Ref: msxzgkfgboeqxjajqtmh</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-supabase-sync')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="p-3.5 rounded-xl bg-surface-container border border-outline-variant/40 flex items-center justify-between">
+          <div>
+            <span class="text-on-surface-variant block font-semibold">PostgreSQL Connection</span>
+            <span id="modal-supabase-status" class="font-mono font-bold text-secondary flex items-center gap-1.5 mt-0.5">
+              <span class="w-2 h-2 rounded-full bg-secondary inline-block"></span> Local Mock Mode (Offline Fallback)
+            </span>
+          </div>
+          <a href="https://supabase.com/dashboard/project/msxzgkfgboeqxjajqtmh" target="_blank" class="px-3 py-1.5 bg-surface text-primary border border-outline-variant/60 rounded-xl hover:bg-surface-container font-medium flex items-center gap-1 text-[11px]">
+            <span>Dashboard</span>
+            <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+          </a>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-on-surface mb-1">Project Public Anon Key</label>
+          <div class="relative">
+            <input id="input-supabase-anon-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl font-mono focus:ring-1 focus:ring-primary focus:outline-none"/>
+            <button type="button" onclick="const el = document.getElementById('input-supabase-anon-key'); el.type = el.type === 'password' ? 'text' : 'password';" class="absolute right-2.5 top-2 text-outline hover:text-on-surface">
+              <span class="material-symbols-outlined text-[16px]">visibility</span>
+            </button>
+          </div>
+          <p class="text-[11px] text-on-surface-variant mt-1">Found in your Supabase Dashboard: <strong>Project Settings → API → Project API keys → anon (public)</strong></p>
+        </div>
+
+        <div class="p-3 bg-secondary-container/20 rounded-xl border border-secondary/20 text-on-surface-variant space-y-1">
+          <p class="font-bold text-secondary">Migration &amp; Seed Files Ready:</p>
+          <ul class="list-disc pl-4 space-y-0.5 text-[11px]">
+            <li><code>supabase/migrations/20260910000001_retail_ops_schema.sql</code> (11 Tables &amp; RLS)</li>
+            <li><code>supabase/seed.sql</code> (200 Mock Employees &amp; 10 Departments)</li>
+          </ul>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-supabase-sync')" class="px-4 py-2 text-on-surface-variant hover:bg-surface-container rounded-xl">Close</button>
+          <button type="button" onclick="handleSaveSupabaseKey()" class="px-5 py-2 bg-secondary text-white font-bold rounded-xl hover:bg-secondary/90 shadow-sm active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">sync</span>
+            <span>Connect &amp; Sync</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
