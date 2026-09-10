@@ -226,6 +226,12 @@
           <span class="material-symbols-outlined text-[20px]">search</span>
         </button>
 
+        <!-- Real-Time SSE Telemetry Stream Indicator -->
+        <div id="header-sse-live-pill" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border border-outline-variant/60 bg-surface-container transition-all" title="Server-Sent Events (SSE) Live Stream: Instant Beacons & MCP Telemetry">
+          <span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+          <span class="text-[10px] font-bold text-secondary">LIVE STREAM</span>
+        </div>
+
         <!-- Supabase Database Sync Pill -->
         <button onclick="openModal('modal-supabase-sync')" id="header-supabase-btn" class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium border border-outline-variant/60 bg-surface-container hover:border-primary transition-all text-on-surface" title="Supabase Database Status & Sync">
           <span id="supabase-status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>

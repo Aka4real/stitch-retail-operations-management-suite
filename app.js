@@ -4938,6 +4938,178 @@ function toggleCopilotVoiceInput() {
 }
 
 // =========================================================================
+// 21. REAL-TIME SERVER-SENT EVENTS (SSE) TELEMETRY & MCP BROADCAST STREAM
+// =========================================================================
+
+function initTelemetrySSE() {
+  const streamUrl = '/api/telemetry/stream?api_key=nexus_dev_open_key';
+  let eventSource = null;
+  let retryTimeout = null;
+
+  function connect() {
+    try {
+      if (eventSource) {
+        eventSource.close();
+      }
+
+      eventSource = new EventSource(streamUrl);
+
+      eventSource.addEventListener('open', () => {
+        console.log('[SSE] Real-time telemetry stream connected to Nexus Retail Hub.');
+        updateSSEStatusBadge(true);
+      });
+
+      eventSource.addEventListener('initial_sync', (e) => {
+        try {
+          const syncData = JSON.parse(e.data);
+          console.log('[SSE] Telemetry stream synchronized:', syncData);
+          updateSSEStatusBadge(true);
+        } catch (err) {}
+      });
+
+      // 1. Live Escalation / Hazard Beacon Triggered
+      eventSource.addEventListener('incident_created', (e) => {
+        try {
+          const esc = JSON.parse(e.data);
+          if (!AppState.escalations.some(x => x.id === esc.id)) {
+            AppState.escalations.unshift({
+              id: esc.id,
+              category: esc.category,
+              zone: esc.zone,
+              urgency: esc.urgency || 'Urgent',
+              description: esc.desc || esc.description,
+              status: 'Open',
+              senderName: 'AI Agent / MCP Telemetry',
+              senderId: 'NEX-MCP',
+              timestamp: 'Just now'
+            });
+            AppState.saveState();
+
+            // Store notification
+            AppState.addNotification({
+              title: `Floor Hazard: ${esc.category}`,
+              desc: `${esc.desc || esc.description} at ${esc.zone} (${esc.urgency})`,
+              type: 'escalation',
+              priority: 'Urgent'
+            });
+
+            toast.error(`Floor Hazard Alert: ${esc.category}`, `${esc.zone} - ${esc.desc || esc.description}`);
+
+            // Live re-render if user is on relevant views
+            renderFloorMap();
+            if (AppState.currentView === 'management') renderManagerEscalations();
+            if (AppState.currentView === 'onboarding') renderMyEscalationsList();
+          }
+        } catch (err) {
+          console.error('[SSE] Error processing incident_created:', err);
+        }
+      });
+
+      // 2. Incident Cleared / Beacon Resolved
+      eventSource.addEventListener('incident_resolved', (e) => {
+        try {
+          const esc = JSON.parse(e.data);
+          const found = AppState.escalations.find(x => x.id === esc.id);
+          if (found) {
+            found.status = 'Resolved';
+            AppState.saveState();
+            toast.success(`Incident Cleared: ${esc.category}`, `Zone ${esc.zone} cleared and secured.`);
+            renderFloorMap();
+            if (AppState.currentView === 'management') renderManagerEscalations();
+          }
+        } catch (err) {}
+      });
+
+      // 3. Multi-Staff Shift Duty Dispatched via AI / MCP
+      eventSource.addEventListener('duty_dispatched', (e) => {
+        try {
+          const duty = JSON.parse(e.data);
+          if (!AppState.tasks.some(t => t.id === duty.id)) {
+            AppState.tasks.unshift({
+              id: duty.id,
+              task: duty.title,
+              title: duty.title,
+              zone: duty.zone,
+              department: duty.department || 'Facilities & Maintenance',
+              associate: duty.lead || 'David Chen',
+              teamLeadName: duty.lead || 'David Chen',
+              status: 'In Progress',
+              priority: duty.priority || 'High',
+              due: 'Today, End of Shift',
+              createdAt: 'Just now',
+              checklist: duty.checklist || []
+            });
+            AppState.saveState();
+            toast.success('Duty Dispatched via AI MCP', `${duty.title} → ${duty.zone}`);
+            renderFloorMap();
+            if (AppState.currentView === 'dashboard') renderDashboard();
+          }
+        } catch (err) {}
+      });
+
+      // 4. Duty Approval / Sign-off
+      eventSource.addEventListener('duty_signed_off', (e) => {
+        try {
+          const duty = JSON.parse(e.data);
+          const t = AppState.tasks.find(x => x.id === duty.id);
+          if (t) {
+            t.status = duty.status;
+            AppState.saveState();
+            renderFloorMap();
+            if (AppState.currentView === 'management') renderManagerApprovals();
+          }
+        } catch (err) {}
+      });
+
+      // 5. Dock Pallet Stock Adjustment
+      eventSource.addEventListener('stock_adjusted', (e) => {
+        try {
+          const item = JSON.parse(e.data);
+          const inv = AppState.inventory.find(x => x.sku === item.sku);
+          if (inv) {
+            inv.stock = item.updated_stock;
+            AppState.saveState();
+            toast.info('Stock Level Synchronized', `${item.sku}: ${item.updated_stock} units available (${item.name})`);
+            if (AppState.currentView === 'inventory') renderInventory();
+          }
+        } catch (err) {}
+      });
+
+      eventSource.onerror = () => {
+        updateSSEStatusBadge(false);
+        if (eventSource) eventSource.close();
+        clearTimeout(retryTimeout);
+        retryTimeout = setTimeout(connect, 4000);
+      };
+
+    } catch (e) {
+      console.warn('[SSE] EventSource unavailable or network blocked:', e);
+    }
+  }
+
+  function updateSSEStatusBadge(isConnected) {
+    const badge = document.getElementById('header-sse-live-pill');
+    if (badge) {
+      if (isConnected) {
+        badge.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+          <span class="text-[10px] font-bold text-secondary font-mono">LIVE STREAM</span>
+        `;
+        badge.className = 'hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border border-secondary/40 bg-secondary/10 transition-all';
+      } else {
+        badge.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-outline"></span>
+          <span class="text-[10px] font-mono text-outline">STREAM OFFLINE</span>
+        `;
+        badge.className = 'hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border border-outline-variant/60 bg-surface-container opacity-60 transition-all';
+      }
+    }
+  }
+
+  connect();
+}
+
+// =========================================================================
 // 18. INITIALIZATION
 // =========================================================================
 
@@ -4946,6 +5118,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCommandPalette();
   updateSessionUI();
   startLiveDigitalClock();
+  initTelemetrySSE();
 
   // Handle URL Hash navigation
   const initialHash = window.location.hash.replace('#', '') || 'dashboard';

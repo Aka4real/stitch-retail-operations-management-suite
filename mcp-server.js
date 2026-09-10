@@ -8,6 +8,10 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const EventEmitter = require('events');
+
+// Real-time Event Broadcaster for SSE and webhooks
+const mcpEvents = new EventEmitter();
 
 // Store Mock Data & State Engine
 const STORE_DATA_PATH = path.join(__dirname, 'mcp-state.json');
@@ -274,6 +278,7 @@ async function handleToolCall(name, args) {
 
       state.duties.unshift(newDuty);
       saveState(state);
+      mcpEvents.emit('event', { type: 'duty_dispatched', data: newDuty });
       return {
         status: 'SUCCESS',
         message: `Duty "${args.title}" dispatched to ${args.zone}.`,
@@ -299,6 +304,7 @@ async function handleToolCall(name, args) {
         duty.rework_notes = args.notes || 'Rework required by manager';
       }
       saveState(state);
+      mcpEvents.emit('event', { type: 'duty_signed_off', data: duty });
       return { status: 'SUCCESS', duty: duty };
     }
 
@@ -336,6 +342,7 @@ async function handleToolCall(name, args) {
       };
       state.escalations.unshift(esc);
       saveState(state);
+      mcpEvents.emit('event', { type: 'incident_created', data: esc });
       return { status: 'ALERT_BEACON_TRIGGERED', escalation: esc };
     }
 
@@ -345,6 +352,7 @@ async function handleToolCall(name, args) {
       esc.status = 'Resolved';
       esc.resolved_at = new Date().toISOString();
       saveState(state);
+      mcpEvents.emit('event', { type: 'incident_resolved', data: esc });
       return { status: 'RESOLVED', escalation: esc };
     }
 
@@ -367,6 +375,7 @@ async function handleToolCall(name, args) {
       const oldStock = item.stock;
       item.stock = Math.max(0, item.stock + args.delta_units);
       saveState(state);
+      mcpEvents.emit('event', { type: 'stock_adjusted', data: { sku: item.sku, name: item.name, previous_stock: oldStock, updated_stock: item.stock, bay_location: item.bay } });
       return {
         status: 'SUCCESS',
         sku: item.sku,
@@ -524,5 +533,8 @@ if (require.main === module) {
 module.exports = {
   MCP_TOOLS,
   handleToolCall,
-  processMessage
+  processMessage,
+  mcpEvents,
+  loadState,
+  state
 };
