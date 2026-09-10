@@ -54,7 +54,7 @@
       // 1. Shift Attendance & Clock-In Alert Channel
       const attendanceChannel = this.client
         .channel('realtime-attendance')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'attendance_logs' }, (payload) => {
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'nexus_attendance_logs' }, (payload) => {
           console.log('[Realtime] Attendance event received:', payload.new);
           if (typeof renderShiftAttendanceFeed === 'function') renderShiftAttendanceFeed();
           if (typeof updateNotificationBadge === 'function') updateNotificationBadge();
@@ -65,7 +65,7 @@
       // 2. Duties & Approvals Channel
       const dutiesChannel = this.client
         .channel('realtime-duties')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'duties' }, (payload) => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'nexus_duties' }, (payload) => {
           console.log('[Realtime] Duty event received:', payload);
           if (typeof renderMyDutiesList === 'function') renderMyDutiesList();
           if (typeof renderPendingApprovals === 'function') renderPendingApprovals();
@@ -77,7 +77,7 @@
       // 3. Floor Escalations Channel
       const escalationsChannel = this.client
         .channel('realtime-escalations')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'escalations' }, (payload) => {
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'nexus_escalations' }, (payload) => {
           console.log('[Realtime] Escalation event received:', payload);
           if (typeof renderMyEscalationsList === 'function') renderMyEscalationsList();
           if (typeof renderManagerEscalations === 'function') renderManagerEscalations();
@@ -105,7 +105,7 @@
     async fetchEmployees() {
       if (!this.isConnected) return null;
       const { data, error } = await this.client
-        .from('employees')
+        .from('nexus_employees')
         .select('*')
         .order('rank', { ascending: false });
 
@@ -144,12 +144,12 @@
     async fetchDuties() {
       if (!this.isConnected) return null;
       const { data, error } = await this.client
-        .from('duties')
+        .from('nexus_duties')
         .select(`
           id, title, zone, priority, status, due_at, rework_notes,
           team_lead:team_lead_id (employee_code, name),
-          assignees:duty_assignees (employee:employee_id (employee_code, name, role_title), is_team_lead),
-          checklists:duty_checklists (id, task_label, is_completed, sort_order)
+          assignees:nexus_duty_assignees (employee:employee_id (employee_code, name, role_title), is_team_lead),
+          checklists:nexus_duty_checklists (id, task_label, is_completed, sort_order)
         `)
         .order('created_at', { ascending: false });
 
@@ -163,7 +163,7 @@
     async fetchEscalations() {
       if (!this.isConnected) return null;
       const { data, error } = await this.client
-        .from('escalations')
+        .from('nexus_escalations')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -180,15 +180,15 @@
       const emp = AppState.employees.find(e => e.id === employeeCode);
       if (!emp || !emp.dbId) return;
 
-      // 1. Insert into attendance_logs (triggers notification alert in DB)
-      await this.client.from('attendance_logs').insert({
+      // 1. Insert into nexus_attendance_logs (triggers notification alert in DB)
+      await this.client.from('nexus_attendance_logs').insert({
         employee_id: emp.dbId,
         action_type: actionType,
         zone: zone || emp.zone || 'North Wing #42'
       });
 
       // 2. Update employee clocked status
-      await this.client.from('employees').update({
+      await this.client.from('nexus_employees').update({
         is_clocked_in: actionType === 'CLOCK_IN',
         clock_in_time: actionType === 'CLOCK_IN' ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null
       }).eq('id', emp.dbId);
@@ -196,7 +196,7 @@
 
     async submitDutySignOff(dutyId, managerCode) {
       if (!this.isConnected) return;
-      await this.client.from('duties').update({
+      await this.client.from('nexus_duties').update({
         status: 'Approved',
         approved_at: new Date().toISOString()
       }).eq('id', dutyId);
