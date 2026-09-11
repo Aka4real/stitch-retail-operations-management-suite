@@ -2,7 +2,6 @@
   "name": "nexus-retail-operations-management-suite",
   "version": "1.0.0",
   "description": "Nexus Retail Management Suite - High performance corporate retail operations dashboard and store intelligence.",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",

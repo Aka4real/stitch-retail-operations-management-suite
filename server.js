@@ -108,16 +108,20 @@ function broadcastSSE(eventType, data) {
   }
 }
 
-// Keep-alive heartbeat every 20 seconds to maintain persistent connections
-setInterval(() => {
-  for (const client of sseClients) {
-    try {
-      client.write(':ping\n\n');
-    } catch (e) {
-      sseClients.delete(client);
+// Keep-alive heartbeat every 20 seconds to maintain persistent connections (local server only)
+let sseHeartbeat = null;
+if (require.main === module) {
+  sseHeartbeat = setInterval(() => {
+    for (const client of sseClients) {
+      try {
+        client.write(':ping\n\n');
+      } catch (e) {
+        sseClients.delete(client);
+      }
     }
-  }
-}, 20000);
+  }, 20000);
+  if (sseHeartbeat && sseHeartbeat.unref) sseHeartbeat.unref();
+}
 
 // Hook into mcp-server events for automated real-time broadcasts
 try {
@@ -144,7 +148,8 @@ function requestHandler(req, res) {
     return;
   }
 
-  const urlPath = req.url.split('?')[0];
+  const rawUrl = req.headers['x-forwarded-uri'] || req.url;
+  const urlPath = rawUrl.split('?')[0];
 
   // API Route 1: GET /api/auth/verify - Verify API Key & Scopes
   if (urlPath === '/api/auth/verify' && req.method === 'GET') {
@@ -356,20 +361,24 @@ function findAvailablePort(startPort, callback) {
   tester.listen(startPort, '0.0.0.0');
 }
 
-findAvailablePort(DEFAULT_PORT, (err, port) => {
-  if (err) {
-    console.error('Failed to find free port:', err);
-    process.exit(1);
-  }
+if (require.main === module) {
+  findAvailablePort(DEFAULT_PORT, (err, port) => {
+    if (err) {
+      console.error('Failed to find free port:', err);
+      process.exit(1);
+    }
 
-  const server = http.createServer(requestHandler);
-  server.listen(port, '0.0.0.0', () => {
-    console.log(`\n======================================================`);
-    console.log(` Nexus Retail Operations Management Suite`);
-    console.log(` Server running at: http://localhost:${port}`);
-    console.log(` MCP Endpoint: http://localhost:${port}/api/mcp`);
-    console.log(` SSE Stream:   http://localhost:${port}/api/telemetry/stream`);
-    console.log(` Tool Catalog: http://localhost:${port}/api/mcp/tools`);
-    console.log(`======================================================\n`);
+    const server = http.createServer(requestHandler);
+    server.listen(port, '0.0.0.0', () => {
+      console.log(`\n======================================================`);
+      console.log(` Nexus Retail Operations Management Suite`);
+      console.log(` Server running at: http://localhost:${port}`);
+      console.log(` MCP Endpoint: http://localhost:${port}/api/mcp`);
+      console.log(` SSE Stream:   http://localhost:${port}/api/telemetry/stream`);
+      console.log(` Tool Catalog: http://localhost:${port}/api/mcp/tools`);
+      console.log(`======================================================\n`);
+    });
   });
-});
+}
+
+module.exports = requestHandler;

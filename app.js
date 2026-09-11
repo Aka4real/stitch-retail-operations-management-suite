@@ -533,35 +533,53 @@ const AppState = {
   })(),
 
   // Security & Permission Audit Log
-  auditLogs: JSON.parse(localStorage.getItem('nexus_audit_logs')) || [
-    { timestamp: 'Today, 08:30 AM', actor: 'Marcus Vance (Admin)', action: 'System Initialization', target: 'Security Cluster', detail: 'All RBAC policy enforcement active' },
-    { timestamp: 'Today, 09:15 AM', actor: 'Marcus Vance (Admin)', action: 'Permission Granted', target: 'Elena Rodriguez', detail: 'Added "assign_tasks" clearance' },
-    { timestamp: 'Yesterday, 04:20 PM', actor: 'Marcus Vance (Admin)', action: 'Role Provisioning', target: 'David Chen', detail: 'Elevated to Rank 2: Inventory Specialist' }
-  ],
+  auditLogs: (function() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('nexus_audit_logs'));
+      if (Array.isArray(stored) && stored.length > 0) return stored;
+    } catch(e) {}
+    return [
+      { timestamp: 'Today, 08:30 AM', actor: 'Marcus Vance (Admin)', action: 'System Initialization', target: 'Security Cluster', detail: 'All RBAC policy enforcement active' },
+      { timestamp: 'Today, 09:15 AM', actor: 'Marcus Vance (Admin)', action: 'Permission Granted', target: 'Elena Rodriguez', detail: 'Added "assign_tasks" clearance' },
+      { timestamp: 'Yesterday, 04:20 PM', actor: 'Marcus Vance (Admin)', action: 'Role Provisioning', target: 'David Chen', detail: 'Elevated to Rank 2: Inventory Specialist' }
+    ];
+  })(),
 
   // Inventory Store
-  inventory: JSON.parse(localStorage.getItem('nexus_inventory')) || [
-    { id: 1, name: 'OLED Monitor 27"', sku: 'EL-OM-27', category: 'Electronics', stock: 145, max: 200, price: 349.99, status: 'In Stock' },
-    { id: 2, name: 'Winter Parka - L', sku: 'FA-WP-L', category: 'Fashion', stock: 12, max: 80, price: 129.50, status: 'Reorder Now' },
-    { id: 3, name: 'Wireless Earbuds Pro', sku: 'EL-WE-P', category: 'Electronics', stock: 0, max: 150, price: 89.99, status: 'Out of Stock' },
-    { id: 4, name: 'Ergo Office Chair', sku: 'HG-EC-B', category: 'Home Goods', stock: 45, max: 60, price: 219.00, status: 'In Stock' },
-    { id: 5, name: 'Ceramic Table Lamp', sku: 'HG-CTL-W', category: 'Home Goods', stock: 28, max: 50, price: 64.00, status: 'In Stock' },
-    { id: 6, name: 'Merino Wool Sweater', sku: 'FA-MWS-M', category: 'Fashion', stock: 8, max: 50, price: 95.00, status: 'Reorder Now' },
-    { id: 7, name: 'Smart Video Doorbell', sku: 'EL-SVD-1', category: 'Electronics', stock: 62, max: 100, price: 119.99, status: 'In Stock' },
-    { id: 8, name: 'Cotton Linen Duvet Set', sku: 'HG-CLD-K', category: 'Home Goods', stock: 19, max: 40, price: 85.00, status: 'In Stock' }
-  ],
+  inventory: (function() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('nexus_inventory'));
+      if (Array.isArray(stored) && stored.length > 0) return stored;
+    } catch(e) {}
+    return [
+      { id: 1, name: 'OLED Monitor 27"', sku: 'EL-OM-27', category: 'Electronics', stock: 145, max: 200, price: 349.99, status: 'In Stock' },
+      { id: 2, name: 'Winter Parka - L', sku: 'FA-WP-L', category: 'Fashion', stock: 12, max: 80, price: 129.50, status: 'Reorder Now' },
+      { id: 3, name: 'Wireless Earbuds Pro', sku: 'EL-WE-P', category: 'Electronics', stock: 0, max: 150, price: 89.99, status: 'Out of Stock' },
+      { id: 4, name: 'Ergo Office Chair', sku: 'HG-EC-B', category: 'Home Goods', stock: 45, max: 60, price: 219.00, status: 'In Stock' },
+      { id: 5, name: 'Ceramic Table Lamp', sku: 'HG-CTL-W', category: 'Home Goods', stock: 28, max: 50, price: 64.00, status: 'In Stock' },
+      { id: 6, name: 'Merino Wool Sweater', sku: 'FA-MWS-M', category: 'Fashion', stock: 8, max: 50, price: 95.00, status: 'Reorder Now' },
+      { id: 7, name: 'Smart Video Doorbell', sku: 'EL-SVD-1', category: 'Electronics', stock: 62, max: 100, price: 119.99, status: 'In Stock' },
+      { id: 8, name: 'Cotton Linen Duvet Set', sku: 'HG-CLD-K', category: 'Home Goods', stock: 19, max: 40, price: 85.00, status: 'In Stock' }
+    ];
+  })(),
 
   // Transactions Store
-  transactions: JSON.parse(localStorage.getItem('nexus_transactions')) || [
-    { id: 101, date: 'Oct 24, 2023', desc: 'Tenant Lease Payment - Zara', category: 'Revenue', type: 'revenue', amount: 12500, status: 'Completed' },
-    { id: 102, date: 'Oct 23, 2023', desc: 'Facility Maintenance - HVAC Services', category: 'Maintenance', type: 'expense', amount: 3420, status: 'Completed' },
-    { id: 103, date: 'Oct 22, 2023', desc: 'East Wing Lighting Retrofit', category: 'Utilities', type: 'expense', amount: 1850, status: 'Pending' },
-    { id: 104, date: 'Oct 21, 2023', desc: 'Anchor Tenant Lease - Apple Store', category: 'Revenue', type: 'revenue', amount: 28500, status: 'Completed' },
-    { id: 105, date: 'Oct 20, 2023', desc: 'Bi-Weekly Security Contractor Payroll', category: 'Payroll', type: 'expense', amount: 8400, status: 'Completed' },
-    { id: 106, date: 'Oct 19, 2023', desc: 'Food Court Concession Royalty', category: 'Revenue', type: 'revenue', amount: 6720, status: 'Completed' },
-    { id: 107, date: 'Oct 18, 2023', desc: 'Parking Garage Automation License', category: 'Utilities', type: 'expense', amount: 1200, status: 'Completed' },
-    { id: 108, date: 'Oct 17, 2023', desc: 'Emergency Plumbing Repair - Level 2', category: 'Maintenance', type: 'expense', amount: 950, status: 'Completed' }
-  ],
+  transactions: (function() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('nexus_transactions'));
+      if (Array.isArray(stored) && stored.length > 0) return stored;
+    } catch(e) {}
+    return [
+      { id: 101, date: 'Oct 24, 2023', desc: 'Tenant Lease Payment - Zara', category: 'Revenue', type: 'revenue', amount: 12500, status: 'Completed' },
+      { id: 102, date: 'Oct 23, 2023', desc: 'Facility Maintenance - HVAC Services', category: 'Maintenance', type: 'expense', amount: 3420, status: 'Completed' },
+      { id: 103, date: 'Oct 22, 2023', desc: 'East Wing Lighting Retrofit', category: 'Utilities', type: 'expense', amount: 1850, status: 'Pending' },
+      { id: 104, date: 'Oct 21, 2023', desc: 'Anchor Tenant Lease - Apple Store', category: 'Revenue', type: 'revenue', amount: 28500, status: 'Completed' },
+      { id: 105, date: 'Oct 20, 2023', desc: 'Bi-Weekly Security Contractor Payroll', category: 'Payroll', type: 'expense', amount: 8400, status: 'Completed' },
+      { id: 106, date: 'Oct 19, 2023', desc: 'Food Court Concession Royalty', category: 'Revenue', type: 'revenue', amount: 6720, status: 'Completed' },
+      { id: 107, date: 'Oct 18, 2023', desc: 'Parking Garage Automation License', category: 'Utilities', type: 'expense', amount: 1200, status: 'Completed' },
+      { id: 108, date: 'Oct 17, 2023', desc: 'Emergency Plumbing Repair - Level 2', category: 'Maintenance', type: 'expense', amount: 950, status: 'Completed' }
+    ];
+  })(),
 
   // Tasks & Multi-Staff Duties with designated Team Leads and Checklists
   tasks: (function() {
