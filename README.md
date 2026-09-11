@@ -103,7 +103,7 @@ start index.html
 Run the included standalone server (defaults to port 3050, with automatic conflict avoidance):
 ```bash
 npm start
-# or: node server.js
+# or: node local-server.js
 ```
 Then open [http://localhost:3050](http://localhost:3050) in your browser.
 
@@ -116,7 +116,7 @@ stitch_retail_operations_management_suite/
 ├── index.html                   # Master unified single-page application
 ├── styles.css                   # Custom design system CSS & Emil Kowalski physics
 ├── app.js                       # State management, router, charts & toast system
-├── server.js                    # Zero-dependency local web server
+├── local-server.js              # Zero-dependency local web server
 ├── package.json                 # Project configuration & npm scripts
 ├── update-subscreens.js         # Subscreen navigation linking utility
 ├── README.md                    # Project documentation
