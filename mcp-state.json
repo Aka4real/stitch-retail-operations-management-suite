@@ -107,6 +107,33 @@
   ],
   "duties": [
     {
+      "id": 1789107103846,
+      "title": "Restock Display Aisle 3",
+      "zone": "North Wing #42",
+      "department": "Apparel & Fashion",
+      "lead": "Elena Rodriguez",
+      "priority": "High",
+      "status": "In Progress",
+      "checklist": [
+        {
+          "id": 1,
+          "text": "Unpack cartons",
+          "done": false
+        },
+        {
+          "id": 2,
+          "text": "Hang outerwear",
+          "done": false
+        },
+        {
+          "id": 3,
+          "text": "Steam wrinkles",
+          "done": false
+        }
+      ],
+      "dispatched_at": "2026-09-11T06:11:43.846Z"
+    },
+    {
       "id": 1789098492148,
       "title": "Restock Display Aisle 3",
       "zone": "North Wing #42",
@@ -376,6 +403,15 @@
   ],
   "escalations": [
     {
+      "id": "ESC-857",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Broken olive oil bottle in aisle 3 via SDK test",
+      "status": "Open",
+      "reported_at": "2026-09-11T06:11:43.857Z"
+    },
+    {
       "id": "ESC-155",
       "category": "Spill / Slip Hazard",
       "zone": "North Wing #42",
@@ -486,7 +522,7 @@
     {
       "sku": "EL-OM-27",
       "name": "OLED Monitor 27\"",
-      "stock": 235,
+      "stock": 245,
       "max": 200,
       "bay": "Bay B-4",
       "price": 349.99

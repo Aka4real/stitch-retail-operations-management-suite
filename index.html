@@ -148,10 +148,8 @@
       </a>
       <a href="#management" id="sidebar-nav-management" data-view="management" onclick="navigateTo('management')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
-        <span class="flex-1">Manager Portal</span>
-        <span id="manager-nav-lock" class="hidden font-mono text-[9px] bg-tertiary-container text-on-tertiary-container px-1.5 py-0.2 rounded-full font-bold flex items-center gap-0.5">
-          <span class="material-symbols-outlined text-[10px]">lock</span>RANK 4+
-        </span>
+        <span class="flex-1">Top Management Suite</span>
+        <span class="font-mono text-[9px] bg-primary/10 text-primary dark:text-primary-fixed px-1.5 py-0.2 rounded-full font-bold">AI SUITE</span>
       </a>
       <a href="#login" id="sidebar-nav-login" data-view="login" onclick="navigateTo('login')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">badge</span>
@@ -1324,9 +1322,12 @@
               <span class="text-xs text-secondary font-mono font-bold flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>Zero-Trust Session Active
               </span>
+              <span class="badge-pill bg-primary/10 text-primary dark:text-primary-fixed text-[10px] font-mono font-bold">
+                AI EXEC-CORE ONLINE
+              </span>
             </div>
-            <h2 class="font-headline text-2xl font-bold text-primary dark:text-primary-fixed mt-1">Manager Control &amp; Staff Permissions</h2>
-            <p class="text-xs text-on-surface-variant">Assign functions, provision mall employees, and audit security permissions across terminals.</p>
+            <h2 class="font-headline text-2xl font-bold text-primary dark:text-primary-fixed mt-1">Top Management Suite &amp; Executive Control</h2>
+            <p class="text-xs text-on-surface-variant">Autonomous AI operations, enterprise personnel provisioning, cross-terminal security and duty orchestration.</p>
           </div>
 
           <div class="flex items-center gap-3">
@@ -1336,6 +1337,110 @@
             </button>
           </div>
         </div>
+
+        <!-- ========================================================================= -->
+        <!-- EXECUTIVE AI OPERATIONS COCKPIT (COMPLETE LEVEL 5 OMNI-ACCESS) -->
+        <!-- ========================================================================= -->
+        <section class="nexus-card p-6 md:p-7 border-2 border-primary/40 dark:border-primary-fixed/30 bg-gradient-to-br from-surface-lowest via-surface-low/80 to-primary/5 shadow-2xl relative overflow-hidden rounded-3xl">
+          <!-- Specular Glow & Radial Aura -->
+          <div class="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-primary/10 dark:bg-primary-fixed/10 blur-3xl pointer-events-none"></div>
+          <div class="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
+
+          <!-- Cockpit Header -->
+          <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-outline-variant/40">
+            <div class="flex items-start gap-3.5">
+              <div class="relative w-12 h-12 rounded-2xl bg-gradient-to-tr from-primary to-slate-800 text-white flex items-center justify-center shadow-lg shrink-0">
+                <span class="material-symbols-outlined text-2xl animate-pulse">psychology</span>
+                <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-secondary border-2 border-surface flex items-center justify-center">
+                  <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                </span>
+              </div>
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="badge-pill bg-primary/10 text-primary dark:text-primary-fixed text-[11px] font-bold font-mono flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">bolt</span>
+                    <span>LEVEL 5 OMNI-ACCESS</span>
+                  </span>
+                  <span class="badge-pill bg-secondary-container/40 text-secondary text-[11px] font-mono font-bold flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-secondary"></span>
+                    <span>ALL 7 SUBSYSTEMS ONLINE</span>
+                  </span>
+                  <span class="badge-pill bg-tertiary-container/30 text-on-tertiary-container text-[11px] font-mono">
+                    AUTONOMOUS EXECUTION
+                  </span>
+                </div>
+                <h3 class="font-headline text-xl font-bold text-primary dark:text-primary-fixed mt-1">Executive AI Operations Cockpit</h3>
+                <p class="text-xs text-on-surface-variant max-w-2xl">
+                  Command the store using natural language. The Executive AI possesses complete supervisor authority across staff transfers, inventory replenishment, ledger entries, floor duty dispatch, hazard resolution, and statutory compliance.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <button type="button" onclick="clearExecAIFeed()" class="px-3 py-1.5 rounded-xl border border-outline-variant/60 hover:bg-surface-container text-xs font-semibold text-on-surface-variant transition-colors flex items-center gap-1" title="Clear activity ledger">
+                <span class="material-symbols-outlined text-[16px]">clear_all</span>
+                <span>Clear Ledger</span>
+              </button>
+              <button type="button" onclick="openModal('modal-handover-report')" class="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-highest text-xs font-semibold text-on-surface transition-colors flex items-center gap-1" title="Generate Handover Report">
+                <span class="material-symbols-outlined text-[16px] text-primary">assessment</span>
+                <span>Executive Digest</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Natural Language Directives Input Bar -->
+          <div class="relative z-10 mt-5">
+            <form id="exec-ai-form" onsubmit="handleExecAIOrderSubmit(event)" class="space-y-3">
+              <div class="relative flex items-center">
+                <span class="material-symbols-outlined absolute left-4 text-[22px] text-primary dark:text-primary-fixed pointer-events-none">terminal</span>
+                <input id="exec-ai-input" type="text" placeholder="Instruct Executive AI (e.g. 'Transfer David Chen to Logistics', 'Add 50 units to SKU EL-OM-27', 'Approve all pending duties', 'Fire John Doe', 'Record $5,000 rent revenue')..." class="w-full pl-12 pr-32 py-3.5 text-xs sm:text-sm bg-surface-lowest dark:bg-surface-lowest/90 border-2 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl shadow-inner font-medium text-on-surface focus:outline-none transition-all" />
+                <div class="absolute right-2 flex items-center gap-1">
+                  <button type="button" id="exec-ai-voice-btn" onclick="toggleExecAIVoiceInput()" class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors" title="Voice Dictation">
+                    <span class="material-symbols-outlined text-[20px]">mic</span>
+                  </button>
+                  <button type="submit" id="exec-ai-submit-btn" class="px-4 py-2 bg-primary hover:bg-primary-container text-on-primary text-xs font-bold rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">bolt</span>
+                    <span class="hidden sm:inline">Execute</span>
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <!-- Preset Quick-Action Chips -->
+            <div class="mt-3 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+              <span class="text-[11px] font-bold text-on-surface-variant shrink-0 mr-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-secondary">flash_on</span>
+                <span>Fast Directives:</span>
+              </span>
+              <button type="button" onclick="sendExecAIPreset('Approve all pending duties')" class="exec-ai-chip">⚡ Approve All Pending Duties</button>
+              <button type="button" onclick="sendExecAIPreset('Restock all low-stock items by 50 units')" class="exec-ai-chip">⚡ Restock Low-Stock SKUs (+50)</button>
+              <button type="button" onclick="sendExecAIPreset('Resolve all open floor hazards')" class="exec-ai-chip">⚡ Resolve All Floor Hazards</button>
+              <button type="button" onclick="sendExecAIPreset('Transfer David Chen to Logistics &amp; Bay Storage')" class="exec-ai-chip">⚡ Transfer David Chen to Logistics</button>
+              <button type="button" onclick="sendExecAIPreset('Clock in all Logistics crew')" class="exec-ai-chip">⚡ Clock In Logistics Crew</button>
+              <button type="button" onclick="sendExecAIPreset('Record $12,500 revenue for Tenant Lease Payment - Apple Store')" class="exec-ai-chip">⚡ Record $12.5k Tenant Lease</button>
+              <button type="button" onclick="sendExecAIPreset('Audit employee meal and rest break compliance')" class="exec-ai-chip">⚡ Audit Labor Law Compliance</button>
+              <button type="button" onclick="sendExecAIPreset('Show confidential HR team roles and payroll')" class="exec-ai-chip">⚡ Show Confidential HR Roster</button>
+              <button type="button" onclick="sendExecAIPreset('Promote Elena Rodriguez to Rank 4 Operations Lead')" class="exec-ai-chip">⚡ Promote Elena to Rank 4</button>
+              <button type="button" onclick="sendExecAIPreset('Trigger emergency evacuation alert')" class="exec-ai-chip text-error hover:bg-error-container/30">⚡ Trigger Emergency Alert</button>
+            </div>
+          </div>
+
+          <!-- Activity Stream & Execution Ledger -->
+          <div class="relative z-10 mt-5 pt-4 border-t border-outline-variant/40">
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span>
+                <span class="text-xs font-bold text-on-surface uppercase tracking-wider font-mono">Autonomous Execution Ledger</span>
+              </div>
+              <span class="text-[11px] font-mono text-on-surface-variant" id="exec-ai-timestamp-pill">Live Gateway Sync</span>
+            </div>
+
+            <!-- Feed Container -->
+            <div id="exec-ai-feed" class="space-y-2.5 max-h-[340px] overflow-y-auto pr-1">
+              <!-- Dynamically populated by app.js: renderExecAIFeed() -->
+            </div>
+          </div>
+        </section>
 
         <!-- Management Overview KPI Cards -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -3715,34 +3820,40 @@
   <!-- Slide-Up Copilot Window -->
   <div id="copilot-drawer" class="copilot-floating-drawer hidden">
     <!-- Header -->
-    <div class="p-3.5 bg-surface-container-low border-b border-outline-variant/50 flex items-center justify-between">
+    <div class="p-3.5 bg-gradient-to-r from-primary to-slate-800 text-white flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm">
-          <span class="material-symbols-outlined text-[18px]">smart_toy</span>
+        <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shadow-sm">
+          <span class="material-symbols-outlined text-[20px] text-white">psychology</span>
         </div>
         <div>
           <div class="flex items-center gap-1.5">
-            <h3 class="font-headline text-xs font-bold text-on-surface">AI Operations Copilot</h3>
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <h3 class="font-headline text-xs font-bold text-white">Executive AI Operations Copilot</h3>
+            <span id="copilot-omni-pill" class="badge-pill bg-secondary text-white text-[9px] font-mono font-bold">R5 OMNI-ACCESS</span>
           </div>
-          <p class="text-[10px] text-on-surface-variant font-mono">Retail MCP Tools Active &bull; Voice Enabled</p>
+          <p class="text-[10px] text-white/70 font-mono">Complete Store Orchestration &bull; Voice Enabled</p>
         </div>
       </div>
-      <button onclick="toggleCopilot()" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface" title="Minimize Copilot">
+      <button onclick="toggleCopilot()" class="p-1 rounded-full text-white/80 hover:text-white" title="Minimize Copilot">
         <span class="material-symbols-outlined text-[18px]">expand_more</span>
       </button>
     </div>
 
     <!-- Suggested Quick Action Chips -->
     <div class="p-2.5 bg-surface-container-lowest/60 border-b border-outline-variant/30 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-      <button onclick="sendCopilotSuggestedPrompt('Who is clocked in from Logistics right now?')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
-        📋 Logistics on shift?
+      <button onclick="sendCopilotSuggestedPrompt('Approve all pending duties')" class="whitespace-nowrap px-2.5 py-1 bg-secondary-container/30 hover:bg-secondary-container/50 rounded-full text-[11px] text-secondary font-bold border border-secondary/40 transition-colors">
+        ⚡ Approve duties
       </button>
-      <button onclick="sendCopilotSuggestedPrompt('Summarize all open high-priority escalations today')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
-        🚨 Open escalations
+      <button onclick="sendCopilotSuggestedPrompt('Restock all low-stock items by 50 units')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
+        📦 Restock low SKUs
       </button>
-      <button onclick="sendCopilotSuggestedPrompt('What items have critical low stock risk?')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
-        📦 Stock risk report
+      <button onclick="sendCopilotSuggestedPrompt('Resolve all open floor hazards')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
+        🚨 Clear hazards
+      </button>
+      <button onclick="sendCopilotSuggestedPrompt('Transfer David Chen to Logistics & Bay Storage')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
+        👤 Transfer staff
+      </button>
+      <button onclick="sendCopilotSuggestedPrompt('Record $12,500 revenue for Tenant Lease Payment - Apple Store')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
+        💰 Record $12.5k revenue
       </button>
       <button onclick="sendCopilotSuggestedPrompt('Audit employee meal and rest break compliance')" class="whitespace-nowrap px-2.5 py-1 bg-surface-container hover:bg-surface-highest rounded-full text-[11px] text-on-surface border border-outline-variant/50 transition-colors">
         ⚖️ Labor compliance

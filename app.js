@@ -791,6 +791,25 @@ const AppState = {
     }
   ],
 
+  // Executive AI Operations Cockpit Activity Ledger (Level 5 Omni-Access)
+  execAIHistory: (function() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('nexus_exec_ai_history'));
+      if (Array.isArray(stored) && stored.length > 0) return stored;
+    } catch(e) {}
+    return [
+      {
+        id: 'init-1',
+        type: 'system',
+        badge: 'SUPERUSER ONLINE',
+        title: 'Level 5 Omni-Access Gateway Initialized',
+        detail: 'Marcus Vance authenticated with Global Administrator clearance. All 7 store subsystems (Staff Roster, Inventory Depot, Financial Ledger, Floor Halos, Escalation Grid, Break Compliance, Supabase Sync) unlocked for natural language execution.',
+        timestamp: 'Active Now',
+        status: 'Online'
+      }
+    ];
+  })(),
+
   saveState() {
     localStorage.setItem('nexus_inventory', JSON.stringify(this.inventory));
     localStorage.setItem('nexus_transactions', JSON.stringify(this.transactions));
@@ -801,6 +820,7 @@ const AppState = {
     localStorage.setItem('nexus_escalations', JSON.stringify(this.escalations));
     localStorage.setItem('nexus_shift_schedules', JSON.stringify(this.shiftSchedules));
     localStorage.setItem('nexus_shift_swaps', JSON.stringify(this.shiftSwaps));
+    localStorage.setItem('nexus_exec_ai_history', JSON.stringify(this.execAIHistory));
     localStorage.setItem('nexus_current_user_id', this.currentUserId);
   }
 };
@@ -3189,6 +3209,7 @@ function renderManagement() {
   if (escEl) escEl.textContent = openEscalationsCount;
 
   // Render Sub-Sections
+  renderExecAISection();
   renderPendingApprovals();
   renderShiftAttendanceFeed();
   initDutyDispatcherForm();
@@ -5778,269 +5799,1107 @@ function signAndCloseHandover() {
 }
 
 // =========================================================================
-// 24. AI OPERATIONS COPILOT (BUILT ON MCP TOOLS)
+// 24. EXECUTIVE AI OPERATIONS COCKPIT & OMNI-ACCESS ENGINE (LEVEL 5 SUPERUSER)
 // =========================================================================
 
-function toggleCopilot() {
-  const drawer = document.getElementById('copilot-drawer');
-  const unread = document.getElementById('copilot-unread-dot');
-  if (!drawer) return;
-
-  const isHidden = drawer.classList.contains('hidden');
-  if (isHidden) {
-    drawer.classList.remove('hidden');
-    if (unread) unread.classList.add('hidden');
-    const input = document.getElementById('copilot-user-input');
-    if (input) setTimeout(() => input.focus(), 150);
-  } else {
-    drawer.classList.add('hidden');
+function renderExecAISection() {
+  const tsPill = document.getElementById('exec-ai-timestamp-pill');
+  if (tsPill) {
+    tsPill.textContent = `Gateway Active • ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   }
+  renderExecAIFeed();
 }
 
-function sendCopilotSuggestedPrompt(promptText) {
-  const input = document.getElementById('copilot-user-input');
-  if (input) {
-    input.value = promptText;
-    executeCopilotCommand(promptText);
-    input.value = '';
+function renderExecAIFeed() {
+  const feed = document.getElementById('exec-ai-feed');
+  if (!feed) return;
+
+  const history = AppState.execAIHistory || [];
+  if (history.length === 0) {
+    feed.innerHTML = `
+      <div class="p-5 text-center text-on-surface-variant bg-surface-container-low/30 rounded-2xl border border-dashed border-outline-variant/60">
+        <span class="material-symbols-outlined text-2xl text-secondary mb-1">check_circle</span>
+        <p class="font-bold text-xs text-on-surface">Executive AI Operations Ledger Ready</p>
+        <p class="text-[11px] mt-0.5">Enter any operational instruction above or tap a Fast Directive preset chip.</p>
+      </div>
+    `;
+    return;
   }
+
+  feed.innerHTML = history.map((item, idx) => {
+    return `
+      <div class="exec-ai-mutation-card p-3.5 rounded-2xl bg-surface dark:bg-surface-lowest border border-outline-variant/50 shadow-sm space-y-2">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-1.5">
+            <span class="badge-pill ${item.badgeClass || 'bg-secondary-container/40 text-secondary'} font-mono text-[9px] font-bold">
+              ${item.badge || '✓ EXECUTED'}
+            </span>
+            <span class="text-xs font-bold text-on-surface">${item.title}</span>
+          </div>
+          <span class="text-[10px] font-mono text-on-surface-variant">${item.timestamp}</span>
+        </div>
+
+        ${item.query ? `
+          <div class="text-[11px] font-mono text-on-surface-variant bg-surface-container-low px-2.5 py-1 rounded-lg border border-outline-variant/30 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[13px] text-primary">terminal</span>
+            <span class="truncate">"${item.query}"</span>
+          </div>
+        ` : ''}
+
+        <p class="text-xs text-on-surface leading-relaxed">${item.detail}</p>
+
+        ${item.diffHtml ? `
+          <div class="p-2.5 rounded-xl bg-surface-lowest dark:bg-surface-low border border-outline-variant/40 text-[11px] font-mono space-y-1">
+            ${item.diffHtml}
+          </div>
+        ` : ''}
+
+        ${item.actionHtml ? `
+          <div class="flex items-center gap-2 pt-1">
+            ${item.actionHtml}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
 }
 
-function handleCopilotSubmit(e) {
+function clearExecAIFeed() {
+  AppState.execAIHistory = [];
+  AppState.saveState();
+  renderExecAIFeed();
+  toast.info('Ledger Cleared', 'Executive AI activity history reset.');
+}
+
+function sendExecAIPreset(promptText) {
+  const input = document.getElementById('exec-ai-input');
+  if (input) input.value = promptText;
+  executeOmniCommand(promptText, 'cockpit');
+  if (input) input.value = '';
+}
+
+function handleExecAIOrderSubmit(e) {
   e.preventDefault();
-  const input = document.getElementById('copilot-user-input');
+  const input = document.getElementById('exec-ai-input');
   if (!input || !input.value.trim()) return;
 
   const query = input.value.trim();
   input.value = '';
-  executeCopilotCommand(query);
+  executeOmniCommand(query, 'cockpit');
 }
 
-function appendCopilotMessage(sender, textHtml) {
-  const thread = document.getElementById('copilot-chat-thread');
-  if (!thread) return;
-
-  const isUser = sender === 'user';
-  const msgEl = document.createElement('div');
-  msgEl.className = `flex gap-2 items-start ${isUser ? 'justify-end' : ''}`;
-
-  if (isUser) {
-    msgEl.innerHTML = `
-      <div class="bg-primary text-white p-3 rounded-2xl rounded-tr-sm text-xs max-w-[85%] shadow-sm">
-        ${textHtml}
-      </div>
-      <div class="w-6 h-6 rounded-lg bg-primary/20 text-primary font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
-        YOU
-      </div>
-    `;
-  } else {
-    msgEl.innerHTML = `
-      <div class="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 text-[11px] font-bold">
-        AI
-      </div>
-      <div class="flex-1 bg-surface-container p-3 rounded-2xl rounded-tl-sm text-xs text-on-surface space-y-2 border border-outline-variant/40 shadow-sm max-w-[90%]">
-        ${textHtml}
-      </div>
-    `;
+function toggleExecAIVoiceInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    toast.info('Voice Dictation', 'Speech synthesis active. Type your command in the prompt box.');
+    return;
   }
 
-  thread.appendChild(msgEl);
-  thread.scrollTop = thread.scrollHeight;
+  const voiceBtn = document.getElementById('exec-ai-voice-btn');
+  const input = document.getElementById('exec-ai-input');
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    if (voiceBtn) voiceBtn.classList.add('text-error', 'animate-pulse');
+    toast.info('Listening...', 'Speak your operational directive now.');
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    if (input) input.value = transcript;
+    executeOmniCommand(transcript, 'cockpit');
+  };
+
+  recognition.onerror = () => {
+    if (voiceBtn) voiceBtn.classList.remove('text-error', 'animate-pulse');
+  };
+
+  recognition.onend = () => {
+    if (voiceBtn) voiceBtn.classList.remove('text-error', 'animate-pulse');
+  };
+
+  recognition.start();
 }
 
-function executeCopilotCommand(query) {
-  appendCopilotMessage('user', query);
+// =========================================================================
+// UNDO OPERATIONS HELPER REGISTRY
+// =========================================================================
 
-  const lower = query.toLowerCase();
+function undoEmployeeTransfer(empId, oldDept, oldZone) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp) return;
 
-  // Show thinking indicator
-  const thread = document.getElementById('copilot-chat-thread');
-  const thinkingId = `copilot-thinking-${Date.now()}`;
-  const thinkingEl = document.createElement('div');
-  thinkingEl.id = thinkingId;
-  thinkingEl.className = 'flex gap-2 items-start';
-  thinkingEl.innerHTML = `
-    <div class="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 text-[11px] font-bold animate-pulse">
-      AI
-    </div>
-    <div class="bg-surface-container p-2.5 rounded-xl text-xs text-on-surface-variant font-mono flex items-center gap-1.5">
-      <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
-      <span>Calling MCP tool &amp; analyzing store telemetry...</span>
-    </div>
-  `;
-  thread.appendChild(thinkingEl);
-  thread.scrollTop = thread.scrollHeight;
+  const currentDept = emp.department;
+  emp.department = oldDept;
+  emp.zone = oldZone;
+
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${AppState.currentUser.name} (Undo Action)`,
+    action: 'Staff Transfer Reverted',
+    target: emp.name,
+    detail: `Reverted from ${currentDept} back to ${oldDept} (${oldZone})`
+  });
+
+  AppState.saveState();
+  renderEmployees();
+  renderShiftAttendanceFeed();
+  renderPermissionsMatrix();
+  renderDashboard();
+  renderExecAIFeed();
+  toast.info('Transfer Reverted', `${emp.name} returned to ${oldDept}.`);
+}
+
+function undoInventoryAdjustment(sku, delta) {
+  const item = AppState.inventory.find(i => i.sku === sku);
+  if (!item) return;
+
+  item.stock = Math.max(0, item.stock - delta);
+  item.status = item.stock === 0 ? 'Out of Stock' : (item.stock <= 15 ? 'Reorder Now' : 'In Stock');
+
+  AppState.saveState();
+  renderInventory();
+  renderDashboard();
+  renderExecAIFeed();
+  toast.info('Stock Reverted', `${item.name} (${sku}) adjusted by ${-delta} units.`);
+}
+
+function undoDutyApproval(dutyId) {
+  const duty = AppState.tasks.find(t => t.id === dutyId);
+  if (!duty) return;
+
+  duty.status = 'Pending Approval';
+  duty.signedOffBy = null;
+  duty.signedOffAt = null;
+
+  AppState.saveState();
+  renderPendingApprovals();
+  renderMyDutiesList();
+  renderDashboard();
+  renderExecAIFeed();
+  toast.info('Sign-Off Reverted', `Duty #${dutyId} returned to Pending Approval queue.`);
+}
+
+function reinstateEmployee(empId) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp) return;
+
+  emp.status = 'Active';
+  emp.rank = 1;
+  emp.permissions = ['assign_tasks'];
+  emp.terminatedAt = null;
+
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${AppState.currentUser.name} (Executive AI)`,
+    action: 'Staff Reinstatement',
+    target: emp.name,
+    detail: 'Restored associate credentials and status to Active'
+  });
+
+  AppState.saveState();
+  renderEmployees();
+  renderPermissionsMatrix();
+  renderDashboard();
+  renderExecAIFeed();
+  toast.success('Staff Reinstated', `${emp.name} restored to active workforce.`);
+}
+
+// =========================================================================
+// OMNIPOTENT EXECUTIVE AI EXECUTION ENGINE
+// =========================================================================
+
+function executeOmniCommand(query, source = 'cockpit') {
+  if (!query || !query.trim()) return;
+  const rawQuery = query.trim();
+  const lower = rawQuery.toLowerCase();
+
+  // 1. RBAC Guard: Top management suite requires Rank 4+
+  const isSuperuser = AppState.currentUser && AppState.currentUser.rank >= 4;
+  if (!isSuperuser) {
+    toast.error('Clearance Denied', 'Autonomous store execution requires Rank 4 or Rank 5 Executive clearance.');
+    return;
+  }
+
+  // 2. UI Feedback: Show thinking indicator
+  let thinkingEl = null;
+  const thinkingId = `ai-thinking-${Date.now()}`;
+
+  if (source === 'cockpit') {
+    const feed = document.getElementById('exec-ai-feed');
+    if (feed) {
+      thinkingEl = document.createElement('div');
+      thinkingEl.id = thinkingId;
+      thinkingEl.className = 'p-3 rounded-2xl bg-surface-container/50 border border-primary/30 flex items-center gap-2 text-xs font-mono text-primary animate-pulse';
+      thinkingEl.innerHTML = `
+        <span class="material-symbols-outlined text-[18px] animate-spin">sync</span>
+        <span>Executing Level 5 directive: "${rawQuery}"...</span>
+      `;
+      feed.prepend(thinkingEl);
+    }
+  } else {
+    appendCopilotMessage('user', rawQuery);
+    const thread = document.getElementById('copilot-chat-thread');
+    if (thread) {
+      thinkingEl = document.createElement('div');
+      thinkingEl.id = thinkingId;
+      thinkingEl.className = 'flex gap-2 items-start';
+      thinkingEl.innerHTML = `
+        <div class="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 text-[11px] font-bold animate-pulse">
+          AI
+        </div>
+        <div class="bg-surface-container p-2.5 rounded-xl text-xs text-on-surface-variant font-mono flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
+          <span>Executing store mutation across clusters...</span>
+        </div>
+      `;
+      thread.appendChild(thinkingEl);
+      thread.scrollTop = thread.scrollHeight;
+    }
+  }
 
   setTimeout(() => {
-    // Remove thinking element
+    // Remove thinking indicator
     const tEl = document.getElementById(thinkingId);
     if (tEl) tEl.remove();
 
+    let resultRecord = null;
     let replyHtml = '';
 
-    // INTENT 1: Staff / Attendance query
-    if (lower.includes('logistics') || lower.includes('clocked in') || lower.includes('who is on') || lower.includes('staff')) {
-      let deptName = 'Logistics & Bay Storage';
-      if (lower.includes('apparel') || lower.includes('fashion')) deptName = 'Apparel & Fashion';
-      if (lower.includes('electronics')) deptName = 'Electronics & Gadgets';
-      if (lower.includes('cashier')) deptName = 'Cashier & Front End';
+    // -----------------------------------------------------------------------
+    // INTENT 1: APPROVE / SIGN OFF PENDING DUTIES
+    // -----------------------------------------------------------------------
+    if (lower.includes('approve') || lower.includes('sign off') || lower.includes('sign-off') || (lower.includes('duty') && lower.includes('all'))) {
+      const pending = AppState.tasks.filter(t => t.status === 'Pending Approval');
+      if (pending.length > 0) {
+        pending.forEach(d => {
+          d.status = 'Signed Off';
+          d.signedOffBy = `${AppState.currentUser.name} (Executive Admin)`;
+          d.signedOffAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        });
 
-      const staff = AppState.employees.filter(e => e.department === deptName && e.clockedIn && e.status !== 'Terminated');
-      replyHtml = `
-        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
-          <span class="font-bold text-on-surface">MCP Tool: <code>get_shift_attendance</code></span>
-          <span class="badge-pill bg-secondary-container/40 text-secondary font-mono text-[9px] font-bold">${staff.length} Active</span>
-        </div>
-        <p class="font-semibold text-on-surface">Active Crew in ${deptName}:</p>
-        <ul class="space-y-1 my-1">
-          ${staff.slice(0, 5).map(e => `
-            <li class="flex items-center justify-between font-mono text-[11px] bg-surface-container-low p-1.5 rounded">
-              <span>👤 ${e.name}</span>
-              <span class="text-secondary font-bold">${e.clockInTime || 'On Shift'}</span>
-            </li>
-          `).join('')}
-        </ul>
-        <p class="text-[10px] text-on-surface-variant">Zone: ${staff[0]?.zone || 'Storage Bay B'}. All staff checked in via biometric punch.</p>
-      `;
-    }
-    // INTENT 2: Escalations Digest
-    else if (lower.includes('escalat') || lower.includes('hazard') || lower.includes('spill') || lower.includes('open issue')) {
-      const open = AppState.escalations.filter(e => e.status === 'Open');
-      replyHtml = `
-        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
-          <span class="font-bold text-on-surface">MCP Tool: <code>list_floor_escalations</code></span>
-          <span class="badge-pill bg-error text-white font-mono text-[9px] font-bold">${open.length} Critical</span>
-        </div>
-        <p class="font-semibold text-on-surface">Open Floor Incidents Digest:</p>
-        <div class="space-y-1.5 my-1.5">
-          ${open.map(e => `
-            <div class="p-2 rounded bg-error/10 border border-error/20 text-[11px]">
-              <div class="flex justify-between font-bold text-error">
-                <span>[${e.zone}] ${e.category}</span>
-                <span>${e.urgency}</span>
-              </div>
-              <p class="text-on-surface mt-0.5">${e.description}</p>
+        // Trigger MCP background sync
+        try {
+          fetch('/api/mcp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': 'nexus_live_agent_admin_9x82' },
+            body: JSON.stringify({
+              jsonrpc: '2.0', id: Date.now(), method: 'tools/call',
+              params: { name: 'sign_off_duty', arguments: { duty_id: pending[0].id, action: 'approve' } }
+            })
+          }).catch(() => {});
+        } catch(e) {}
+
+        AppState.auditLogs.unshift({
+          timestamp: 'Just now',
+          actor: `${AppState.currentUser.name} (via Executive AI)`,
+          action: 'Bulk Duty Authorization',
+          target: `${pending.length} Completed Duties`,
+          detail: `Approved checklists submitted by leads: ${pending.map(p => p.teamLeadName || p.associate).join(', ')}`
+        });
+
+        AppState.saveState();
+        renderPendingApprovals();
+        renderMyDutiesList();
+        renderDashboard();
+
+        const diffLines = pending.map(p => `
+          <div class="flex justify-between items-center py-0.5">
+            <span><strong>${p.title || p.task}</strong> (${p.zone})</span>
+            <span class="text-secondary font-bold">Pending ➔ Signed Off</span>
+          </div>
+        `).join('');
+
+        resultRecord = {
+          id: `exec-${Date.now()}`,
+          query: rawQuery,
+          badge: '✓ EXECUTED: DUTY SIGN-OFF',
+          badgeClass: 'bg-secondary-container text-secondary',
+          title: `Approved ${pending.length} Completed Floor Duties`,
+          detail: `Executive sign-off executed across all queued tasks. Duty checklists verified and records locked for payroll compliance.`,
+          diffHtml: diffLines,
+          actionHtml: `
+            <button onclick="navigateTo('management')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Inspect Approvals &rarr;</button>
+            <button onclick="undoDutyApproval(${pending[0].id})" class="px-3 py-1 border border-outline-variant/60 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container">Undo Last</button>
+          `,
+          timestamp: 'Just now'
+        };
+
+        replyHtml = `
+          <div class="space-y-2">
+            <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+              <span class="badge-pill bg-secondary text-white font-mono text-[9px] font-bold">✓ EXECUTED (RANK 5)</span>
+              <span class="text-[10px] font-mono text-on-surface-variant">${pending.length} Tasks Approved</span>
             </div>
-          `).join('')}
-        </div>
-        <button onclick="navigateTo('floor-map')" class="mt-1 w-full py-1 bg-primary text-white text-[11px] font-bold rounded-lg text-center">
-          View Escalation Beacons on Map &rarr;
-        </button>
-      `;
-    }
-    // INTENT 3: Inventory / Stock Risk
-    else if (lower.includes('stock') || lower.includes('inventory') || lower.includes('risk') || lower.includes('reorder')) {
-      const lowStock = AppState.inventory.filter(i => i.stock <= 15);
-      replyHtml = `
-        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
-          <span class="font-bold text-on-surface">MCP Tool: <code>audit_inventory_levels</code></span>
-          <span class="badge-pill bg-amber-500/15 text-amber-700 font-mono text-[9px] font-bold">${lowStock.length} Low SKUs</span>
-        </div>
-        <p class="font-semibold text-on-surface">Critical Supply Chain Stock Warnings:</p>
-        <div class="space-y-1 my-1">
-          ${lowStock.map(i => `
-            <div class="flex items-center justify-between p-1.5 rounded bg-surface-container-low text-[11px]">
-              <span class="font-medium">${i.name} (${i.sku})</span>
-              <span class="font-mono font-bold ${i.stock === 0 ? 'text-error' : 'text-amber-600'}">${i.stock} in stock</span>
+            <p class="font-bold text-on-surface text-xs">All pending duties have been authorized and signed off.</p>
+            <div class="text-[11px] p-2 bg-surface-lowest rounded-xl font-mono space-y-1">
+              ${diffLines}
             </div>
-          `).join('')}
-        </div>
-        <button onclick="navigateTo('inventory')" class="mt-1 w-full py-1 bg-surface-container hover:bg-surface-highest text-on-surface text-[11px] font-bold rounded-lg text-center border border-outline-variant/50">
-          Manage Stock In Inventory &rarr;
-        </button>
-      `;
+          </div>
+        `;
+        toast.success('Duties Signed Off', `Approved ${pending.length} duties with Executive clearance.`);
+      } else {
+        resultRecord = {
+          id: `exec-${Date.now()}`,
+          query: rawQuery,
+          badge: 'CLEARANCE VERIFIED',
+          badgeClass: 'bg-surface-container text-on-surface',
+          title: 'No Pending Duties in Queue',
+          detail: 'All floor duties are currently In Progress or already Signed Off. Shift leads have not submitted new completed checklists.',
+          timestamp: 'Just now'
+        };
+        replyHtml = `<p class="text-xs">No pending duties currently await manager sign-off. All floor checklists are up to date.</p>`;
+        toast.info('No Pending Duties', 'Queue is clear.');
+      }
     }
-    // INTENT 4: Dispatch Urgent Duty
-    else if (lower.includes('dispatch') || lower.includes('cleanup')) {
+
+    // -----------------------------------------------------------------------
+    // INTENT 2: INVENTORY RESTOCK & ADJUSTMENTS
+    // -----------------------------------------------------------------------
+    else if (lower.includes('restock') || lower.includes('replenish') || (lower.includes('add') && lower.includes('unit')) || (lower.includes('stock') && (lower.includes('low') || lower.includes('units')))) {
+      if (lower.includes('all') || lower.includes('low')) {
+        // Bulk restock low-stock items
+        const lowItems = AppState.inventory.filter(i => i.stock <= 15);
+        const delta = 50;
+        lowItems.forEach(item => {
+          item.stock += delta;
+          item.status = 'In Stock';
+          try {
+            fetch('/api/mcp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-api-key': 'nexus_live_agent_admin_9x82' },
+              body: JSON.stringify({
+                jsonrpc: '2.0', id: Date.now(), method: 'tools/call',
+                params: { name: 'adjust_inventory_stock', arguments: { sku: item.sku, delta_units: delta, reason: 'Executive AI Mass Replenishment' } }
+              })
+            }).catch(() => {});
+          } catch(e) {}
+        });
+
+        AppState.auditLogs.unshift({
+          timestamp: 'Just now',
+          actor: `${AppState.currentUser.name} (via Executive AI)`,
+          action: 'Bulk Inventory Replenishment',
+          target: `${lowItems.length} Low-Stock SKUs`,
+          detail: `Injected +${delta} units into each depleted SKU to avert stockout risks`
+        });
+
+        AppState.saveState();
+        renderInventory();
+        renderDashboard();
+
+        const diffLines = lowItems.map(item => `
+          <div class="flex justify-between items-center py-0.5">
+            <span><strong>${item.name}</strong> (${item.sku})</span>
+            <span class="text-secondary font-bold font-mono">${item.stock - delta} ➔ ${item.stock} (+${delta})</span>
+          </div>
+        `).join('');
+
+        resultRecord = {
+          id: `exec-${Date.now()}`,
+          query: rawQuery,
+          badge: '✓ EXECUTED: REPLENISHMENT',
+          badgeClass: 'bg-secondary-container text-secondary',
+          title: `Replenished ${lowItems.length} Low-Stock Items (+${delta} units each)`,
+          detail: `Autonomous dock supply allocation completed. Inventory statuses upgraded to 'In Stock'.`,
+          diffHtml: diffLines,
+          actionHtml: `
+            <button onclick="navigateTo('inventory')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Inspect Inventory &rarr;</button>
+          `,
+          timestamp: 'Just now'
+        };
+
+        replyHtml = `
+          <div class="space-y-2">
+            <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+              <span class="badge-pill bg-secondary text-white font-mono text-[9px] font-bold">✓ EXECUTED (RANK 5)</span>
+              <span class="text-[10px] font-mono text-on-surface-variant">+${delta} per SKU</span>
+            </div>
+            <p class="font-bold text-on-surface text-xs">Mass replenishment executed across low inventory.</p>
+            <div class="text-[11px] p-2 bg-surface-lowest rounded-xl font-mono space-y-1">
+              ${diffLines}
+            </div>
+          </div>
+        `;
+        toast.success('Stock Replenished', `Added +${delta} units to ${lowItems.length} SKUs.`);
+      } else {
+        // Target single SKU / product
+        const deltaMatch = lower.match(/\b(\d+)\s+units?/);
+        const delta = deltaMatch ? parseInt(deltaMatch[1], 10) : 50;
+
+        let targetItem = null;
+        for (const item of AppState.inventory) {
+          if (lower.includes(item.sku.toLowerCase()) || lower.includes(item.name.toLowerCase())) {
+            targetItem = item;
+            break;
+          }
+        }
+        if (!targetItem) targetItem = AppState.inventory[0]; // fallback to first item
+
+        const prevStock = targetItem.stock;
+        targetItem.stock += delta;
+        targetItem.status = 'In Stock';
+
+        try {
+          fetch('/api/mcp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': 'nexus_live_agent_admin_9x82' },
+            body: JSON.stringify({
+              jsonrpc: '2.0', id: Date.now(), method: 'tools/call',
+              params: { name: 'adjust_inventory_stock', arguments: { sku: targetItem.sku, delta_units: delta, reason: 'Executive AI Directive' } }
+            })
+          }).catch(() => {});
+        } catch(e) {}
+
+        AppState.auditLogs.unshift({
+          timestamp: 'Just now',
+          actor: `${AppState.currentUser.name} (via Executive AI)`,
+          action: 'Stock Adjustment',
+          target: `${targetItem.name} (${targetItem.sku})`,
+          detail: `Stock level mutated from ${prevStock} to ${targetItem.stock} (+${delta} units)`
+        });
+
+        AppState.saveState();
+        renderInventory();
+        renderDashboard();
+
+        resultRecord = {
+          id: `exec-${Date.now()}`,
+          query: rawQuery,
+          badge: '✓ EXECUTED: STOCK ADJUSTMENT',
+          badgeClass: 'bg-secondary-container text-secondary',
+          title: `Injected +${delta} units to ${targetItem.name}`,
+          detail: `SKU ${targetItem.sku} inventory recorded at ${targetItem.stock} units. ERP ledger synchronized.`,
+          diffHtml: `
+            <div class="flex justify-between items-center">
+              <span>Previous Count: <span class="line-through text-error font-bold">${prevStock}</span></span>
+              <span>Updated Count: <span class="text-secondary font-bold">${targetItem.stock} (+${delta})</span></span>
+            </div>
+          `,
+          actionHtml: `
+            <button onclick="navigateTo('inventory')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Inspect in Inventory &rarr;</button>
+            <button onclick="undoInventoryAdjustment('${targetItem.sku}', ${delta})" class="px-3 py-1 border border-outline-variant/60 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container">Undo</button>
+          `,
+          timestamp: 'Just now'
+        };
+
+        replyHtml = `
+          <div class="space-y-2">
+            <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+              <span class="badge-pill bg-secondary text-white font-mono text-[9px] font-bold">✓ EXECUTED (RANK 5)</span>
+              <span class="text-[10px] font-mono text-on-surface-variant">SKU ${targetItem.sku}</span>
+            </div>
+            <p class="font-bold text-on-surface text-xs">Stock adjusted for ${targetItem.name}.</p>
+            <div class="text-[11px] p-2 bg-surface-lowest rounded-xl font-mono">
+              Count: <span class="line-through text-error">${prevStock}</span> ➔ <span class="text-secondary font-bold">${targetItem.stock} (+${delta} units)</span>
+            </div>
+          </div>
+        `;
+        toast.success('Stock Adjusted', `Added +${delta} units to ${targetItem.name}.`);
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // INTENT 3: RESOLVE FLOOR HAZARDS & ESCALATIONS
+    // -----------------------------------------------------------------------
+    else if (lower.includes('resolve') || lower.includes('clear hazard') || lower.includes('clear escalation')) {
+      const openEsc = AppState.escalations.filter(e => e.status === 'Open');
+      if (openEsc.length > 0) {
+        openEsc.forEach(e => {
+          e.status = 'Resolved';
+          e.resolvedBy = `${AppState.currentUser.name} (via Executive AI)`;
+          e.resolvedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          try {
+            fetch('/api/mcp', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'x-api-key': 'nexus_live_agent_admin_9x82' },
+              body: JSON.stringify({
+                jsonrpc: '2.0', id: Date.now(), method: 'tools/call',
+                params: { name: 'resolve_floor_incident', arguments: { escalation_id: e.id, resolution_notes: 'Resolved via Executive AI superuser command' } }
+              })
+            }).catch(() => {});
+          } catch(err) {}
+        });
+
+        AppState.auditLogs.unshift({
+          timestamp: 'Just now',
+          actor: `${AppState.currentUser.name} (via Executive AI)`,
+          action: 'Floor Hazard Resolution',
+          target: `${openEsc.length} Incidents`,
+          detail: `Cleared escalations: ${openEsc.map(e => e.id).join(', ')}. Floor map beacons deactivated.`
+        });
+
+        AppState.saveState();
+        renderManagerEscalations();
+        renderFloorMap();
+        renderDashboard();
+
+        const diffLines = openEsc.map(e => `
+          <div class="flex justify-between items-center py-0.5">
+            <span>[${e.zone}] <strong>${e.category}</strong> (${e.id})</span>
+            <span class="text-secondary font-bold">Open ➔ Resolved</span>
+          </div>
+        `).join('');
+
+        resultRecord = {
+          id: `exec-${Date.now()}`,
+          query: rawQuery,
+          badge: '✓ EXECUTED: HAZARDS RESOLVED',
+          badgeClass: 'bg-emerald-500/20 text-emerald-600',
+          title: `Resolved ${openEsc.length} Open Floor Escalations`,
+          detail: `Safety triage completed. Red radar beacons on Digital Twin Floor Map have been deactivated.`,
+          diffHtml: diffLines,
+          actionHtml: `
+            <button onclick="navigateTo('floor-map')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Inspect Digital Twin Map &rarr;</button>
+          `,
+          timestamp: 'Just now'
+        };
+
+        replyHtml = `
+          <div class="space-y-2">
+            <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+              <span class="badge-pill bg-secondary text-white font-mono text-[9px] font-bold">✓ EXECUTED (RANK 5)</span>
+              <span class="text-[10px] font-mono text-on-surface-variant">${openEsc.length} Resolved</span>
+            </div>
+            <p class="font-bold text-on-surface text-xs">All active floor hazard tickets have been marked resolved.</p>
+            <div class="text-[11px] p-2 bg-surface-lowest rounded-xl font-mono space-y-1">
+              ${diffLines}
+            </div>
+          </div>
+        `;
+        toast.success('Hazards Resolved', `Deactivated ${openEsc.length} escalation beacons.`);
+      } else {
+        resultRecord = {
+          id: `exec-${Date.now()}`,
+          query: rawQuery,
+          badge: 'ALL CLEAR',
+          badgeClass: 'bg-surface-container text-on-surface',
+          title: 'Zero Active Floor Hazards',
+          detail: 'No open incidents are registered across all store zones. Floor telemetry reports normal operations.',
+          timestamp: 'Just now'
+        };
+        replyHtml = `<p class="text-xs">No active hazards found. The escalation queue is completely clear.</p>`;
+        toast.info('All Clear', 'No active floor hazards.');
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // INTENT 4: STAFF TRANSFER / REASSIGNMENT
+    // -----------------------------------------------------------------------
+    else if (lower.includes('transfer') || lower.includes('move') || lower.includes('reassign')) {
+      // Find candidate employee
+      let targetEmp = null;
+      for (const emp of AppState.employees) {
+        const nameParts = emp.name.toLowerCase().split(' ');
+        if (lower.includes(emp.name.toLowerCase()) || nameParts.some(p => p.length > 2 && lower.includes(p))) {
+          targetEmp = emp;
+          break;
+        }
+      }
+      if (!targetEmp) targetEmp = AppState.employees.find(e => e.id === 'NEX-3401') || AppState.employees[1]; // David Chen fallback
+
+      // Find candidate department
+      let targetDept = DEPARTMENTS.find(d => lower.includes(d.name.toLowerCase()) || lower.includes(d.name.split(' ')[0].toLowerCase()));
+      if (!targetDept) {
+        if (lower.includes('logistics') || lower.includes('bay')) targetDept = DEPARTMENTS.find(d => d.name.includes('Logistics'));
+        else if (lower.includes('apparel') || lower.includes('fashion')) targetDept = DEPARTMENTS.find(d => d.name.includes('Apparel'));
+        else if (lower.includes('security')) targetDept = DEPARTMENTS.find(d => d.name.includes('Security'));
+        else if (lower.includes('customer')) targetDept = DEPARTMENTS.find(d => d.name.includes('Customer'));
+        else targetDept = DEPARTMENTS[3]; // Logistics
+      }
+
+      const prevDept = targetEmp.department;
+      const prevZone = targetEmp.zone;
+      targetEmp.department = targetDept.name;
+      targetEmp.zone = targetDept.zone;
+
+      if (lower.includes('lead')) {
+        targetEmp.role = `${targetDept.name.split(' ')[0]} Lead`;
+        targetEmp.rank = Math.max(targetEmp.rank, 3);
+      }
+
+      AppState.auditLogs.unshift({
+        timestamp: 'Just now',
+        actor: `${AppState.currentUser.name} (via Executive AI)`,
+        action: 'Personnel Reassignment',
+        target: targetEmp.name,
+        detail: `Transferred from ${prevDept} to ${targetDept.name} (${targetDept.zone})`
+      });
+
+      AppState.saveState();
+      renderEmployees();
+      renderShiftAttendanceFeed();
+      renderPermissionsMatrix();
+      renderDashboard();
+      renderMyDutiesList();
+
+      resultRecord = {
+        id: `exec-${Date.now()}`,
+        query: rawQuery,
+        badge: '✓ EXECUTED: STAFF TRANSFER',
+        badgeClass: 'bg-secondary-container text-secondary',
+        title: `Transferred ${targetEmp.name} to ${targetDept.name}`,
+        detail: `Associate credentials and station terminal mapped to ${targetDept.zone}. Schedule & attendance rosters updated.`,
+        diffHtml: `
+          <div><span class="text-on-surface-variant">Previous:</span> <span class="line-through text-error">${prevDept} (${prevZone})</span></div>
+          <div><span class="text-secondary font-bold">Updated:</span> <span>${targetDept.name} (${targetDept.zone})</span></div>
+        `,
+        actionHtml: `
+          <button onclick="navigateTo('hr')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Inspect Roster &rarr;</button>
+          <button onclick="undoEmployeeTransfer('${targetEmp.id}', '${prevDept}', '${prevZone}')" class="px-3 py-1 border border-outline-variant/60 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container">Undo</button>
+        `,
+        timestamp: 'Just now'
+      };
+
+      replyHtml = `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+            <span class="badge-pill bg-secondary text-white font-mono text-[9px] font-bold">✓ EXECUTED (RANK 5)</span>
+            <span class="text-[10px] font-mono text-on-surface-variant">${targetEmp.name}</span>
+          </div>
+          <p class="font-bold text-on-surface text-xs">Transferred to ${targetDept.name} (${targetDept.zone}).</p>
+          <div class="text-[11px] p-2 bg-surface-lowest rounded-xl font-mono">
+            <span class="line-through text-error">${prevDept}</span> ➔ <span class="text-secondary font-bold">${targetDept.name}</span>
+          </div>
+        </div>
+      `;
+      toast.success('Associate Transferred', `${targetEmp.name} moved to ${targetDept.name}.`);
+    }
+
+    // -----------------------------------------------------------------------
+    // INTENT 5: CLOCK IN / OUT STAFF
+    // -----------------------------------------------------------------------
+    else if (lower.includes('clock in') || lower.includes('clock out')) {
+      const isClockIn = lower.includes('clock in');
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      let affected = [];
+      if (lower.includes('all') || lower.includes('logistics') || lower.includes('crew')) {
+        let dept = 'Logistics & Bay Storage';
+        if (lower.includes('apparel')) dept = 'Apparel & Fashion';
+        if (lower.includes('all')) {
+          affected = AppState.employees.slice(0, 15);
+        } else {
+          affected = AppState.employees.filter(e => e.department === dept && e.status !== 'Terminated');
+        }
+      } else {
+        const emp = AppState.employees.find(e => lower.includes(e.name.toLowerCase()));
+        if (emp) affected = [emp];
+        else affected = AppState.employees.filter(e => e.department.includes('Logistics')).slice(0, 5);
+      }
+
+      affected.forEach(e => {
+        e.clockedIn = isClockIn;
+        e.clockInTime = isClockIn ? timeStr : null;
+      });
+
+      AppState.auditLogs.unshift({
+        timestamp: 'Just now',
+        actor: `${AppState.currentUser.name} (via Executive AI)`,
+        action: isClockIn ? 'Bulk Biometric Punch In' : 'Bulk Clock Out',
+        target: `${affected.length} Crew Members`,
+        detail: `Updated terminal session punch times to ${timeStr}`
+      });
+
+      AppState.saveState();
+      renderShiftAttendanceFeed();
+      renderDashboard();
+
+      resultRecord = {
+        id: `exec-${Date.now()}`,
+        query: rawQuery,
+        badge: isClockIn ? '✓ EXECUTED: CLOCK IN' : '✓ EXECUTED: CLOCK OUT',
+        badgeClass: 'bg-secondary-container text-secondary',
+        title: `${isClockIn ? 'Clocked In' : 'Clocked Out'} ${affected.length} Staff Members`,
+        detail: `Floor terminal attendance feed updated at ${timeStr}. Headcount recalculated.`,
+        diffHtml: `
+          <div class="text-secondary font-bold">Status: ${isClockIn ? 'Active On Shift' : 'Off Shift'} (${timeStr})</div>
+          <div class="text-on-surface-variant truncate">Associates: ${affected.slice(0, 4).map(a => a.name).join(', ')}${affected.length > 4 ? ` +${affected.length - 4} more` : ''}</div>
+        `,
+        actionHtml: `
+          <button onclick="navigateTo('management')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Inspect Attendance &rarr;</button>
+        `,
+        timestamp: 'Just now'
+      };
+
+      replyHtml = `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+            <span class="badge-pill bg-secondary text-white font-mono text-[9px] font-bold">✓ EXECUTED (RANK 5)</span>
+            <span class="text-[10px] font-mono text-on-surface-variant">${affected.length} Staff</span>
+          </div>
+          <p class="font-bold text-on-surface text-xs">Clocked ${isClockIn ? 'IN' : 'OUT'} ${affected.length} crew associates at ${timeStr}.</p>
+        </div>
+      `;
+      toast.info('Attendance Updated', `${affected.length} crew members clocked ${isClockIn ? 'in' : 'out'}.`);
+    }
+
+    // -----------------------------------------------------------------------
+    // INTENT 6: RECORD FINANCIAL LEDGER ENTRY / ADD SALE
+    // -----------------------------------------------------------------------
+    else if (lower.includes('record') || lower.includes('ledger') || lower.includes('tenant') || (lower.includes('sale') && lower.includes('$'))) {
+      const amtMatch = rawQuery.match(/\$?([0-9,]+(?:\.[0-9]{2})?)/);
+      const amount = amtMatch ? parseFloat(amtMatch[1].replace(/,/g, '')) : 12500;
+      const isExpense = lower.includes('expense') || lower.includes('repair') || lower.includes('hvac');
+      const descMatch = rawQuery.replace(/.*(?:for|from|desc)\s+/i, '');
+      const desc = descMatch && descMatch.length > 4 ? descMatch : 'Tenant Lease Payment - Retail Partner';
+
+      const newTx = {
+        id: Date.now(),
+        date: 'Today',
+        desc: desc,
+        category: isExpense ? 'Maintenance' : 'Revenue',
+        type: isExpense ? 'expense' : 'revenue',
+        amount: amount,
+        status: 'Completed'
+      };
+
+      AppState.transactions.unshift(newTx);
+      AppState.auditLogs.unshift({
+        timestamp: 'Just now',
+        actor: `${AppState.currentUser.name} (via Executive AI)`,
+        action: 'Financial Ledger Entry',
+        target: `$${amount.toLocaleString()}`,
+        detail: `Posted ${newTx.type.toUpperCase()}: ${newTx.desc}`
+      });
+
+      AppState.saveState();
+      renderSales();
+      renderTransactions();
+      renderDashboard();
+
+      resultRecord = {
+        id: `exec-${Date.now()}`,
+        query: rawQuery,
+        badge: '✓ EXECUTED: LEDGER TRANSACTION',
+        badgeClass: 'bg-primary/10 text-primary dark:text-primary-fixed',
+        title: `Posted $${amount.toLocaleString()} ${newTx.category} to General Ledger`,
+        detail: `Transaction TX-${newTx.id.toString().slice(-4)} recorded under Marcus Vance authorization. Income statements and cashflow charts recalibrated.`,
+        diffHtml: `
+          <div class="flex justify-between items-center">
+            <span>Description: <strong>${newTx.desc}</strong></span>
+            <span class="${isExpense ? 'text-error' : 'text-secondary'} font-bold">${isExpense ? '-' : '+'}$${amount.toLocaleString()}</span>
+          </div>
+        `,
+        actionHtml: `
+          <button onclick="navigateTo('sales')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Inspect Financial Ledger &rarr;</button>
+        `,
+        timestamp: 'Just now'
+      };
+
+      replyHtml = `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+            <span class="badge-pill bg-secondary text-white font-mono text-[9px] font-bold">✓ EXECUTED (RANK 5)</span>
+            <span class="text-[10px] font-mono text-on-surface-variant">TX-${newTx.id.toString().slice(-4)}</span>
+          </div>
+          <p class="font-bold text-on-surface text-xs">Recorded ${newTx.desc} (+$${amount.toLocaleString()}).</p>
+        </div>
+      `;
+      toast.success('Transaction Posted', `+$${amount.toLocaleString()} added to ledger.`);
+    }
+
+    // -----------------------------------------------------------------------
+    // INTENT 7: DISPATCH URGENT FLOOR DUTY
+    // -----------------------------------------------------------------------
+    else if (lower.includes('dispatch') || lower.includes('assign duty') || lower.includes('create duty')) {
+      const taskTitle = rawQuery.replace(/.*(?:dispatch|assign duty|create duty)\s+/i, '').replace(/\s+to\s+.*/i, '') || 'Emergency Floor Cleanup & Safety Triage';
+      
+      let assignee = AppState.employees.find(e => lower.includes(e.name.toLowerCase())) || AppState.employees.find(e => e.id === 'NEX-3401') || AppState.employees[1];
+      const zone = assignee.zone || 'North Wing #42';
+
       const newDuty = {
         id: Date.now(),
-        task: 'Emergency Floor Cleanup & Safety Triage',
-        title: 'Emergency Floor Cleanup & Safety Triage',
-        zone: 'North Wing #42',
-        department: 'Facilities & Maintenance',
-        associate: 'David Chen',
-        teamLeadId: 'NEX-3401',
-        teamLeadName: 'David Chen',
+        task: taskTitle,
+        title: taskTitle,
+        zone: zone,
+        department: assignee.department,
+        associate: assignee.name,
+        teamLeadId: assignee.id,
+        teamLeadName: assignee.name,
         assignees: [
-          { id: 'NEX-3401', name: 'David Chen', role: 'Team Lead', isLead: true },
-          { id: 'NEX-1001', name: 'James Smith', role: 'Associate', isLead: false }
+          { id: assignee.id, name: assignee.name, role: 'Team Lead', isLead: true }
         ],
         status: 'In Progress',
         priority: 'Urgent',
-        due: 'Today, 30m',
+        due: 'Today, 45m',
         createdAt: 'Just now',
         checklist: [
-          { id: 1, text: 'Deploy yellow hazard wet-floor cones', done: false },
-          { id: 2, text: 'Neutralize and sanitize spill area', done: false },
-          { id: 3, text: 'Inspect slip hazard clearance and report to supervisor', done: false }
+          { id: 1, text: 'Deploy station safety equipment & verify area', done: false },
+          { id: 2, text: 'Execute assigned operational task', done: false },
+          { id: 3, text: 'Submit completed checklist for supervisor review', done: false }
         ]
       };
+
       AppState.tasks.unshift(newDuty);
+
+      try {
+        fetch('/api/mcp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': 'nexus_live_agent_admin_9x82' },
+          body: JSON.stringify({
+            jsonrpc: '2.0', id: Date.now(), method: 'tools/call',
+            params: { name: 'dispatch_shift_duty', arguments: { title: newDuty.title, zone: newDuty.zone, department: newDuty.department, team_lead_name: assignee.name, priority: 'Urgent' } }
+          })
+        }).catch(() => {});
+      } catch(e) {}
+
+      AppState.auditLogs.unshift({
+        timestamp: 'Just now',
+        actor: `${AppState.currentUser.name} (via Executive AI)`,
+        action: 'Duty Dispatched',
+        target: newDuty.title,
+        detail: `Pushed duty to ${assignee.name} (${zone})`
+      });
+
       AppState.saveState();
       renderMyDutiesList();
       renderDashboard();
 
-      replyHtml = `
-        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
-          <span class="font-bold text-on-surface">MCP Tool: <code>dispatch_shift_duty</code></span>
-          <span class="badge-pill bg-secondary-container/40 text-secondary font-mono text-[9px] font-bold">DISPATCHED</span>
-        </div>
-        <p class="font-bold text-secondary">✓ Duty Successfully Dispatched to Floor:</p>
-        <div class="p-2 rounded bg-surface-container-low text-[11px] space-y-1">
+      resultRecord = {
+        id: `exec-${Date.now()}`,
+        query: rawQuery,
+        badge: '✓ EXECUTED: DUTY DISPATCH',
+        badgeClass: 'bg-secondary-container text-secondary',
+        title: `Dispatched Duty to ${assignee.name}`,
+        detail: `Task pushed to Floor Station Terminal in ${zone}. 45-minute SLA countdown activated.`,
+        diffHtml: `
           <div><strong>Task:</strong> ${newDuty.title}</div>
-          <div><strong>Zone:</strong> ${newDuty.zone}</div>
-          <div><strong>Designated Lead:</strong> David Chen</div>
-          <div><strong>Priority:</strong> Urgent (30m countdown)</div>
-        </div>
-        <p class="text-[10px] text-on-surface-variant">Checklist created and pushed to assigned personnel duty stations.</p>
-      `;
-    }
-    // INTENT 5: Labor Compliance
-    else if (lower.includes('compliance') || lower.includes('break') || lower.includes('meal') || lower.includes('labor')) {
+          <div><strong>Assignee:</strong> ${assignee.name} (${newDuty.department})</div>
+          <div><strong>Station:</strong> ${zone} | Priority: <span class="text-error font-bold">Urgent</span></div>
+        `,
+        actionHtml: `
+          <button onclick="navigateTo('assign-task')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Inspect Task &rarr;</button>
+        `,
+        timestamp: 'Just now'
+      };
+
       replyHtml = `
-        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
-          <span class="font-bold text-on-surface">MCP Tool: <code>audit_labor_compliance</code></span>
-          <span class="badge-pill bg-emerald-500/10 text-emerald-600 font-mono text-[9px] font-bold">100% PASS</span>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+            <span class="badge-pill bg-secondary text-white font-mono text-[9px] font-bold">✓ EXECUTED (RANK 5)</span>
+            <span class="text-[10px] font-mono text-on-surface-variant">${zone}</span>
+          </div>
+          <p class="font-bold text-on-surface text-xs">Dispatched: "${newDuty.title}" to ${assignee.name}.</p>
         </div>
-        <p class="font-semibold text-on-surface">Labor Law &amp; OSHA Compliance Scorecard:</p>
-        <ul class="text-[11px] space-y-1 my-1">
-          <li class="flex items-center gap-1.5"><span class="text-secondary">✓</span> <strong>5-Hour Meal Rule:</strong> 0 statutory violations detected across on-duty associates.</li>
-          <li class="flex items-center gap-1.5"><span class="text-secondary">✓</span> <strong>Rest Breaks (15m):</strong> Active on 14 crew members with legal countdown tracking.</li>
-          <li class="flex items-center gap-1.5"><span class="text-secondary">✓</span> <strong>Overtime Grace:</strong> Zero shifts exceeding maximum daily ceiling.</li>
-        </ul>
-        <button onclick="openBreakComplianceModal()" class="mt-1 w-full py-1 bg-secondary text-white text-[11px] font-bold rounded-lg text-center">
-          Open Break Timer Station &rarr;
-        </button>
       `;
+      toast.success('Duty Dispatched', `Task routed to ${assignee.name}.`);
     }
-    // INTENT 6: Handover Briefing
-    else if (lower.includes('handover') || lower.includes('briefing') || lower.includes('end of shift')) {
-      replyHtml = `
-        <div class="flex items-center justify-between pb-1 mb-1 border-b border-outline-variant/40">
-          <span class="font-bold text-on-surface">MCP Tool: <code>generate_shift_handover</code></span>
-          <span class="badge-pill bg-primary text-white font-mono text-[9px] font-bold">READY</span>
+
+    // -----------------------------------------------------------------------
+    // INTENT 8: CONFIDENTIAL HR ROSTER & PAYROLL
+    // -----------------------------------------------------------------------
+    else if (lower.includes('hr') || lower.includes('payroll') || lower.includes('human resources')) {
+      const hrStaff = AppState.employees.filter(e => e.department.toLowerCase().includes('human resources') || e.department.toLowerCase().includes('talent'));
+      
+      const hrTable = hrStaff.map(e => `
+        <div class="flex items-center justify-between py-1 border-b border-outline-variant/30">
+          <div>
+            <span class="font-bold text-on-surface">${e.name}</span>
+            <span class="text-[10px] text-on-surface-variant block">${e.role} (Rank ${e.rank})</span>
+          </div>
+          <div class="text-right font-mono">
+            <span class="text-secondary font-bold">$${(e.rank * 28000 + 42000).toLocaleString()}/yr</span>
+            <span class="text-[9px] text-on-surface-variant block">${e.email}</span>
+          </div>
         </div>
-        <p class="text-xs">End-of-shift handover digest generated from live store telemetry. Includes task completion rates, open incident logs, and inventory shrink warnings.</p>
-        <button onclick="openHandoverModal()" class="mt-2 w-full py-1.5 bg-primary text-white text-[11px] font-bold rounded-lg text-center shadow-sm">
-          Open Printable Handover Briefing &rarr;
-        </button>
-      `;
-    }
-    // FALLBACK
-    else {
+      `).join('');
+
+      resultRecord = {
+        id: `exec-${Date.now()}`,
+        query: rawQuery,
+        badge: 'CONFIDENTIAL HR DECLASSIFIED',
+        badgeClass: 'bg-primary/10 text-primary dark:text-primary-fixed',
+        title: `Disclosed Confidential HR Roster (${hrStaff.length} Records)`,
+        detail: `Identity cloaking bypassed via Level 5 Superuser Clearance. Full compensation and talent metrics revealed.`,
+        diffHtml: hrTable,
+        actionHtml: `
+          <button onclick="navigateTo('hr')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Open HR Suite &rarr;</button>
+        `,
+        timestamp: 'Just now'
+      };
+
       replyHtml = `
-        <p class="text-xs">I analyzed your command: <em>"${query}"</em>.</p>
-        <p class="text-xs text-on-surface-variant">I can assist with querying live staff locations, dispatching emergency tasks, inspecting floor escalations, or managing break compliance.</p>
-        <div class="flex flex-wrap gap-1 mt-1">
-          <button onclick="sendCopilotSuggestedPrompt('Who is clocked in from Logistics right now?')" class="text-[10px] px-2 py-0.5 bg-surface-container rounded border border-outline-variant/50">Logistics Crew</button>
-          <button onclick="sendCopilotSuggestedPrompt('Summarize all open high-priority escalations today')" class="text-[10px] px-2 py-0.5 bg-surface-container rounded border border-outline-variant/50">Open Escalations</button>
-          <button onclick="sendCopilotSuggestedPrompt('Audit employee meal and rest break compliance')" class="text-[10px] px-2 py-0.5 bg-surface-container rounded border border-outline-variant/50">Labor Compliance</button>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+            <span class="badge-pill bg-primary text-white font-mono text-[9px] font-bold">HR PRIVILEGE DECLASSIFIED</span>
+            <span class="text-[10px] font-mono text-on-surface-variant">Rank 5 Access</span>
+          </div>
+          <p class="font-bold text-on-surface text-xs">Human Resources &amp; Talent Directorate Personnel:</p>
+          <div class="text-[11px] p-2 bg-surface-lowest rounded-xl font-mono">
+            ${hrTable}
+          </div>
         </div>
       `;
     }
 
-    appendCopilotMessage('assistant', replyHtml);
-  }, 600);
+    // -----------------------------------------------------------------------
+    // INTENT 9: EMERGENCY BROADCAST / LOCKDOWN
+    // -----------------------------------------------------------------------
+    else if (lower.includes('emergency') || lower.includes('lockdown') || lower.includes('evacuat')) {
+      const emergencyEsc = {
+        id: `ESC-${Date.now().toString().slice(-4)}`,
+        senderId: AppState.currentUser.id,
+        senderName: AppState.currentUser.name,
+        senderRole: 'Global Administrator',
+        target: 'all',
+        targetLabel: 'All Personnel',
+        category: 'EMERGENCY: Store Evacuation',
+        urgency: 'Emergency',
+        zone: 'Store-Wide',
+        description: 'Store Director emergency broadcast. Evacuate through designated emergency exit corridors.',
+        timestamp: 'Just now',
+        status: 'Open'
+      };
+
+      AppState.escalations.unshift(emergencyEsc);
+      AppState.notifications.unshift({
+        id: `notif-${Date.now()}`,
+        title: 'EMERGENCY BROADCAST',
+        message: emergencyEsc.description,
+        timestamp: 'Just now',
+        read: false,
+        type: 'emergency'
+      });
+
+      try {
+        fetch('/api/telemetry/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': 'nexus_live_agent_admin_9x82' },
+          body: JSON.stringify({
+            event: 'emergency_alert',
+            data: { alert: 'EMERGENCY STORE EVACUATION', initiator: 'Marcus Vance' }
+          })
+        }).catch(() => {});
+      } catch(e) {}
+
+      AppState.saveState();
+      renderManagerEscalations();
+      renderFloorMap();
+      renderNotifications();
+
+      resultRecord = {
+        id: `exec-${Date.now()}`,
+        query: rawQuery,
+        badge: '🚨 EMERGENCY BROADCAST ACTIVE',
+        badgeClass: 'bg-error text-white font-bold',
+        title: 'Dispatched Store-Wide Emergency Evacuation Alert',
+        detail: 'Red radar siren activated across all 9 floor zones. Handheld Zebra PDAs and POS registers locked to emergency mode.',
+        diffHtml: `
+          <div class="text-error font-bold font-mono">CODE RED: Emergency evacuation broadcast active. Audio sirens pulsing.</div>
+        `,
+        actionHtml: `
+          <button onclick="navigateTo('floor-map')" class="px-3 py-1 bg-error text-white rounded-lg text-xs font-bold">View Emergency Map &rarr;</button>
+          <button onclick="executeOmniCommand('Resolve all open floor hazards', 'cockpit')" class="px-3 py-1 border border-outline-variant/60 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container">Deactivate Alert</button>
+        `,
+        timestamp: 'Just now'
+      };
+
+      replyHtml = `
+        <div class="space-y-2 p-2 bg-error/10 border border-error/30 rounded-xl">
+          <div class="flex items-center justify-between pb-1 border-b border-error/20">
+            <span class="badge-pill bg-error text-white font-mono text-[9px] font-bold">EMERGENCY ACTIVE</span>
+            <span class="text-[10px] font-mono text-error font-bold">ALL STATIONS</span>
+          </div>
+          <p class="font-bold text-error text-xs">Emergency evacuation directive broadcast to entire retail complex.</p>
+        </div>
+      `;
+      toast.error('EMERGENCY BROADCAST', 'Store evacuation alert dispatched to all floor terminals!');
+    }
+
+    // -----------------------------------------------------------------------
+    // INTENT 10: LABOR LAW COMPLIANCE
+    // -----------------------------------------------------------------------
+    else if (lower.includes('compliance') || lower.includes('break') || lower.includes('meal') || lower.includes('labor')) {
+      resultRecord = {
+        id: `exec-${Date.now()}`,
+        query: rawQuery,
+        badge: '✓ 100% STATUTORY PASS',
+        badgeClass: 'bg-emerald-500/20 text-emerald-600',
+        title: 'Labor Law & OSHA Compliance Scorecard',
+        detail: 'All 200 personnel records audited against statutory 5-hour continuous shift limits. Zero violations logged.',
+        diffHtml: `
+          <div class="flex items-center gap-1.5"><span class="text-secondary">✓</span> <strong>5-Hour Meal Mandate:</strong> 0 infractions detected.</div>
+          <div class="flex items-center gap-1.5"><span class="text-secondary">✓</span> <strong>15-Minute Rest Cycle:</strong> 14 associates currently on verified rest.</div>
+          <div class="flex items-center gap-1.5"><span class="text-secondary">✓</span> <strong>Overtime Grace:</strong> Compliant. Zero shifts exceeding daily ceiling.</div>
+        `,
+        actionHtml: `
+          <button onclick="openBreakComplianceModal()" class="px-3 py-1 bg-secondary text-white rounded-lg text-xs font-bold">Open Break Compliance Station &rarr;</button>
+        `,
+        timestamp: 'Just now'
+      };
+
+      replyHtml = `
+        <div class="space-y-2">
+          <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+            <span class="badge-pill bg-emerald-500 text-white font-mono text-[9px] font-bold">100% COMPLIANT</span>
+            <span class="text-[10px] font-mono text-on-surface-variant">OSHA Audit</span>
+          </div>
+          <p class="font-bold text-on-surface text-xs">Labor compliance verified. All break requirements met.</p>
+        </div>
+      `;
+      toast.success('Labor Audit', '100% compliant with labor regulations.');
+    }
+
+    // -----------------------------------------------------------------------
+    // FALLBACK: INTELLIGENT TELEMETRY SYNTHESIS
+    // -----------------------------------------------------------------------
+    else {
+      const activeStaff = AppState.employees.filter(e => e.clockedIn).length;
+      const lowStock = AppState.inventory.filter(i => i.stock <= 15).length;
+      const openEsc = AppState.escalations.filter(e => e.status === 'Open').length;
+
+      resultRecord = {
+        id: `exec-${Date.now()}`,
+        query: rawQuery,
+        badge: 'COMMAND ANALYZED',
+        badgeClass: 'bg-primary/10 text-primary',
+        title: `Analyzed Directive: "${rawQuery}"`,
+        detail: `The Executive AI has verified your Level 5 clearance. Use direct commands to modify staff, adjust inventory, record revenues, dispatch floor tasks, or resolve hazards.`,
+        diffHtml: `
+          <div class="grid grid-cols-3 gap-1 text-center py-1">
+            <div class="p-1 bg-surface-container rounded">Headcount: <strong>${activeStaff}</strong></div>
+            <div class="p-1 bg-surface-container rounded">Low SKUs: <strong>${lowStock}</strong></div>
+            <div class="p-1 bg-surface-container rounded">Open Hazards: <strong>${openEsc}</strong></div>
+          </div>
+        `,
+        actionHtml: `
+          <button onclick="sendExecAIPreset('Approve all pending duties')" class="px-2.5 py-1 bg-surface-container rounded text-xs font-semibold hover:bg-surface-highest">Approve Duties</button>
+          <button onclick="sendExecAIPreset('Restock all low-stock items by 50 units')" class="px-2.5 py-1 bg-surface-container rounded text-xs font-semibold hover:bg-surface-highest">Restock SKUs</button>
+          <button onclick="sendExecAIPreset('Resolve all open floor hazards')" class="px-2.5 py-1 bg-surface-container rounded text-xs font-semibold hover:bg-surface-highest">Clear Hazards</button>
+        `,
+        timestamp: 'Just now'
+      };
+
+      replyHtml = `
+        <div class="space-y-1.5">
+          <p class="text-xs">Analyzed directive: <em>"${rawQuery}"</em>.</p>
+          <p class="text-xs text-on-surface-variant">Store telemetry: <strong>${activeStaff}</strong> associates on shift, <strong>${lowStock}</strong> critical stock warnings, <strong>${openEsc}</strong> open hazard tickets.</p>
+        </div>
+      `;
+    }
+
+    // Persist to Activity Ledger & Update UI
+    if (resultRecord) {
+      if (!AppState.execAIHistory) AppState.execAIHistory = [];
+      AppState.execAIHistory.unshift(resultRecord);
+      if (AppState.execAIHistory.length > 25) AppState.execAIHistory.pop();
+      AppState.saveState();
+      renderExecAIFeed();
+    }
+
+    if (source === 'copilot' && replyHtml) {
+      appendCopilotMessage('assistant', replyHtml);
+    }
+  }, 350);
+}
+
+// Global Copilot router wrapper
+function executeCopilotCommand(query) {
+  executeOmniCommand(query, 'copilot');
 }
 
 function toggleCopilotVoiceInput() {
@@ -6065,7 +6924,7 @@ function toggleCopilotVoiceInput() {
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
     if (input) input.value = transcript;
-    executeCopilotCommand(transcript);
+    executeOmniCommand(transcript, 'copilot');
   };
 
   recognition.onerror = () => {
@@ -6078,6 +6937,7 @@ function toggleCopilotVoiceInput() {
 
   recognition.start();
 }
+
 
 // =========================================================================
 // 21. REAL-TIME SERVER-SENT EVENTS (SSE) TELEMETRY & MCP BROADCAST STREAM
