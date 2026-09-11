@@ -1626,6 +1626,13 @@ function navigateTo(viewId) {
   renderNavActive(viewId);
   closeMobileDrawer();
 
+  // Track SPA subscreen navigation in Vercel Analytics
+  try {
+    if (typeof window.va === 'function') {
+      window.va('event', { name: 'view_change', view: viewId });
+    }
+  } catch(e) {}
+
   // Trigger view renderers
   if (viewId === 'dashboard') renderDashboard();
   if (viewId === 'inventory') renderInventory();
