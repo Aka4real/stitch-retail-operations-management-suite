@@ -1888,13 +1888,16 @@
 
       <!-- Telemetry KPI Overview Strip -->
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="nexus-card p-4 flex items-center justify-between">
+        <div onclick="handleViewActiveFloorCrew()" class="nexus-card p-4 flex items-center justify-between cursor-pointer hover:border-primary/50 hover:shadow-md transition-all active:scale-[0.98] group" title="Tap to view active floor crew members">
           <div>
-            <span class="font-mono text-[10px] uppercase tracking-wider text-on-surface-variant font-semibold">Active Floor Crew</span>
-            <div id="map-kpi-staff-count" class="font-headline text-2xl font-black text-primary dark:text-primary-fixed mt-0.5">134</div>
-            <span class="text-[10px] text-secondary font-semibold font-mono">67% on shift</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono text-[10px] uppercase tracking-wider text-slate-500 font-bold">Active Floor Crew</span>
+              <span class="material-symbols-outlined text-[14px] text-primary group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+            </div>
+            <div id="map-kpi-staff-count" class="font-headline text-2xl font-black text-slate-900 dark:text-white mt-0.5">134</div>
+            <span class="text-[10px] text-secondary font-bold font-mono">67% on shift &bull; Tap to inspect</span>
           </div>
-          <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
             <span class="material-symbols-outlined text-[20px]">group</span>
           </div>
         </div>
@@ -2597,21 +2600,21 @@
   <!-- MODAL: RECORD TRANSACTION -->
   <!-- ========================================================================= -->
   <div id="modal-add-transaction" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
-      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+    <div class="modal-content w-full max-w-lg p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200/80 dark:border-slate-800">
         <div>
-          <h3 class="font-headline text-lg font-bold text-on-surface">Record Ledger Transaction</h3>
-          <p class="text-xs text-on-surface-variant">Log operational revenue or expenditure</p>
+          <h3 class="font-headline text-xl font-extrabold text-slate-900 dark:text-white">Record Ledger Transaction</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-300 font-medium">Log operational revenue or expenditure</p>
         </div>
-        <button onclick="closeModal('modal-add-transaction')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+        <button onclick="closeModal('modal-add-transaction')" class="p-1 rounded-full text-slate-500 hover:text-slate-900 dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
       <form onsubmit="handleAddTransactionSubmit(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Description *</label>
-          <input name="trans_desc" type="text" placeholder="e.g. Tenant Rent - Nike Store" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          <label class="block text-xs font-bold text-slate-900 dark:text-slate-100 mb-1">Description *</label>
+          <input name="trans_desc" type="text" placeholder="e.g. Tenant Rent - Nike Store" required class="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none font-medium text-slate-900 dark:text-white"/>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -3506,15 +3509,15 @@
   <!-- MODAL: END-OF-SHIFT HANDOVER BRIEFING REPORT -->
   <!-- ========================================================================= -->
   <div id="modal-handover-report" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="modal-content w-full max-w-3xl max-h-[90vh] flex flex-col bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
-      <div class="flex items-center justify-between pb-3 mb-4 border-b border-outline-variant/50 no-print">
+    <div class="modal-content w-full max-w-3xl max-h-[90vh] flex flex-col p-6 relative">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200/80 dark:border-slate-800 no-print">
         <div class="flex items-center gap-2">
-          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary dark:text-primary-fixed flex items-center justify-center">
             <span class="material-symbols-outlined text-xl">assignment_turned_in</span>
           </div>
           <div>
-            <h3 class="font-headline text-lg font-bold text-on-surface">End-of-Shift Handover Briefing</h3>
-            <p class="text-xs text-on-surface-variant">Automated digest for incoming shift leads &bull; Live operational telemetry</p>
+            <h3 class="font-headline text-xl font-extrabold text-slate-900 dark:text-white">End-of-Shift Handover Briefing</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-300 font-medium">Automated digest for incoming shift leads &bull; Live operational telemetry</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -3616,6 +3619,86 @@
           <span id="break-law-badge" class="badge-pill bg-emerald-500/10 text-emerald-600 font-mono text-[10px] font-bold">COMPLIANT</span>
         </div>
         <p class="text-on-surface-variant text-[10px]">Continuous shifts exceeding 5.0 hours require a minimum 30-minute off-duty meal punch to avoid statutory overtime penalties.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: DEPARTMENT CREW MEMBERS ROSTER & STATUS -->
+  <!-- ========================================================================= -->
+  <div id="modal-crew-members" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-3xl max-h-[88vh] flex flex-col p-6 relative">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-200/80 dark:border-slate-800">
+        <div class="flex items-center gap-3">
+          <div id="crew-modal-icon-container" class="w-11 h-11 rounded-2xl bg-primary/10 text-primary dark:text-primary-fixed flex items-center justify-center shadow-xs">
+            <span id="crew-modal-icon" class="material-symbols-outlined text-2xl">group</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="crew-modal-title" class="font-headline text-xl font-extrabold text-slate-900 dark:text-white">Department Crew Roster</h3>
+              <span id="crew-modal-hr-badge" class="badge-pill bg-primary text-white font-mono text-[9px] font-bold hidden">HR CORE</span>
+            </div>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span id="crew-modal-zone" class="text-xs text-slate-500 font-mono font-medium flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">location_on</span>
+                <span id="crew-modal-zone-text">Central Mall HQ</span>
+              </span>
+              <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+              <span id="crew-modal-stats" class="text-xs text-secondary font-bold font-mono flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span>
+                <span id="crew-modal-clocked-text">0 On Shift</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="crew-modal-total-pill" class="badge-pill bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-xs font-bold border border-slate-200 dark:border-slate-700">
+            0 Total Crew
+          </span>
+          <button onclick="closeModal('modal-crew-members')" class="p-1.5 rounded-full text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Controls: Search & Shift Filters -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+        <!-- Search Filter -->
+        <div class="relative w-full sm:w-72">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">search</span>
+          <input id="crew-search-input" type="text" oninput="filterCrewModalMembers()" placeholder="Search associate, role, ID..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 font-medium text-slate-900 dark:text-white"/>
+        </div>
+
+        <!-- Filter Segmented Tabs -->
+        <div class="apple-segmented-tabs w-full sm:w-auto text-xs font-semibold">
+          <button type="button" id="crew-tab-all" onclick="setCrewModalFilter('all')" class="apple-tab-item active py-1.5 px-3 text-xs">
+            <span>All</span>
+            <span id="crew-filter-count-all" class="font-mono text-[10px] opacity-80">(0)</span>
+          </button>
+          <button type="button" id="crew-tab-shift" onclick="setCrewModalFilter('shift')" class="apple-tab-item py-1.5 px-3 text-xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+            <span>On Shift</span>
+            <span id="crew-filter-count-shift" class="font-mono text-[10px] opacity-80">(0)</span>
+          </button>
+          <button type="button" id="crew-tab-off" onclick="setCrewModalFilter('off')" class="apple-tab-item py-1.5 px-3 text-xs">
+            <span>Off Duty</span>
+            <span id="crew-filter-count-off" class="font-mono text-[10px] opacity-80">(0)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Members Roster Grid -->
+      <div id="crew-members-roster-container" class="flex-1 overflow-y-auto space-y-2.5 pr-1 max-h-[52vh]">
+        <!-- Populated dynamically by app.js: renderCrewMembersModal() -->
+      </div>
+
+      <!-- Footer Info -->
+      <div class="pt-4 mt-3 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 font-mono">
+        <span id="crew-modal-footer-info">Department Lead &amp; Operations Roster &bull; Authorized Personnel Only</span>
+        <button onclick="closeModal('modal-crew-members')" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 font-bold rounded-xl transition-all shadow-xs active:scale-95">
+          Done
+        </button>
       </div>
     </div>
   </div>

@@ -437,6 +437,26 @@ const AppState = {
     return Array.isArray(this.currentUser.permissions) && this.currentUser.permissions.includes(permKey);
   },
 
+  canViewCrewMembers(deptName) {
+    const u = this.currentUser;
+    if (!u) return false;
+    // Upper Management (Rank 4+) & Global Admin can view any crew
+    if (this.canPerformUpperManagement() || u.rank >= 4) return true;
+    // If viewing All Store Crew, require Rank 2+ or HR
+    if (deptName === "All Store Crew") return u.rank >= 2 || this.isHRMember();
+    // If viewing HR Crew, only HR team and Upper Management have clearance
+    if (deptName && (deptName.toLowerCase().includes('human resources') || deptName.toLowerCase().includes('hr'))) {
+      return this.canSeeHRRoles();
+    }
+    // HR staff can inspect all enterprise crews
+    if (this.isHRMember()) return true;
+    // Team Leads (Rank 3+) can inspect department crew rosters
+    if (u.rank >= 3) return true;
+    // Associate can view their own department's crew
+    if (u.department && deptName && u.department.toLowerCase() === deptName.toLowerCase()) return true;
+    return false;
+  },
+
   // Real-Time Notifications & Shift Alerts
   notifications: (function() {
     try {
@@ -2144,6 +2164,10 @@ function renderHRDutiesTable() {
   }).join('');
 }
 
+// Global state for Department Crew Inspection Modal
+let currentCrewModalDept = null;
+let currentCrewModalFilter = 'all';
+
 function renderHRDepartmentCrews() {
   const container = document.getElementById('hr-department-crews-grid');
   if (!container) return;
@@ -2169,59 +2193,294 @@ function renderHRDepartmentCrews() {
     const activeStaff = AppState.employees.filter(e => e.department === dept.name && e.status !== 'Terminated');
     const clockedCount = activeStaff.filter(e => e.clockedIn).length;
     const lead = activeStaff.find(e => e.rank >= 3)?.name || 'Unassigned';
+    const canView = AppState.canViewCrewMembers(dept.name);
 
     return `
-      <div class="p-4 rounded-2xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all ${dept.isHR ? 'ring-1 ring-primary/40 bg-primary/5' : ''}">
+      <div onclick="handleViewCrewMembers('${dept.name}')" class="p-4 rounded-2xl bg-white dark:bg-surface-lowest border border-slate-200/90 dark:border-white/10 shadow-sm flex flex-col justify-between hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group ${dept.isHR ? 'ring-1 ring-primary/40 bg-primary/5' : ''}">
         <div>
+          <!-- Header -->
           <div class="flex items-start justify-between gap-2 mb-2">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <span class="material-symbols-outlined text-[18px]">${dept.icon}</span>
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary dark:text-primary-fixed flex items-center justify-center group-hover:scale-105 transition-transform">
+                <span class="material-symbols-outlined text-[20px]">${dept.icon}</span>
               </div>
               <div>
-                <h4 class="font-bold text-xs text-on-surface leading-tight flex items-center gap-1">
+                <h4 class="font-extrabold text-sm text-slate-900 dark:text-white leading-tight flex items-center gap-1.5">
                   <span>${dept.name}</span>
                   ${dept.isHR ? '<span class="badge-pill bg-primary text-white font-mono text-[8px] font-bold">HR CORE</span>' : ''}
                 </h4>
-                <p class="text-[10px] text-on-surface-variant font-mono">${dept.zone}</p>
+                <p class="text-[11px] text-slate-500 font-mono flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[13px]">location_on</span>
+                  <span>${dept.zone}</span>
+                </p>
               </div>
             </div>
-            <span class="badge-pill bg-surface-container text-on-surface font-mono text-[10px] font-bold">
+            <span class="badge-pill bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-mono text-[10px] font-bold border border-slate-200 dark:border-slate-700">
               ${activeStaff.length} Staff
             </span>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 my-3 p-2.5 rounded-xl bg-surface-container-low/60 text-[11px]">
+          <!-- Roster Metric Snippet -->
+          <div class="grid grid-cols-2 gap-2 my-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 text-[11px]">
             <div>
-              <span class="text-on-surface-variant text-[10px] block">On Shift:</span>
+              <span class="text-slate-500 text-[10px] block font-medium">On Shift:</span>
               <span class="font-bold text-secondary font-mono flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full ${clockedCount > 0 ? 'bg-secondary' : 'bg-outline'}"></span>
+                <span class="w-2 h-2 rounded-full ${clockedCount > 0 ? 'bg-secondary live-pulse' : 'bg-slate-400'}"></span>
                 ${clockedCount} Active
               </span>
             </div>
             <div>
-              <span class="text-on-surface-variant text-[10px] block">Team Lead:</span>
-              <span class="font-bold text-on-surface truncate block" title="${lead}">${lead}</span>
+              <span class="text-slate-500 text-[10px] block font-medium">Team Lead:</span>
+              <span class="font-bold text-slate-900 dark:text-white truncate block" title="${lead}">${lead}</span>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center justify-between gap-1.5 pt-2 border-t border-outline-variant/40">
-          ${AppState.canPerformUpperManagement() ? `
-            <button onclick="openDissolveTeamModal('${dept.name}')" class="flex-1 py-1.5 px-2 bg-surface-container hover:bg-surface-container-high text-on-surface text-[11px] font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 active:scale-95" title="Disband active shift assignments and return associates to reserve">
-              <span class="material-symbols-outlined text-[14px]">cancel</span>
-              <span>Dissolve Crew</span>
-            </button>
-            <button onclick="openSackTeamModal('${dept.name}')" class="py-1.5 px-2.5 bg-error/10 hover:bg-error/20 text-error text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1 active:scale-95" title="Mass terminate all associates in this department">
-              <span class="material-symbols-outlined text-[14px]">gavel</span>
-              <span>Sack Team</span>
+        <div class="space-y-2 pt-2 border-t border-slate-200/80 dark:border-slate-800">
+          <!-- Primary Action: View / Tap to inspect Crew Members -->
+          ${canView ? `
+            <button type="button" onclick="event.stopPropagation(); handleViewCrewMembers('${dept.name}')" class="w-full py-2 px-3 bg-primary/10 hover:bg-primary text-primary hover:text-white dark:bg-white/10 dark:hover:bg-white dark:hover:text-slate-900 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs">
+              <span class="material-symbols-outlined text-[16px]">group</span>
+              <span>Inspect Crew Members (${activeStaff.length}) &rarr;</span>
             </button>
           ` : `
-            <div class="flex items-center justify-center gap-1 text-[10px] text-outline w-full py-1">
-              <span class="material-symbols-outlined text-[12px]">lock</span>
-              <span>Team actions locked (Upper Mgmt Rank 4+)</span>
+            <button type="button" onclick="event.stopPropagation(); toast.error('Clearance Denied', 'Viewing ${dept.name} crew roster requires Team Lead or Upper Management clearance.');" class="w-full py-2 px-3 bg-slate-100 dark:bg-slate-800/80 text-slate-400 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-not-allowed">
+              <span class="material-symbols-outlined text-[15px]">lock</span>
+              <span>Crew Roster Restricted</span>
+            </button>
+          `}
+
+          <!-- Administrative Controls for Upper Management -->
+          ${AppState.canPerformUpperManagement() ? `
+            <div class="flex items-center gap-1.5 pt-1">
+              <button onclick="event.stopPropagation(); openDissolveTeamModal('${dept.name}')" class="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 active:scale-95" title="Disband active shift assignments and return associates to reserve">
+                <span class="material-symbols-outlined text-[14px]">cancel</span>
+                <span>Dissolve</span>
+              </button>
+              <button onclick="event.stopPropagation(); openSackTeamModal('${dept.name}')" class="py-1.5 px-2.5 bg-error/10 hover:bg-error/20 text-error text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1 active:scale-95" title="Mass terminate all associates in this department">
+                <span class="material-symbols-outlined text-[14px]">gavel</span>
+                <span>Sack</span>
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Controller to open and display Crew Members Modal
+function handleViewCrewMembers(deptName) {
+  if (!deptName) return;
+
+  // Clearance verification
+  if (!AppState.canViewCrewMembers(deptName)) {
+    toast.error('Clearance Denied', `Viewing ${deptName} crew roster requires Team Lead, HR, or Upper Management clearance.`);
+    return;
+  }
+
+  currentCrewModalDept = deptName;
+  currentCrewModalFilter = 'all';
+
+  const searchInput = document.getElementById('crew-search-input');
+  if (searchInput) searchInput.value = '';
+
+  ['all', 'shift', 'off'].forEach(f => {
+    const btn = document.getElementById(`crew-tab-${f}`);
+    if (btn) btn.classList.toggle('active', f === 'all');
+  });
+
+  renderCrewMembersModal();
+  openModal('modal-crew-members');
+}
+
+// View Active Floor Crew across all departments (from floor map KPI)
+function handleViewActiveFloorCrew() {
+  const u = AppState.currentUser;
+  if (!u) return;
+
+  if (u.rank < 2 && !AppState.isHRMember()) {
+    toast.error('Clearance Denied', 'Viewing complete live floor crew roster requires Supervisory clearance (Rank 2+).');
+    return;
+  }
+
+  handleViewCrewMembers("All Store Crew");
+}
+
+function setCrewModalFilter(filter) {
+  currentCrewModalFilter = filter;
+  ['all', 'shift', 'off'].forEach(f => {
+    const btn = document.getElementById(`crew-tab-${f}`);
+    if (btn) btn.classList.toggle('active', f === filter);
+  });
+  renderCrewMembersModal();
+}
+
+function filterCrewModalMembers() {
+  renderCrewMembersModal();
+}
+
+function renderCrewMembersModal() {
+  if (!currentCrewModalDept) return;
+  const deptName = currentCrewModalDept;
+  const isAll = deptName === "All Store Crew";
+  const isHR = !isAll && (deptName.toLowerCase().includes('human resources') || deptName.toLowerCase().includes('hr'));
+
+  // Strict security check: non-HR and non-management cannot view HR crew
+  if (isHR && !AppState.canSeeHRRoles()) {
+    closeModal('modal-crew-members');
+    toast.error('Clearance Denied', 'Access to HR crew roster restricted to HR personnel and Upper Management.');
+    return;
+  }
+
+  const deptsMeta = [
+    { name: "Human Resources & Talent", zone: "Central Mall HQ", icon: "badge" },
+    { name: "Apparel & Fashion", zone: "North Wing #42", icon: "styler" },
+    { name: "Electronics & Gadgets", zone: "South Atrium", icon: "devices" },
+    { name: "Logistics & Bay Storage", zone: "Storage Bay B", icon: "warehouse" },
+    { name: "Customer Relations", zone: "Central Mall HQ", icon: "support_agent" },
+    { name: "Security & Safety", zone: "West Gallery", icon: "security" },
+    { name: "Facilities & Maintenance", zone: "Service Core A", icon: "build" },
+    { name: "Food & Beverage", zone: "Food Court Deck", icon: "restaurant" },
+    { name: "Cashier & Front End", zone: "East Promenade", icon: "point_of_sale" },
+    { name: "Beauty & Cosmetics", zone: "North Wing #42", icon: "spa" },
+    { name: "Home Goods & Furniture", zone: "Upper Mezzanine", icon: "chair" }
+  ];
+
+  const meta = isAll ? 
+    { name: "All Store Crew", zone: "Storewide (All 9 Mall Zones)", icon: "groups" } :
+    (deptsMeta.find(d => d.name === deptName) || { name: deptName, zone: "Store Floor", icon: "groups" });
+
+  // Update header DOM elements
+  const titleEl = document.getElementById('crew-modal-title');
+  const iconEl = document.getElementById('crew-modal-icon');
+  const zoneEl = document.getElementById('crew-modal-zone-text');
+  const hrBadge = document.getElementById('crew-modal-hr-badge');
+  const totalPill = document.getElementById('crew-modal-total-pill');
+  const clockedText = document.getElementById('crew-modal-clocked-text');
+
+  if (titleEl) titleEl.textContent = isAll ? "All Store Floor Crew" : `${deptName} Crew`;
+  if (iconEl) iconEl.textContent = meta.icon;
+  if (zoneEl) zoneEl.textContent = meta.zone;
+  if (hrBadge) hrBadge.classList.toggle('hidden', !isHR);
+
+  // Retrieve employees
+  let allDeptStaff = isAll ? 
+    AppState.employees.filter(e => e.status !== 'Terminated' && (!e.department.includes('Human Resources') || AppState.canSeeHRRoles())) :
+    AppState.employees.filter(e => e.department === deptName && e.status !== 'Terminated');
+
+  const onShiftStaff = allDeptStaff.filter(e => e.clockedIn);
+  const offShiftStaff = allDeptStaff.filter(e => !e.clockedIn);
+
+  if (totalPill) totalPill.textContent = `${allDeptStaff.length} Members`;
+  if (clockedText) clockedText.textContent = `${onShiftStaff.length} On Shift (${Math.round((onShiftStaff.length / (allDeptStaff.length || 1)) * 100)}%)`;
+
+  // Update counts in segmented tabs
+  const countAll = document.getElementById('crew-filter-count-all');
+  const countShift = document.getElementById('crew-filter-count-shift');
+  const countOff = document.getElementById('crew-filter-count-off');
+  if (countAll) countAll.textContent = `(${allDeptStaff.length})`;
+  if (countShift) countShift.textContent = `(${onShiftStaff.length})`;
+  if (countOff) countOff.textContent = `(${offShiftStaff.length})`;
+
+  // Apply shift filter
+  let displayedStaff = allDeptStaff;
+  if (currentCrewModalFilter === 'shift') displayedStaff = onShiftStaff;
+  if (currentCrewModalFilter === 'off') displayedStaff = offShiftStaff;
+
+  // Apply search query filter
+  const query = (document.getElementById('crew-search-input')?.value || '').trim().toLowerCase();
+  if (query) {
+    displayedStaff = displayedStaff.filter(e => 
+      e.name.toLowerCase().includes(query) ||
+      e.id.toLowerCase().includes(query) ||
+      e.role.toLowerCase().includes(query) ||
+      (e.department && e.department.toLowerCase().includes(query)) ||
+      (e.rfid && e.rfid.toLowerCase().includes(query))
+    );
+  }
+
+  // Sort: Higher ranks first, then clocked-in associates, then alphabetical
+  displayedStaff.sort((a, b) => {
+    if (b.rank !== a.rank) return b.rank - a.rank;
+    if (a.clockedIn !== b.clockedIn) return a.clockedIn ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const container = document.getElementById('crew-members-roster-container');
+  if (!container) return;
+
+  if (displayedStaff.length === 0) {
+    container.innerHTML = `
+      <div class="p-8 text-center text-slate-500 bg-slate-50/60 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+        <span class="material-symbols-outlined text-3xl mb-1 text-slate-400">group_off</span>
+        <p class="font-bold text-sm text-slate-800 dark:text-slate-200">No Crew Members Found</p>
+        <p class="text-xs mt-0.5">No associates matching current search or shift filter.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const rankColors = {
+    1: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300',
+    2: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
+    3: 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300',
+    4: 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-300',
+    5: 'bg-purple-50 text-purple-800 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300'
+  };
+  const rankLabels = { 1: 'R1 Assoc', 2: 'R2 Specialist', 3: 'R3 Team Lead', 4: 'R4 Manager', 5: 'R5 Admin' };
+
+  container.innerHTML = displayedStaff.map(emp => {
+    const isClocked = !!emp.clockedIn;
+    const isLead = emp.rank >= 3;
+    const isMe = emp.id === AppState.currentUser.id;
+
+    return `
+      <div class="p-3.5 rounded-2xl bg-white dark:bg-surface-lowest border border-slate-200/90 dark:border-white/10 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-primary/40 transition-all">
+        <!-- Left: Avatar & Info -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm ${isClocked ? 'bg-secondary/15 text-secondary border border-secondary/30 ring-2 ring-secondary/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'}">
+            ${emp.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <h4 class="font-extrabold text-sm text-slate-900 dark:text-white leading-tight">${emp.name}</h4>
+              <span class="badge-pill text-[9px] font-mono font-bold border ${rankColors[emp.rank] || rankColors[1]}">
+                ${rankLabels[emp.rank] || 'R1'}
+              </span>
+              ${isMe ? '<span class="badge-pill bg-primary text-white text-[9px] font-bold">YOU</span>' : ''}
+              ${isAll ? `<span class="badge-pill bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[9px] font-semibold">${emp.department}</span>` : ''}
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5">${emp.role}</p>
+            <div class="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+              <span>ID: ${emp.id}</span>
+              <span>&bull;</span>
+              <span>${emp.rfid ? `Tag: ${emp.rfid}` : 'No RFID'}</span>
+              <span>&bull;</span>
+              <span class="truncate max-w-[140px] sm:max-w-[180px]">${emp.email}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Live Shift Status & Actions -->
+        <div class="flex items-center gap-2 self-end sm:self-center">
+          ${isClocked ? `
+            <div class="px-2.5 py-1 rounded-xl bg-secondary-container/40 text-secondary border border-secondary/30 text-xs font-bold flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span>
+              <span>On Shift</span>
+            </div>
+          ` : `
+            <div class="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-semibold flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+              <span>Off Duty</span>
             </div>
           `}
+
+          ${AppState.canPerformUpperManagement() || AppState.isUserInHRTeam() ? `
+            <button onclick="closeModal('modal-crew-members'); openTransferEmployeeModal('${emp.id}')" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors" title="Transfer Associate">
+              <span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
