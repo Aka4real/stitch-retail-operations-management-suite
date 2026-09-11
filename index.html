@@ -165,6 +165,16 @@
         <span class="flex-1">Top Management Suite</span>
         <span class="font-mono text-[9px] bg-primary/10 text-primary dark:text-primary-fixed px-1.5 py-0.2 rounded-full font-bold">AI SUITE</span>
       </a>
+      <a href="#documents" id="sidebar-nav-documents" data-view="documents" onclick="navigateTo('documents')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">description</span>
+        <span class="flex-1">Document Hub</span>
+        <span class="font-mono text-[9px] bg-tertiary-container/30 text-on-tertiary-container px-1.5 py-0.2 rounded-full font-bold">DOCS</span>
+      </a>
+      <a href="#deboarding" id="sidebar-nav-deboarding" data-view="deboarding" onclick="navigateTo('deboarding')" class="nav-link">
+        <span class="material-symbols-outlined text-[20px]">person_remove</span>
+        <span class="flex-1">Dismissal &amp; Deboarding</span>
+        <span class="font-mono text-[9px] bg-error-container/30 text-error px-1.5 py-0.2 rounded-full font-bold">EXIT</span>
+      </a>
       <a href="#login" id="sidebar-nav-login" data-view="login" onclick="navigateTo('login')" class="nav-link">
         <span class="material-symbols-outlined text-[20px]">badge</span>
         <span class="flex-1">Terminal Login</span>
@@ -2636,6 +2646,163 @@
       </div>
     </main>
 
+    <!-- ========================================================================= -->
+    <!-- VIEW 12: STAFF DISMISSAL & DEBOARDING CENTER -->
+    <!-- ========================================================================= -->
+    <main id="view-deboarding" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 hidden">
+      <!-- Deboarding Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="material-symbols-outlined text-error text-[22px]">person_remove</span>
+            <h2 class="font-headline text-2xl font-bold text-on-surface">Staff Dismissal &amp; Deboarding Center</h2>
+          </div>
+          <p class="text-xs text-on-surface-variant">Manage employee offboarding, credential revocation, equipment recovery, and statutory severance settlements.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="navigateTo('hr')" class="px-3.5 py-2 bg-surface-container border border-outline-variant text-on-surface rounded-xl text-xs font-semibold hover:bg-surface-container-high transition-colors flex items-center gap-1.5 shadow-xs">
+            <span class="material-symbols-outlined text-[16px]">groups</span>
+            <span>Active Team Roster</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="nexus-card p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-on-surface-variant font-medium">Total Dismissals</span>
+            <span class="material-symbols-outlined text-[18px] text-error">gavel</span>
+          </div>
+          <div id="deboarding-kpi-total" class="font-headline text-2xl font-extrabold text-on-surface font-mono">0</div>
+          <span class="text-[11px] text-on-surface-variant">Archived workforce files</span>
+        </div>
+        <div class="nexus-card p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-on-surface-variant font-medium">Deboarding In-Progress</span>
+            <span class="material-symbols-outlined text-[18px] text-amber-500">pending_actions</span>
+          </div>
+          <div id="deboarding-kpi-active" class="font-headline text-2xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">0</div>
+          <span class="text-[11px] text-on-surface-variant">Steps pending completion</span>
+        </div>
+        <div class="nexus-card p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-on-surface-variant font-medium">Assets Pending Return</span>
+            <span class="material-symbols-outlined text-[18px] text-primary">inventory</span>
+          </div>
+          <div id="deboarding-kpi-assets" class="font-headline text-2xl font-extrabold text-primary font-mono">0</div>
+          <span class="text-[11px] text-on-surface-variant">Scanners, radios &amp; keys</span>
+        </div>
+        <div class="nexus-card p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-on-surface-variant font-medium">Severance Liquidated</span>
+            <span class="material-symbols-outlined text-[18px] text-secondary">account_balance_wallet</span>
+          </div>
+          <div id="deboarding-kpi-severance" class="font-headline text-2xl font-extrabold text-secondary font-mono">$0</div>
+          <span class="text-[11px] text-on-surface-variant">Statutory PTO &amp; settlements</span>
+        </div>
+      </section>
+
+      <!-- Filter Controls & Search -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-surface-container-low/60 rounded-2xl border border-outline-variant/40">
+        <div class="flex items-center gap-1.5 overflow-x-auto">
+          <button id="deboard-tab-all" onclick="filterDeboardingList('all')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary text-on-primary transition-all deboard-filter-btn">All Dismissed (<span id="deboard-count-all">0</span>)</button>
+          <button id="deboard-tab-progress" onclick="filterDeboardingList('in_progress')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all deboard-filter-btn">In Progress (<span id="deboard-count-progress">0</span>)</button>
+          <button id="deboard-tab-completed" onclick="filterDeboardingList('completed')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all deboard-filter-btn">Cleared &amp; Archived (<span id="deboard-count-completed">0</span>)</button>
+        </div>
+        <div class="relative min-w-[240px]">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+          <input id="deboarding-search-input" oninput="renderDeboarding()" type="text" placeholder="Search dismissed staff..." class="w-full pl-9 pr-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        </div>
+      </div>
+
+      <!-- Dismissed Staff Cards Container -->
+      <div id="deboarding-dossier-list" class="space-y-4">
+        <!-- Rendered dynamically by renderDeboarding() -->
+      </div>
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 13: DOCUMENT HUB & POLICY REGISTRY -->
+    <!-- ========================================================================= -->
+    <main id="view-documents" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 hidden">
+      <!-- Documents Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="material-symbols-outlined text-primary text-[22px]">description</span>
+            <h2 class="font-headline text-2xl font-bold text-on-surface">Nexus Document Hub &amp; SOP Registry</h2>
+          </div>
+          <p class="text-xs text-on-surface-variant">Centralized repository for corporate standards, department daily SOPs, safety compliance manuals, and executive directives.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- Upload / Authorize Button (Visible to HR & Upper Management) -->
+          <button id="doc-hub-upload-btn" onclick="openUploadDocumentModal()" class="px-3.5 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:bg-primary-container transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
+            <span class="material-symbols-outlined text-[16px]">upload_file</span>
+            <span>Upload / Authorize Document</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- User Clearance Info Banner -->
+      <div id="doc-hub-clearance-banner" class="p-3.5 rounded-2xl bg-surface-container-low/70 border border-outline-variant/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+            <span class="material-symbols-outlined text-[20px]">verified_user</span>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-on-surface flex items-center gap-2">
+              <span id="doc-user-name">Marcus Vance</span>
+              <span id="doc-user-rank-badge" class="badge-pill font-mono text-[9px] bg-primary/10 text-primary">Rank 5 Clearance</span>
+              <span id="doc-user-dept-badge" class="badge-pill font-mono text-[9px] bg-secondary-container/40 text-secondary">Executive Operations</span>
+            </div>
+            <p class="text-[11px] text-on-surface-variant">Document visibility dynamically resolved by department assignment, clearance tier, and executive authorizations.</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="badge-pill bg-tertiary-container/30 text-on-tertiary-container font-mono text-[11px] font-bold border border-tertiary/20">
+            <span id="doc-accessible-count">0</span> Documents Accessible
+          </span>
+        </div>
+      </div>
+
+      <!-- Filters & Category Navigation -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          <button id="doc-filter-all" onclick="filterDocumentsCategory('All')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary text-on-primary transition-all doc-cat-pill">All Documents</button>
+          <button id="doc-filter-mydept" onclick="filterDocumentsCategory('MyDept')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all doc-cat-pill">My Department</button>
+          <button id="doc-filter-sop" onclick="filterDocumentsCategory('SOP')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all doc-cat-pill">Operational SOPs</button>
+          <button id="doc-filter-policy" onclick="filterDocumentsCategory('Policy')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all doc-cat-pill">Policies &amp; Safety</button>
+          <button id="doc-filter-exec" onclick="filterDocumentsCategory('Executive')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all doc-cat-pill">Executive Directives</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="doc-dept-select-filter" onchange="renderDocuments()" class="px-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium">
+            <option value="All">All Departments</option>
+            <option value="Apparel & Fashion">Apparel &amp; Fashion</option>
+            <option value="Electronics & Gadgets">Electronics &amp; Gadgets</option>
+            <option value="Logistics & Bay Storage">Logistics &amp; Bay Storage</option>
+            <option value="Customer Relations">Customer Relations</option>
+            <option value="Security & Safety">Security &amp; Safety</option>
+            <option value="Facilities & Maintenance">Facilities &amp; Maintenance</option>
+            <option value="Food & Beverage">Food &amp; Beverage</option>
+            <option value="Cashier & Front End">Cashier &amp; Front End</option>
+            <option value="Beauty & Cosmetics">Beauty &amp; Cosmetics</option>
+            <option value="Home Goods & Furniture">Home Goods &amp; Furniture</option>
+            <option value="Human Resources & Talent">Human Resources &amp; Talent</option>
+          </select>
+          <div class="relative min-w-[200px]">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
+            <input id="document-search-input" oninput="renderDocuments()" type="text" placeholder="Search documents..." class="w-full pl-8 pr-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Document Cards Grid -->
+      <div id="documents-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered dynamically by renderDocuments() -->
+      </div>
+    </main>
+
   </div>
 
   <!-- ========================================================================= -->
@@ -3881,6 +4048,158 @@
         <span class="material-symbols-outlined text-[18px]">send</span>
       </button>
     </form>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: UPLOAD / AUTHORIZE DOCUMENT -->
+  <!-- ========================================================================= -->
+  <div id="modal-upload-document" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+    <div class="modal-content w-full max-w-xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">upload_file</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">Upload &amp; Authorize Document</h3>
+            <p class="text-xs text-on-surface-variant">Publish operational procedure or policy with granular RBAC access controls</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-upload-document')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleUploadDocumentSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1">Document Title *</label>
+          <input id="doc-upload-title" name="title" type="text" required placeholder="e.g. Storage Bay B Inventory Audit SOP 2026" class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface mb-1">Category *</label>
+            <select id="doc-upload-category" name="category" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium">
+              <option value="SOP">Standard Operating Procedure (SOP)</option>
+              <option value="Policy">Workforce Policy</option>
+              <option value="Health & Safety">Health &amp; Safety / Compliance</option>
+              <option value="Supervisory">Supervisory &amp; Shift Lead Manual</option>
+              <option value="Financial">Financial Ledger / P&amp;L Report</option>
+              <option value="Executive Directive">Executive Directive</option>
+              <option value="HR Master">HR Confidential Procedure</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface mb-1">Security Classification *</label>
+            <select id="doc-upload-classification" name="classification" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium">
+              <option value="General Access">General Access (All Staff)</option>
+              <option value="Department Restricted">Department Restricted</option>
+              <option value="Confidential (Rank 3+)">Confidential (Rank 3+)</option>
+              <option value="Executive Eyes Only">Executive Eyes Only (Rank 4+)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface mb-1">Target Department Scope *</label>
+            <select id="doc-upload-dept" name="target_dept" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium">
+              <option value="All">All Departments (Storewide)</option>
+              <option value="Apparel & Fashion">Apparel &amp; Fashion</option>
+              <option value="Electronics & Gadgets">Electronics &amp; Gadgets</option>
+              <option value="Logistics & Bay Storage">Logistics &amp; Bay Storage</option>
+              <option value="Customer Relations">Customer Relations</option>
+              <option value="Security & Safety">Security &amp; Safety</option>
+              <option value="Facilities & Maintenance">Facilities &amp; Maintenance</option>
+              <option value="Food & Beverage">Food &amp; Beverage</option>
+              <option value="Cashier & Front End">Cashier &amp; Front End</option>
+              <option value="Beauty & Cosmetics">Beauty &amp; Cosmetics</option>
+              <option value="Home Goods & Furniture">Home Goods &amp; Furniture</option>
+              <option value="Human Resources & Talent">Human Resources &amp; Talent</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface mb-1">Minimum Clearance Rank *</label>
+            <select id="doc-upload-min-rank" name="min_rank" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium">
+              <option value="1">Rank 1: All Associates &amp; Staff</option>
+              <option value="2">Rank 2: Specialists &amp; Up</option>
+              <option value="3">Rank 3: Team Leads &amp; Up</option>
+              <option value="4">Rank 4: Managers &amp; Up</option>
+              <option value="5">Rank 5: Global Admin Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1">Explicit Employee Whitelist (Optional)</label>
+          <input id="doc-upload-grants" name="granted_employees" type="text" placeholder="Enter comma-separated Employee IDs (e.g. NEX-8492, NEX-1044)..." class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-mono"/>
+          <p class="text-[10px] text-on-surface-variant mt-1">Listed staff are granted immediate access regardless of department or rank.</p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1">Executive Summary / Abstract *</label>
+          <textarea id="doc-upload-summary" name="summary" rows="2" required placeholder="Brief description of the document purpose..." class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1">Document Content / Policy Text *</label>
+          <textarea id="doc-upload-content" name="content" rows="5" required placeholder="Full document text, procedures, or instructions..." class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-mono"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-outline-variant/40">
+          <button type="button" onclick="closeModal('modal-upload-document')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary-container shadow-sm active:scale-95 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">publish</span>
+            <span>Publish &amp; Authorize</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: VIEW DOCUMENT READER -->
+  <!-- ========================================================================= -->
+  <div id="modal-view-document" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+    <div class="modal-content w-full max-w-2xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] flex flex-col">
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between pb-3 border-b border-outline-variant/50 shrink-0">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span id="view-doc-cat-badge" class="badge-pill bg-primary/10 text-primary font-mono text-[9px] font-bold">Policy</span>
+            <span id="view-doc-class-badge" class="badge-pill bg-secondary-container/40 text-secondary font-mono text-[9px] font-bold">General Access</span>
+            <span id="view-doc-id" class="text-on-surface-variant font-mono text-[10px]">DOC-001</span>
+          </div>
+          <h3 id="view-doc-title" class="font-headline text-lg font-bold text-on-surface">Document Title</h3>
+          <p id="view-doc-meta" class="text-[11px] text-on-surface-variant mt-0.5">Author: Management • Updated: Today • Scope: All Departments</p>
+        </div>
+        <button onclick="closeModal('modal-view-document')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Document Content Body -->
+      <div id="view-doc-content-body" class="py-4 overflow-y-auto flex-1 text-xs text-on-surface leading-relaxed space-y-3 prose dark:prose-invert max-w-none">
+        <!-- Injected dynamically -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="pt-3 border-t border-outline-variant/50 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
+          <span class="material-symbols-outlined text-[14px] text-secondary">verified</span>
+          <span>Official Corporate Standard</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="toast.success('Document Downloaded', 'PDF copy generated for offline compliance.'); closeModal('modal-view-document');" class="px-3 py-1.5 text-xs font-medium border border-outline-variant rounded-xl hover:bg-surface-container text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">download</span>
+            <span>Download PDF</span>
+          </button>
+          <button type="button" onclick="toast.success('Acknowledgment Recorded', 'Signed off in compliance audit log.'); closeModal('modal-view-document');" class="px-4 py-1.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-xs active:scale-95">
+            Acknowledge &amp; Close
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Sonner Toast Container -->

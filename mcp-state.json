@@ -107,6 +107,60 @@
   ],
   "duties": [
     {
+      "id": 1789164785577,
+      "title": "Restock Display Aisle 3",
+      "zone": "North Wing #42",
+      "department": "Apparel & Fashion",
+      "lead": "Elena Rodriguez",
+      "priority": "High",
+      "status": "In Progress",
+      "checklist": [
+        {
+          "id": 1,
+          "text": "Unpack cartons",
+          "done": false
+        },
+        {
+          "id": 2,
+          "text": "Hang outerwear",
+          "done": false
+        },
+        {
+          "id": 3,
+          "text": "Steam wrinkles",
+          "done": false
+        }
+      ],
+      "dispatched_at": "2026-09-11T22:13:05.577Z"
+    },
+    {
+      "id": 1789162771071,
+      "title": "Restock Display Aisle 3",
+      "zone": "North Wing #42",
+      "department": "Apparel & Fashion",
+      "lead": "Elena Rodriguez",
+      "priority": "High",
+      "status": "In Progress",
+      "checklist": [
+        {
+          "id": 1,
+          "text": "Unpack cartons",
+          "done": false
+        },
+        {
+          "id": 2,
+          "text": "Hang outerwear",
+          "done": false
+        },
+        {
+          "id": 3,
+          "text": "Steam wrinkles",
+          "done": false
+        }
+      ],
+      "dispatched_at": "2026-09-11T21:39:31.071Z"
+    },
+    {
       "id": 1789107103846,
       "title": "Restock Display Aisle 3",
       "zone": "North Wing #42",
@@ -403,6 +457,24 @@
   ],
   "escalations": [
     {
+      "id": "ESC-583",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Broken olive oil bottle in aisle 3 via SDK test",
+      "status": "Open",
+      "reported_at": "2026-09-11T22:13:05.583Z"
+    },
+    {
+      "id": "ESC-077",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Broken olive oil bottle in aisle 3 via SDK test",
+      "status": "Open",
+      "reported_at": "2026-09-11T21:39:31.077Z"
+    },
+    {
       "id": "ESC-857",
       "category": "Spill / Slip Hazard",
       "zone": "North Wing #42",
@@ -522,7 +594,7 @@
     {
       "sku": "EL-OM-27",
       "name": "OLED Monitor 27\"",
-      "stock": 245,
+      "stock": 265,
       "max": 200,
       "bay": "Bay B-4",
       "price": 349.99

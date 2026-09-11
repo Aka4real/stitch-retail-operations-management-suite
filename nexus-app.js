@@ -910,6 +910,142 @@ const AppState = {
     ];
   })(),
 
+  // Corporate Documents, Department SOPs & Policy Registry Store
+  documents: (function() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('nexus_documents'));
+      if (Array.isArray(stored) && stored.length > 0) return stored;
+    } catch(e) {}
+    return [
+      {
+        id: 'DOC-GEN-001',
+        title: 'Nexus Retail Enterprise Associate Handbook 2026',
+        category: 'Policy',
+        targetDept: 'All',
+        minRank: 1,
+        grantedEmployeeIds: [],
+        classification: 'General Access',
+        version: 'v4.2',
+        updatedAt: 'Aug 15, 2026',
+        author: 'Human Resources & Talent',
+        summary: 'Core workplace standards, dress code, anti-harassment regulations, customer service ethos, and shift expectations.',
+        content: `<h3>1. Welcome to Nexus Retail Operations</h3><p>Nexus Mall Retail Operations represents the global benchmark in modern omni-channel commerce. Every workforce member is an ambassador of our service culture.</p><h3>2. Attendance & Shift Punctuality</h3><p>Associates are expected to badge-in at least 5 minutes prior to shift commencement at their designated station zone. Breaks must be strictly logged in the Digital Twin kiosk.</p><h3>3. Customer Experience Protocol</h3><p>Provide proactive greeting within 30 seconds of customer arrival. Maintain pristine display merchandising and adhere to zero-shrinkage floor vigilance.</p>`
+      },
+      {
+        id: 'DOC-SAF-002',
+        title: 'Store Emergency Evacuation & Fire Safety Protocol',
+        category: 'Health & Safety',
+        targetDept: 'All',
+        minRank: 1,
+        grantedEmployeeIds: [],
+        classification: 'General Access',
+        version: 'v2.1',
+        updatedAt: 'Jul 20, 2026',
+        author: 'Security & Safety',
+        summary: 'Emergency muster points, alarm triggers, fire extinguisher handling, and customer safe egress procedures.',
+        content: `<h3>1. Emergency Alarm Triggers</h3><p>In the event of fire, severe water breach, or seismic tremor, break glass at nearest alarm terminal and notify Command Central on radio Channel 1.</p><h3>2. Evacuation Routes</h3><p>North Wing: Egress through West Fire Stairwell B. South Atrium: Exit via Promenade Service Doors 1 & 2. Do not use passenger elevators.</p><h3>3. Muster Stations</h3><p>Assemble at North Perimeter Plaza Assembly Area 3 for headcount verification with Floor Leads.</p>`
+      },
+      {
+        id: 'DOC-LOG-003',
+        title: 'Logistics & Bay Storage: Pallet Handling & Forklift Safety SOP',
+        category: 'SOP',
+        targetDept: 'Logistics & Bay Storage',
+        minRank: 1,
+        grantedEmployeeIds: [],
+        classification: 'Department Restricted',
+        version: 'v3.0',
+        updatedAt: 'Sep 02, 2026',
+        author: 'Liam Vance (Logistics Operations Manager)',
+        summary: 'Mandatory safety protocol for hydraulic pallet jacks, forklift operation in Storage Bay B, and freight elevator clearances.',
+        content: `<h3>1. Bay Storage Equipment Operation</h3><p>All operators of motorized pallet stackers and electric forklifts must possess current OSHA/Nexus certification on file with Central HR.</p><h3>2. High-Density Racking Regulations</h3><p>Never exceed 1,200 kg per pallet bay tier. Double-check locking pins on Aisle 4 high-rise cantilever racks.</p><h3>3. Inbound Dock Verification</h3><p>Scan bill of lading barcodes against purchase orders immediately upon unloading. Log damaged packaging into the Discrepancy Ledger prior to sign-off.</p>`
+      },
+      {
+        id: 'DOC-CSH-004',
+        title: 'Cashier & Front End: Cash Register Reconciliation & POS Fraud Prevention',
+        category: 'SOP',
+        targetDept: 'Cashier & Front End',
+        minRank: 1,
+        grantedEmployeeIds: [],
+        classification: 'Department Restricted',
+        version: 'v3.4',
+        updatedAt: 'Sep 05, 2026',
+        author: 'Olivia Chang (Front End Operations Manager)',
+        summary: 'Till float reconciliation, counterfeit note detection, card transaction chargeback rules, and register handover procedures.',
+        content: `<h3>1. Cash Drawer Float Standards</h3><p>Each cashier till begins with an exact $300.00 cash float. No currency may be kept in drawers outside the till housing.</p><h3>2. Counterfeit UV Verification</h3><p>All $50 and $100 bills must be passed through the UV scanner. If counterfeit currency is detected, alert Front End Supervisor via silent buzzer.</p><h3>3. Till Handover & End-of-Shift Balancing</h3><p>Run register blind-count tape at shift close. Variances exceeding $5.00 require manager countersignature.</p>`
+      },
+      {
+        id: 'DOC-FSH-005',
+        title: 'Apparel & Fashion: Visual Merchandising & RFID Tagging Standards',
+        category: 'SOP',
+        targetDept: 'Apparel & Fashion',
+        minRank: 1,
+        grantedEmployeeIds: [],
+        classification: 'Department Restricted',
+        version: 'v1.8',
+        updatedAt: 'Aug 28, 2026',
+        author: 'Chloe Dupont (Apparel & Styling Manager)',
+        summary: 'Color story coordination, designer mannequin dressing standards, hanger spacing ratios, and RFID loss prevention tags.',
+        content: `<h3>1. Visual Display Guidelines</h3><p>All display mannequins in East Promenade windows must feature current autumn collection items in tonal harmony. Spotlights must be angled at 45 degrees.</p><h3>2. Hanger Spacing</h3><p>Maintain precisely 1.5 inches between hangers across all display rails. Face all garment zippers towards the left entry.</p><h3>3. RFID Hard Tag Application</h3><p>Affix security tags inside left inseams or inner labels to avoid fabric puncturing.</p>`
+      },
+      {
+        id: 'DOC-SEC-006',
+        title: 'Security & Safety: CCTV Surveillance & Loss Prevention Manual',
+        category: 'SOP',
+        targetDept: 'Security & Safety',
+        minRank: 2,
+        grantedEmployeeIds: [],
+        classification: 'Department Restricted',
+        version: 'v4.0',
+        updatedAt: 'Aug 10, 2026',
+        author: 'Darius Sterling (Security & Facilities Manager)',
+        summary: 'Optical PTZ tracking protocols, shoplifting apprehension parameters, and emergency panic button lines.',
+        content: `<h3>1. Surveillance Monitoring</h3><p>PTZ cameras 12-18 must maintain continuous sweep of high-value luxury vitrines and main entrance vestibules.</p><h3>2. Shoplifting Intervention Protocol</h3><p>Security officers must maintain uninterrupted visual observation from item concealment to past the final point of sale before initiating an approach.</p>`
+      },
+      {
+        id: 'DOC-TLD-007',
+        title: 'Team Lead Supervisory Playbook & Floor Incident Escalation SOP',
+        category: 'Supervisory',
+        targetDept: 'All',
+        minRank: 3,
+        grantedEmployeeIds: [],
+        classification: 'Confidential (Rank 3+)',
+        version: 'v2.5',
+        updatedAt: 'Sep 01, 2026',
+        author: 'Executive Operations Command',
+        summary: 'Shift duty delegation rules, checklist sign-off procedures, interpersonal conflict resolution, and emergency manager escalations.',
+        content: `<h3>1. Shift Delegation & Task Auditing</h3><p>Team Leads must inspect and sign off on all associate checklists prior to shift release. Checklists with incomplete items must be marked for rework.</p><h3>2. Incident Escalation Levels</h3><p>Level 1 (Minor delay) &bull; Level 2 (Equipment failure / restock shortage) &bull; Level 3 (Safety hazard / police / emergency services required).</p>`
+      },
+      {
+        id: 'DOC-EXC-008',
+        title: 'Store Financial P&L Ledger & Margin Performance Audit (Q3 2026)',
+        category: 'Financial',
+        targetDept: 'All',
+        minRank: 4,
+        grantedEmployeeIds: [],
+        classification: 'Executive Eyes Only',
+        version: 'v1.0',
+        updatedAt: 'Sep 10, 2026',
+        author: 'Marcus Vance (Global Administrator)',
+        summary: 'Confidential net margin statements, department labor efficiency rates, vendor markdown subsidies, and capital expenditure forecasts.',
+        content: `<h3>1. Executive Financial Summary</h3><p>Quarterly Gross Revenue reached $3,450,000 against operational expenditures of $1,820,000, yielding a 47.2% operating margin.</p><h3>2. Department Margin Analysis</h3><p>Fashion & Apparel generated top gross revenue. Electronics margins remain compressed due to consumer tech hardware wholesale costs.</p>`
+      },
+      {
+        id: 'DOC-HR-009',
+        title: 'Workforce Disciplinary Policy & Involuntary Dismissal Guidelines',
+        category: 'HR Master',
+        targetDept: 'Human Resources & Talent',
+        minRank: 4,
+        grantedEmployeeIds: [],
+        classification: 'HR Confidential',
+        version: 'v3.1',
+        updatedAt: 'Aug 01, 2026',
+        author: 'Central Mall HR Directorate',
+        summary: 'Statutory compliance rules for employee termination, progressive discipline steps, severance formulas, and deboarding checklists.',
+        content: `<h3>1. Grounds for Immediate Dismissal</h3><p>Gross misconduct, theft of store assets, assault, fraudulent punch-clock manipulation, and willful breach of client confidentiality warrant immediate termination.</p><h3>2. Deboarding Compliance Protocol</h3><p>Upon termination, systems access must be immediately revoked, physical assets collected, and severance calculated according to tenure guidelines.</p>`
+      }
+    ];
+  })(),
+
   saveState() {
     localStorage.setItem('nexus_inventory', JSON.stringify(this.inventory));
     localStorage.setItem('nexus_transactions', JSON.stringify(this.transactions));
@@ -922,6 +1058,7 @@ const AppState = {
     localStorage.setItem('nexus_shift_swaps', JSON.stringify(this.shiftSwaps));
     localStorage.setItem('nexus_exec_ai_history', JSON.stringify(this.execAIHistory));
     localStorage.setItem('nexus_purchase_reminders', JSON.stringify(this.purchaseReminders));
+    localStorage.setItem('nexus_documents', JSON.stringify(this.documents));
     localStorage.setItem('nexus_current_user_id', this.currentUserId);
   }
 };
@@ -1148,6 +1285,26 @@ function updateSessionUI() {
     }
   }
 
+  // CRITICAL REQUIREMENT: "Dismissal and deboarding page"
+  // Completely hide the deboarding nav link for non-HR and non-upper-management
+  const deboardingLink = document.getElementById('sidebar-nav-deboarding');
+  if (deboardingLink) {
+    if (AppState.canPerformHRFunctions()) {
+      deboardingLink.style.display = '';
+      deboardingLink.classList.remove('hidden');
+    } else {
+      deboardingLink.style.display = 'none';
+      deboardingLink.classList.add('hidden');
+    }
+  }
+
+  // Document Hub nav link is accessible to all active employees
+  const docsLink = document.getElementById('sidebar-nav-documents');
+  if (docsLink) {
+    docsLink.style.display = '';
+    docsLink.classList.remove('hidden');
+  }
+
   // Provision button in switch modal
   const provisionContainer = document.getElementById('switch-modal-provision-container');
   if (provisionContainer) {
@@ -1161,6 +1318,10 @@ function updateSessionUI() {
 function switchUser(empId) {
   const emp = AppState.employees.find(e => e.id === empId);
   if (emp) {
+    if (emp.status === 'Terminated') {
+      toast.error('Account Terminated', `Access revoked for ${emp.name}. This associate was dismissed and system credentials are permanently revoked.`);
+      return;
+    }
     AppState.currentUserId = emp.id;
     AppState.saveState();
     updateSessionUI();
@@ -1168,8 +1329,8 @@ function switchUser(empId) {
     closeModal('modal-switch-user');
     toast.success('Session Authenticated', `Active: ${emp.name} (Rank ${emp.rank} • ${emp.department})`);
 
-    // If switching to non-HR / non-management staff and was on HR or management page, redirect appropriately
-    if (!AppState.canPerformHRFunctions() && AppState.currentView === 'hr') {
+    // If switching to non-HR / non-management staff and was on HR, management, or deboarding page, redirect appropriately
+    if (!AppState.canPerformHRFunctions() && (AppState.currentView === 'hr' || AppState.currentView === 'deboarding')) {
       navigateTo('dashboard');
     } else if (!AppState.isManager() && AppState.currentView === 'management') {
       navigateTo('onboarding');
@@ -1374,6 +1535,11 @@ function handlePortalCredentialLogin(e, autoClockIn = false) {
     return;
   }
 
+  if (emp.status === 'Terminated') {
+    toast.error('Access Revoked', `Account for ${emp.name} has been terminated. System access is permanently disabled.`);
+    return;
+  }
+
   const validPin = emp.pin || '1234';
   if (passInput !== validPin && passInput !== '1234' && passInput !== 'nexus2026') {
     toast.error('Security Rejection', `Invalid Password / PIN for ${emp.name}. Default associate PIN is "1234".`);
@@ -1461,6 +1627,12 @@ async function handlePasskeyAuth(autoClockIn = false) {
           AppState.employees[0];
   }
 
+  if (emp && emp.status === 'Terminated') {
+    if (feedback) feedback.innerHTML = `<span class="text-error font-bold flex items-center justify-center gap-1.5"><span class="material-symbols-outlined text-[15px]">block</span> Biometric Credential Revoked (${emp.name})</span>`;
+    toast.error('Passkey Revoked', `Biometric credential revoked. ${emp.name} has been terminated from store operations.`);
+    return;
+  }
+
   if (navigator.vibrate) {
     try { navigator.vibrate([60, 40, 60]); } catch(e) {}
   }
@@ -1524,6 +1696,12 @@ function handleBadgeScan(badgeCode, forceClockIn) {
   if (!emp) {
     playScannerBeep();
     toast.error('Unregistered Badge', `Card UID / Code "${rawCode}" is not registered to an active workforce member.`);
+    return;
+  }
+
+  if (emp.status === 'Terminated') {
+    playScannerBeep();
+    toast.error('Badge Access Revoked', `Card UID revoked. ${emp.name} has been dismissed from workforce.`);
     return;
   }
 
@@ -1673,7 +1851,7 @@ function initRFIDAndNFCSystem() {
 // =========================================================================
 
 function navigateTo(viewId) {
-  const validViews = ['dashboard', 'inventory', 'sales', 'hr', 'profile', 'assign-task', 'management', 'onboarding', 'floor-map', 'schedule', 'login'];
+  const validViews = ['dashboard', 'inventory', 'sales', 'hr', 'profile', 'assign-task', 'management', 'onboarding', 'floor-map', 'schedule', 'login', 'deboarding', 'documents'];
   if (!validViews.includes(viewId)) viewId = 'dashboard';
 
   // CRITICAL REQUIREMENT: "normal employee should not even see or know that there is a manager page"
@@ -1696,6 +1874,17 @@ function navigateTo(viewId) {
     renderDashboard();
     closeMobileDrawer();
     toast.error('Clearance Denied', 'The HR & Team Roster is strictly restricted to HR Personnel and Upper Management.');
+    return;
+  }
+
+  // CRITICAL REQUIREMENT: Deboarding / Dismissal Center is restricted to HR & Upper Management
+  if (viewId === 'deboarding' && !AppState.canPerformHRFunctions()) {
+    AppState.currentView = 'dashboard';
+    window.location.hash = 'dashboard';
+    renderNavActive('dashboard');
+    renderDashboard();
+    closeMobileDrawer();
+    toast.error('Clearance Denied', 'The Dismissal & Deboarding Center is strictly restricted to HR Personnel and Upper Management.');
     return;
   }
 
@@ -1728,6 +1917,8 @@ function navigateTo(viewId) {
   if (viewId === 'floor-map') renderFloorMap();
   if (viewId === 'schedule') renderSchedule();
   if (viewId === 'login') renderLoginView();
+  if (viewId === 'deboarding') renderDeboarding();
+  if (viewId === 'documents') renderDocuments();
 }
 
 function renderNavActive(viewId) {
@@ -2914,8 +3105,8 @@ function renderCrewMembersModal() {
             </div>
           `}
 
-          ${AppState.canPerformUpperManagement() || AppState.isUserInHRTeam() ? `
-            <button onclick="closeModal('modal-crew-members'); openTransferEmployeeModal('${emp.id}')" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors" title="Transfer Associate">
+          ${AppState.canPerformUpperManagement() || AppState.canPerformHRFunctions() ? `
+            <button onclick="closeModal('modal-crew-members'); openTransferModal('${emp.id}')" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors" title="Transfer Associate">
               <span class="material-symbols-outlined text-[18px]">swap_horiz</span>
             </button>
           ` : ''}
@@ -3129,10 +3320,16 @@ function handleTransferEmployeeSubmit(e) {
 
   AppState.saveState();
   closeModal('modal-transfer-employee');
-  toast.success('Associate Transferred!', `${emp.name} moved to ${targetDept}.`);
+  toast.success('Associate Transferred!', `${emp.name} moved to ${targetDept} (${targetZone}).`);
   renderHR();
+  renderHRDepartmentCrews();
+  renderHRStaffRoster();
+  if (typeof currentCrewModalDept !== 'undefined' && currentCrewModalDept) {
+    renderCrewMembersModal();
+  }
   renderManagement();
   renderShiftAttendanceFeed();
+  renderFloorMap();
 }
 
 function openTerminateModal(empId) {
@@ -3187,12 +3384,30 @@ function handleTerminateEmployeeSubmit(e) {
     return;
   }
 
-  // Mark as terminated & clocked out
+  // Mark as terminated & initialize deboarding workflow
   emp.status = 'Terminated';
   emp.clockedIn = false;
   emp.clockInTime = null;
   emp.terminationReason = reason;
-  emp.terminatedAt = new Date().toISOString();
+  emp.terminationNotes = notes;
+  emp.terminatedAt = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  emp.terminatedBy = AppState.currentUser.name;
+  emp.deboarding = {
+    accessRevoked: true,
+    assetsRetrieved: false,
+    assetsDetails: { uniform: false, scanner: false, keys: false, walkie: false },
+    payrollLiquidated: false,
+    payrollAmount: Math.round((emp.rank * 450 + 680) * 100) / 100,
+    ndaSigned: false,
+    exitInterviewCompleted: false,
+    status: 'In Progress'
+  };
+
+  // If active user was the one sacked, fallback session to Global Admin
+  if (emp.id === AppState.currentUserId) {
+    AppState.currentUserId = 'NEX-0001';
+    updateSessionUI();
+  }
 
   // Remove associate from any active tasks/crews
   AppState.tasks.forEach(task => {
@@ -3216,7 +3431,7 @@ function handleTerminateEmployeeSubmit(e) {
     actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
     action: 'Associate Sacked / Terminated',
     target: emp.name,
-    detail: `Terminated from ${emp.department}. Reason: ${reason}. Notes: ${notes || 'None'}`
+    detail: `Terminated from ${emp.department}. Reason: ${reason}. Deboarding initialized.`
   });
 
   // Add Notification
@@ -3231,12 +3446,18 @@ function handleTerminateEmployeeSubmit(e) {
 
   AppState.saveState();
   closeModal('modal-terminate-employee');
-  toast.error('Staff Member Terminated', `${emp.name} has been sacked and removed from the active roster.`);
+  toast.error('Staff Member Dismissed', `${emp.name} has been terminated. Opening Deboarding & Dismissal Center...`);
   renderHR();
+  renderHRDepartmentCrews();
+  renderHRStaffRoster();
+  if (typeof currentCrewModalDept !== 'undefined' && currentCrewModalDept) {
+    renderCrewMembersModal();
+  }
   renderManagement();
   renderShiftAttendanceFeed();
   renderSwitchUserModalList();
   updateNotificationBadge();
+  navigateTo('deboarding');
 }
 
 function openDissolveTeamModal(deptName) {
@@ -5067,25 +5288,29 @@ function closeCommandPalette() {
 }
 
 const PALETTE_ACTIONS = [
-  { label: 'Go to Workforce Terminal Login & RFID/NFC Gateway', icon: 'badge', action: () => navigateTo('login') },
-  { label: 'Scan RFID / NFC Contactless Employee Badge', icon: 'contactless', action: () => { navigateTo('login'); switchLoginPortalTab('rfid'); simulateBadgeTapOnPad(); } },
-  { label: 'Authenticate via WebAuthn Biometric Passkey', icon: 'fingerprint', action: () => { navigateTo('login'); switchLoginPortalTab('passkey'); handlePasskeyAuth(false); } },
-  { label: 'Lock Terminal & Return to Login Portal', icon: 'lock', action: () => navigateTo('login') },
-  { label: 'Go to Operational Dashboard', icon: 'dashboard', action: () => navigateTo('dashboard') },
-  { label: 'Go to Inventory Management', icon: 'inventory_2', action: () => navigateTo('inventory') },
-  { label: 'Go to Sales & Finance', icon: 'payments', action: () => navigateTo('sales') },
-  { label: 'Go to HR & Team Performance', icon: 'badge', action: () => navigateTo('hr') },
-  { label: 'Go to Staff Onboarding & Duty Station', icon: 'punch_clock', action: () => navigateTo('onboarding') },
-  { label: 'Go to Manager Portal (Staff & Permissions)', icon: 'admin_panel_settings', action: () => navigateTo('management') },
-  { label: 'Switch Active User Session', icon: 'switch_account', action: () => openModal('modal-switch-user') },
-  { label: 'Punch Clock (Clock In / Out)', icon: 'punch_clock', action: () => { navigateTo('onboarding'); handleStaffClockToggle(); } },
-  { label: 'Escalate Floor Issue (Report Hazard / Block)', icon: 'report_problem', action: () => openModal('modal-escalate-issue') },
-  { label: 'Add New Staff Employee', icon: 'person_add', action: () => openAddEmployeeModal() },
-  { label: 'Assign New Duty Task', icon: 'assignment_add', action: () => navigateTo('assign-task') },
-  { label: 'Add New Product SKU', icon: 'add_box', action: () => { navigateTo('inventory'); openModal('modal-add-product'); } },
-  { label: 'Record New Sale / Transaction', icon: 'receipt_long', action: () => { navigateTo('sales'); openModal('modal-add-transaction'); } },
-  { label: 'Export Financial CSV Report', icon: 'download', action: () => exportSalesReport() },
-  { label: 'Toggle Light / Dark Mode', icon: 'dark_mode', action: () => toggleTheme() }
+  { id: 'act-login', label: 'Go to Workforce Terminal Login & RFID/NFC Gateway', icon: 'badge', action: () => navigateTo('login') },
+  { id: 'act-rfid', label: 'Scan RFID / NFC Contactless Employee Badge', icon: 'contactless', action: () => { navigateTo('login'); switchLoginPortalTab('rfid'); simulateBadgeTapOnPad(); } },
+  { id: 'act-passkey', label: 'Authenticate via WebAuthn Biometric Passkey', icon: 'fingerprint', action: () => { navigateTo('login'); switchLoginPortalTab('passkey'); handlePasskeyAuth(false); } },
+  { id: 'act-lock', label: 'Lock Terminal & Return to Login Portal', icon: 'lock', action: () => navigateTo('login') },
+  { id: 'act-dash', label: 'Go to Operational Dashboard', icon: 'dashboard', action: () => navigateTo('dashboard') },
+  { id: 'act-inv', label: 'Go to Inventory Management', icon: 'inventory_2', action: () => navigateTo('inventory') },
+  { id: 'act-sales', label: 'Go to Sales & Finance', icon: 'payments', action: () => navigateTo('sales') },
+  { id: 'act-hr', label: 'Go to HR & Team Performance', icon: 'badge', action: () => navigateTo('hr') },
+  { id: 'act-docs', label: 'Go to Operational Documents & Standard Operating Procedures (SOPs)', icon: 'menu_book', action: () => navigateTo('documents') },
+  { id: 'act-upload-doc', label: 'Upload & Authorize Operational Document / SOP', icon: 'post_add', action: () => openUploadDocumentModal() },
+  { id: 'act-deboard', label: 'Go to Staff Dismissal & Deboarding Center', icon: 'person_remove', action: () => navigateTo('deboarding') },
+  { id: 'act-transfer', label: 'Transfer Crew / Associate to New Team', icon: 'swap_horiz', action: () => openTransferModal() },
+  { id: 'act-onboard', label: 'Go to Staff Onboarding & Duty Station', icon: 'punch_clock', action: () => navigateTo('onboarding') },
+  { id: 'act-mgmt', label: 'Go to Manager Portal (Staff & Permissions)', icon: 'admin_panel_settings', action: () => navigateTo('management') },
+  { id: 'act-switch', label: 'Switch Active User Session', icon: 'switch_account', action: () => openModal('modal-switch-user') },
+  { id: 'act-clock', label: 'Punch Clock (Clock In / Out)', icon: 'punch_clock', action: () => { navigateTo('onboarding'); handleStaffClockToggle(); } },
+  { id: 'act-hazard', label: 'Escalate Floor Issue (Report Hazard / Block)', icon: 'report_problem', action: () => openModal('modal-escalate-issue') },
+  { id: 'act-add-emp', label: 'Add New Staff Employee', icon: 'person_add', action: () => openAddEmployeeModal() },
+  { id: 'act-assign-duty', label: 'Assign New Duty Task', icon: 'assignment_add', action: () => navigateTo('assign-task') },
+  { id: 'act-add-prod', label: 'Add New Product SKU', icon: 'add_box', action: () => { navigateTo('inventory'); openModal('modal-add-product'); } },
+  { id: 'act-add-sale', label: 'Record New Sale / Transaction', icon: 'receipt_long', action: () => { navigateTo('sales'); openModal('modal-add-transaction'); } },
+  { id: 'act-export', label: 'Export Financial CSV Report', icon: 'download', action: () => exportSalesReport() },
+  { id: 'act-theme', label: 'Toggle Light / Dark Mode', icon: 'dark_mode', action: () => toggleTheme() }
 ];
 
 function filterPaletteActions(query) {
@@ -5097,6 +5322,8 @@ function filterPaletteActions(query) {
   const visibleActions = PALETTE_ACTIONS.filter(a => {
     if (a.label.includes('HR') && !canHR) return false;
     if (a.label.includes('Staff Employee') && !canHR) return false;
+    if (a.label.includes('Dismissal & Deboarding') && !canHR) return false;
+    if (a.label.includes('Upload & Authorize') && (!canHR && !canMgmt)) return false;
     if (a.label.includes('Manager Portal') && !canMgmt) return false;
     return true;
   });
@@ -5109,18 +5336,19 @@ function filterPaletteActions(query) {
     return;
   }
 
-  list.innerHTML = filtered.map((a, i) => `
-    <div onclick="executePaletteAction(${i})" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container cursor-pointer transition-colors text-sm font-medium text-on-surface">
+  list.innerHTML = filtered.map(a => `
+    <div onclick="executePaletteAction('${a.id}')" class="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container cursor-pointer transition-colors text-sm font-medium text-on-surface">
       <span class="material-symbols-outlined text-primary text-[20px]">${a.icon}</span>
       <span>${a.label}</span>
     </div>
   `).join('');
 }
 
-function executePaletteAction(index) {
+function executePaletteAction(actionId) {
   closeCommandPalette();
-  if (PALETTE_ACTIONS[index]) {
-    PALETTE_ACTIONS[index].action();
+  const found = PALETTE_ACTIONS.find(a => a.id === actionId);
+  if (found && typeof found.action === 'function') {
+    found.action();
   }
 }
 
@@ -5160,6 +5388,9 @@ function renderSwitchUserModalList() {
   const deptFilter = document.getElementById('directory-dept-filter')?.value || '';
 
   const filtered = AppState.employees.filter(emp => {
+    // Terminated employees have their accounts permanently locked
+    if (emp.status === 'Terminated') return false;
+
     // CRITICAL: Hide HR department and protected roles from non-HR and non-upper-management
     if (!canSeeHR && (emp.department === HR_DEPARTMENT_NAME || HR_PROTECTED_ROLES.includes(emp.role))) {
       return false;
@@ -6927,6 +7158,11 @@ function executeOmniCommand(query, source = 'cockpit') {
       renderPermissionsMatrix();
       renderDashboard();
       renderMyDutiesList();
+      renderHR();
+      renderHRDepartmentCrews();
+      renderHRStaffRoster();
+      renderCrewMembersModal();
+      renderFloorMap();
 
       resultRecord = {
         id: `exec-${Date.now()}`,
@@ -7337,6 +7573,153 @@ function executeOmniCommand(query, source = 'cockpit') {
     }
 
     // -----------------------------------------------------------------------
+    // INTENT 11: DISMISSAL, TERMINATION & DEBOARDING WORKFLOW
+    // -----------------------------------------------------------------------
+    else if (lower.includes('deboard') || lower.includes('dismiss') || lower.includes('fire') || lower.includes('terminate') || lower.includes('sack')) {
+      if (!AppState.canPerformHRFunctions()) {
+        toast.error('Clearance Denied', 'Staff termination & deboarding workflows are strictly restricted to HR Personnel and Upper Management.');
+      } else {
+        // Look for targeted employee
+        let targetEmp = null;
+        for (const emp of AppState.employees) {
+          const nameParts = emp.name.toLowerCase().split(' ');
+          if (lower.includes(emp.name.toLowerCase()) || nameParts.some(p => p.length > 2 && lower.includes(p))) {
+            targetEmp = emp;
+            break;
+          }
+        }
+
+        if (targetEmp && targetEmp.status !== 'Terminated') {
+          // Terminate this associate
+          targetEmp.status = 'Terminated';
+          targetEmp.clockedIn = false;
+          targetEmp.clockInTime = null;
+          targetEmp.deboarding = {
+            accessRevoked: true,
+            assetsRetrieved: false,
+            assetsDetails: { uniform: false, scanner: false, keys: false, walkie: false },
+            payrollLiquidated: false,
+            payrollAmount: Math.round((targetEmp.rank * 450 + 680) * 100) / 100,
+            ndaSigned: false,
+            exitInterviewCompleted: false,
+            status: 'In Progress'
+          };
+
+          AppState.auditLogs.unshift({
+            timestamp: 'Just now',
+            actor: `${AppState.currentUser.name} (via Executive AI)`,
+            action: 'Staff Involuntary Dismissal',
+            target: targetEmp.name,
+            detail: `Terminated employment. System credentials revoked. Initiated 5-step deboarding protocol.`
+          });
+
+          AppState.saveState();
+          renderEmployees();
+          renderShiftAttendanceFeed();
+          renderPermissionsMatrix();
+          renderHR();
+          renderHRDepartmentCrews();
+          renderHRStaffRoster();
+          renderCrewMembersModal();
+          renderFloorMap();
+          renderDeboarding();
+
+          resultRecord = {
+            id: `exec-${Date.now()}`,
+            query: rawQuery,
+            badge: '✓ EXECUTED: STAFF TERMINATED',
+            badgeClass: 'bg-error-container text-error',
+            title: `Dismissed ${targetEmp.name} & Initiated Deboarding`,
+            detail: `Access credentials, RFID badge, and biometric passkeys permanently locked. Transferred to Deboarding & Compliance Center.`,
+            diffHtml: `
+              <div><span class="text-on-surface-variant">Associate:</span> <strong>${targetEmp.name}</strong> (${targetEmp.department})</div>
+              <div><span class="text-error font-bold">Status:</span> <span>Active ➔ Terminated</span></div>
+              <div><span class="text-secondary font-bold">Deboarding:</span> <span>5-Step Separation Protocol Active</span></div>
+            `,
+            actionHtml: `
+              <button onclick="navigateTo('deboarding')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Open Deboarding Center &rarr;</button>
+            `,
+            timestamp: 'Just now'
+          };
+
+          replyHtml = `
+            <div class="space-y-2">
+              <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+                <span class="badge-pill bg-error text-white font-mono text-[9px] font-bold">TERMINATION EXECUTED</span>
+                <span class="text-[10px] font-mono text-on-surface-variant">${targetEmp.name}</span>
+              </div>
+              <p class="font-bold text-on-surface text-xs">Credentials permanently revoked. 5-step separation protocol initiated.</p>
+            </div>
+          `;
+          toast.warning('Associate Dismissed', `${targetEmp.name} dismissed. Separation workflow initiated.`);
+        } else {
+          // Route to deboarding center
+          navigateTo('deboarding');
+          resultRecord = {
+            id: `exec-${Date.now()}`,
+            query: rawQuery,
+            badge: 'NAVIGATION: DEBOARDING',
+            badgeClass: 'bg-primary-container text-primary',
+            title: 'Navigated to Dismissal & Deboarding Center',
+            detail: 'Reviewing involuntary terminations, asset recovery tracking, severance liquidations, and separation NDAs.',
+            actionHtml: `
+              <button onclick="navigateTo('deboarding')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Open Center &rarr;</button>
+            `,
+            timestamp: 'Just now'
+          };
+          replyHtml = `<p class="text-xs">Navigated to the Staff Dismissal & Deboarding Center. Reviewing open separation dossiers.</p>`;
+          toast.info('Deboarding Center', 'Viewing separation and dismissal dossiers.');
+        }
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // INTENT 12: OPERATIONAL DOCUMENT HUB & SOPS
+    // -----------------------------------------------------------------------
+    else if (lower.includes('document') || lower.includes('sop') || lower.includes('policy') || lower.includes('policies') || lower.includes('handbook')) {
+      if (lower.includes('upload') || lower.includes('publish') || lower.includes('new doc') || lower.includes('create doc')) {
+        navigateTo('documents');
+        openUploadDocumentModal();
+        resultRecord = {
+          id: `exec-${Date.now()}`,
+          query: rawQuery,
+          badge: 'ACTION: UPLOAD DOCUMENT',
+          badgeClass: 'bg-primary-container text-primary',
+          title: 'Opened Document Authorization Modal',
+          detail: 'Upload and configure departmental clearance, minimum rank, and employee whitelist grants.',
+          timestamp: 'Just now'
+        };
+        replyHtml = `<p class="text-xs">Document authorization modal opened. Set clearance rank and department parameters.</p>`;
+      } else {
+        navigateTo('documents');
+        if (lower.includes('sop')) {
+          filterDocumentsCategory('SOP');
+        } else if (lower.includes('policy') || lower.includes('safety')) {
+          filterDocumentsCategory('Policy');
+        } else if (lower.includes('exec') || lower.includes('directive') || lower.includes('financial')) {
+          filterDocumentsCategory('Executive');
+        } else if (lower.includes('my') || lower.includes('dept') || lower.includes('team')) {
+          filterDocumentsCategory('MyDept');
+        } else {
+          filterDocumentsCategory('All');
+        }
+        resultRecord = {
+          id: `exec-${Date.now()}`,
+          query: rawQuery,
+          badge: 'NAVIGATION: DOCUMENT HUB',
+          badgeClass: 'bg-primary-container text-primary',
+          title: 'Opened Role-Based Document Hub',
+          detail: 'Displaying operational manuals, SOPs, and directives calibrated to active clearance level.',
+          actionHtml: `
+            <button onclick="navigateTo('documents')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">View Hub &rarr;</button>
+          `,
+          timestamp: 'Just now'
+        };
+        replyHtml = `<p class="text-xs">Role-based Document Hub loaded. Showing documents permitted for your department and rank clearance.</p>`;
+      }
+    }
+
+    // -----------------------------------------------------------------------
     // FALLBACK: INTELLIGENT TELEMETRY SYNTHESIS
     // -----------------------------------------------------------------------
     else {
@@ -7602,6 +7985,714 @@ function initTelemetrySSE() {
 
   connect();
 }
+
+// =========================================================================
+// 24. STAFF DISMISSAL & DEBOARDING CENTER
+// =========================================================================
+
+let activeDeboardingFilter = 'all';
+
+function filterDeboardingList(filter) {
+  activeDeboardingFilter = filter;
+  ['all', 'in_progress', 'completed'].forEach(f => {
+    const btn = document.getElementById(`deboard-tab-${f === 'in_progress' ? 'progress' : f}`);
+    if (btn) {
+      if (f === filter) {
+        btn.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary text-on-primary transition-all deboard-filter-btn shadow-xs';
+      } else {
+        btn.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all deboard-filter-btn';
+      }
+    }
+  });
+  renderDeboarding();
+}
+
+function renderDeboarding() {
+  const container = document.getElementById('deboarding-dossier-list');
+  if (!container) return;
+
+  // Retrieve all terminated staff
+  const terminatedStaff = AppState.employees.filter(e => e.status === 'Terminated');
+
+  // Ensure deboarding object exists on each terminated staff
+  terminatedStaff.forEach(emp => {
+    if (!emp.deboarding) {
+      emp.deboarding = {
+        accessRevoked: true,
+        assetsRetrieved: false,
+        assetsDetails: { uniform: false, scanner: false, keys: false, walkie: false },
+        payrollLiquidated: false,
+        payrollAmount: Math.round((emp.rank * 450 + 680) * 100) / 100,
+        ndaSigned: false,
+        exitInterviewCompleted: false,
+        status: 'In Progress'
+      };
+    }
+  });
+
+  // Calculate KPIs
+  const totalDismissals = terminatedStaff.length;
+  const activeCases = terminatedStaff.filter(e => e.deboarding?.status !== 'Completed').length;
+  const assetsPending = terminatedStaff.filter(e => !e.deboarding?.assetsRetrieved).length;
+  const totalSeverance = terminatedStaff
+    .filter(e => e.deboarding?.payrollLiquidated)
+    .reduce((sum, e) => sum + (e.deboarding?.payrollAmount || 0), 0);
+
+  const kpiTotal = document.getElementById('deboarding-kpi-total');
+  const kpiActive = document.getElementById('deboarding-kpi-active');
+  const kpiAssets = document.getElementById('deboarding-kpi-assets');
+  const kpiSeverance = document.getElementById('deboarding-kpi-severance');
+  const countAll = document.getElementById('deboard-count-all');
+  const countProgress = document.getElementById('deboard-count-progress');
+  const countCompleted = document.getElementById('deboard-count-completed');
+
+  if (kpiTotal) kpiTotal.textContent = totalDismissals;
+  if (kpiActive) kpiActive.textContent = activeCases;
+  if (kpiAssets) kpiAssets.textContent = assetsPending;
+  if (kpiSeverance) kpiSeverance.textContent = `$${totalSeverance.toLocaleString()}`;
+  if (countAll) countAll.textContent = totalDismissals;
+  if (countProgress) countProgress.textContent = activeCases;
+  if (countCompleted) countCompleted.textContent = totalDismissals - activeCases;
+
+  // Apply tab filter & search
+  const searchQuery = (document.getElementById('deboarding-search-input')?.value || '').toLowerCase().trim();
+  let displayed = terminatedStaff;
+
+  if (activeDeboardingFilter === 'in_progress') {
+    displayed = displayed.filter(e => e.deboarding?.status !== 'Completed');
+  } else if (activeDeboardingFilter === 'completed') {
+    displayed = displayed.filter(e => e.deboarding?.status === 'Completed');
+  }
+
+  if (searchQuery) {
+    displayed = displayed.filter(e => 
+      e.name.toLowerCase().includes(searchQuery) ||
+      e.id.toLowerCase().includes(searchQuery) ||
+      e.department.toLowerCase().includes(searchQuery) ||
+      (e.terminationReason && e.terminationReason.toLowerCase().includes(searchQuery))
+    );
+  }
+
+  if (displayed.length === 0) {
+    container.innerHTML = `
+      <div class="nexus-card p-12 text-center text-on-surface-variant">
+        <span class="material-symbols-outlined text-5xl mb-2 text-secondary opacity-60">task_alt</span>
+        <h3 class="font-headline text-base font-bold text-on-surface">No Offboarding Cases</h3>
+        <p class="text-xs text-on-surface-variant mt-1">No dismissed associates match the selected filter criteria.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = displayed.map(emp => {
+    const deb = emp.deboarding;
+    // Calculate progress: 5 steps total
+    let completedSteps = 0;
+    if (deb.accessRevoked) completedSteps++;
+    if (deb.assetsRetrieved) completedSteps++;
+    if (deb.payrollLiquidated) completedSteps++;
+    if (deb.ndaSigned) completedSteps++;
+    if (deb.exitInterviewCompleted) completedSteps++;
+    const progressPercent = Math.round((completedSteps / 5) * 100);
+    const isFinished = deb.status === 'Completed';
+
+    return `
+      <div class="nexus-card p-5 border border-outline-variant/50 hover:border-outline-variant transition-all">
+        <!-- Top: Employee Dossier Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-outline-variant/40">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-error/10 text-error border border-error/25 flex items-center justify-center font-bold text-sm shrink-0">
+              ${emp.initials || 'EX'}
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-headline text-base font-extrabold text-on-surface">${emp.name}</h3>
+                <span class="badge-pill bg-error-container/30 text-error font-mono text-[10px] font-bold border border-error/20">DISMISSED</span>
+                <span class="badge-pill bg-surface-container font-mono text-[10px] text-on-surface-variant font-medium">${emp.id}</span>
+                <span class="badge-pill font-mono text-[10px] ${isFinished ? 'bg-secondary-container/30 text-secondary border border-secondary/20' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25'}">
+                  ${isFinished ? 'Fully Cleared & Archived' : 'Deboarding Active'}
+                </span>
+              </div>
+              <p class="text-xs text-on-surface-variant mt-0.5">
+                Former: <strong class="text-on-surface">${emp.role}</strong> &bull; ${emp.department} &bull; ${emp.zone}
+              </p>
+              <div class="flex items-center gap-3 text-[11px] text-on-surface-variant/80 font-mono mt-0.5">
+                <span>Reason: <strong class="text-on-surface font-sans">${emp.terminationReason || 'Separation of Service'}</strong></span>
+                <span>&bull;</span>
+                <span>Terminated: ${emp.terminatedAt || 'Recently'}</span>
+                <span>&bull;</span>
+                <span>By: ${emp.terminatedBy || 'HR Operations'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Percentage Pill -->
+          <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1.5 shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-on-surface">${completedSteps} / 5 Steps</span>
+              <span class="font-mono text-xs font-extrabold ${progressPercent === 100 ? 'text-secondary' : 'text-primary'}">${progressPercent}%</span>
+            </div>
+            <div class="w-32 h-2 bg-surface-container rounded-full overflow-hidden">
+              <div class="h-full ${progressPercent === 100 ? 'bg-secondary' : 'bg-primary'} transition-all duration-500" style="width: ${progressPercent}%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle: Interactive 5-Step Deboarding Workflow -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 py-4">
+          <!-- Step 1: Access Revocation -->
+          <div class="p-3 bg-surface-container-low rounded-xl border ${deb.accessRevoked ? 'border-secondary/30 bg-secondary-container/10' : 'border-outline-variant/40'} flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] font-mono font-bold uppercase text-on-surface-variant">Step 1</span>
+                <span class="material-symbols-outlined text-[16px] ${deb.accessRevoked ? 'text-secondary' : 'text-outline'}">lock</span>
+              </div>
+              <h4 class="font-bold text-xs text-on-surface">Credentials Revoked</h4>
+              <p class="text-[10px] text-on-surface-variant mt-1 leading-snug">RFID badge, PIN, passkey, and SSO session killed.</p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-outline-variant/30 flex items-center gap-1 text-[11px] font-semibold text-secondary">
+              <span class="material-symbols-outlined text-[14px]">check_circle</span>
+              <span>Revoked (Auto)</span>
+            </div>
+          </div>
+
+          <!-- Step 2: Assets Recovery -->
+          <div class="p-3 bg-surface-container-low rounded-xl border ${deb.assetsRetrieved ? 'border-secondary/30 bg-secondary-container/10' : 'border-outline-variant/40'} flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] font-mono font-bold uppercase text-on-surface-variant">Step 2</span>
+                <span class="material-symbols-outlined text-[16px] ${deb.assetsRetrieved ? 'text-secondary' : 'text-outline'}">inventory</span>
+              </div>
+              <h4 class="font-bold text-xs text-on-surface">Assets Recovery</h4>
+              <p class="text-[10px] text-on-surface-variant mt-1 leading-snug">Retrieve scanner, keys, radio, and uniform.</p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-outline-variant/30">
+              ${deb.assetsRetrieved ? `
+                <div class="flex items-center gap-1 text-[11px] font-semibold text-secondary">
+                  <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                  <span>Assets In Vault</span>
+                </div>
+              ` : `
+                <button onclick="toggleDeboardingStep('${emp.id}', 'assetsRetrieved')" class="w-full py-1 px-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1">
+                  <span>Mark Collected</span>
+                </button>
+              `}
+            </div>
+          </div>
+
+          <!-- Step 3: Final Payroll & Severance Settlement -->
+          <div class="p-3 bg-surface-container-low rounded-xl border ${deb.payrollLiquidated ? 'border-secondary/30 bg-secondary-container/10' : 'border-outline-variant/40'} flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] font-mono font-bold uppercase text-on-surface-variant">Step 3</span>
+                <span class="material-symbols-outlined text-[16px] ${deb.payrollLiquidated ? 'text-secondary' : 'text-outline'}">payments</span>
+              </div>
+              <h4 class="font-bold text-xs text-on-surface">Final Severance</h4>
+              <p class="text-[10px] text-on-surface-variant mt-1 leading-snug">Accrued PTO &amp; separation settlement: <strong class="font-mono text-on-surface">$${(deb.payrollAmount || 1130).toLocaleString()}</strong></p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-outline-variant/30">
+              ${deb.payrollLiquidated ? `
+                <div class="flex items-center gap-1 text-[11px] font-semibold text-secondary">
+                  <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                  <span>Settled &amp; Paid</span>
+                </div>
+              ` : `
+                <button onclick="authorizeDeboardingPayroll('${emp.id}')" class="w-full py-1 px-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1">
+                  <span>Authorize Payout</span>
+                </button>
+              `}
+            </div>
+          </div>
+
+          <!-- Step 4: Separation NDA & Restrictive Covenants -->
+          <div class="p-3 bg-surface-container-low rounded-xl border ${deb.ndaSigned ? 'border-secondary/30 bg-secondary-container/10' : 'border-outline-variant/40'} flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] font-mono font-bold uppercase text-on-surface-variant">Step 4</span>
+                <span class="material-symbols-outlined text-[16px] ${deb.ndaSigned ? 'text-secondary' : 'text-outline'}">draw</span>
+              </div>
+              <h4 class="font-bold text-xs text-on-surface">Separation NDA</h4>
+              <p class="text-[10px] text-on-surface-variant mt-1 leading-snug">Confidentiality &amp; client PII non-disclosure acknowledgment.</p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-outline-variant/30">
+              ${deb.ndaSigned ? `
+                <div class="flex items-center gap-1 text-[11px] font-semibold text-secondary">
+                  <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                  <span>NDA Executed</span>
+                </div>
+              ` : `
+                <button onclick="toggleDeboardingStep('${emp.id}', 'ndaSigned')" class="w-full py-1 px-2 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1">
+                  <span>Log Signed NDA</span>
+                </button>
+              `}
+            </div>
+          </div>
+
+          <!-- Step 5: Exit Interview & File Archival -->
+          <div class="p-3 bg-surface-container-low rounded-xl border ${deb.exitInterviewCompleted ? 'border-secondary/30 bg-secondary-container/10' : 'border-outline-variant/40'} flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] font-mono font-bold uppercase text-on-surface-variant">Step 5</span>
+                <span class="material-symbols-outlined text-[16px] ${deb.exitInterviewCompleted ? 'text-secondary' : 'text-outline'}">assignment_turned_in</span>
+              </div>
+              <h4 class="font-bold text-xs text-on-surface">Exit Clearance</h4>
+              <p class="text-[10px] text-on-surface-variant mt-1 leading-snug">Formal handover notes &amp; statutory HR archive file.</p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-outline-variant/30">
+              ${deb.exitInterviewCompleted ? `
+                <div class="flex items-center gap-1 text-[11px] font-semibold text-secondary">
+                  <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                  <span>Archived</span>
+                </div>
+              ` : `
+                <button onclick="finalizeDeboarding('${emp.id}')" class="w-full py-1 px-2 bg-primary hover:bg-primary-container text-on-primary rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 shadow-xs">
+                  <span>Finalize Exit</span>
+                </button>
+              `}
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom: Administrative Controls & Reinstate Option -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-3 border-t border-outline-variant/40 text-xs">
+          <div class="text-[11px] text-on-surface-variant flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px] text-primary">security</span>
+            <span>Account Status: <strong>Locked (403 Unauthorized)</strong> &bull; Token Signature Inactive</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${AppState.canPerformUpperManagement() ? `
+              <button onclick="reinstateStaff('${emp.id}')" class="px-3 py-1 bg-surface border border-outline-variant text-on-surface hover:bg-surface-container rounded-lg text-[11px] font-semibold transition-colors flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-secondary">replay</span>
+                <span>Reinstate Associate</span>
+              </button>
+            ` : ''}
+            <button onclick="toast.info('Dossier Downloaded', 'Audit package for ${emp.name} compiled.');" class="px-3 py-1 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-lg text-[11px] font-semibold transition-colors flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">download</span>
+              <span>Export Dossier</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleDeboardingStep(empId, stepKey) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp || !emp.deboarding) return;
+
+  emp.deboarding[stepKey] = !emp.deboarding[stepKey];
+
+  // Audit log
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
+    action: 'Deboarding Step Updated',
+    target: emp.name,
+    detail: `Updated step ${stepKey} to ${emp.deboarding[stepKey] ? 'Completed' : 'Pending'}`
+  });
+
+  AppState.saveState();
+  renderDeboarding();
+  toast.success('Deboarding Updated', `${emp.name}: ${stepKey} verified.`);
+}
+
+function authorizeDeboardingPayroll(empId) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp || !emp.deboarding) return;
+
+  const amount = emp.deboarding.payrollAmount || 1130;
+  emp.deboarding.payrollLiquidated = true;
+
+  // Record Expense in Financial Ledger
+  AppState.transactions.unshift({
+    id: Date.now(),
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    desc: `Severance & PTO Settlement: ${emp.name} (${emp.id} - ${emp.department})`,
+    category: 'Payroll & Severance',
+    type: 'expense',
+    amount: amount,
+    status: 'Completed'
+  });
+
+  // Audit log
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${AppState.currentUser.name} (HR / Management)`,
+    action: 'Severance Settlement Liquidated',
+    target: emp.name,
+    detail: `Authorized statutory severance of $${amount.toLocaleString()} for dismissed associate ${emp.id}.`
+  });
+
+  AppState.saveState();
+  renderDeboarding();
+  renderSales();
+  renderDashboard();
+  toast.success('Severance Authorized', `Liquidated $${amount.toLocaleString()} final severance for ${emp.name}. Expense logged to ledger.`);
+}
+
+function finalizeDeboarding(empId) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp || !emp.deboarding) return;
+
+  emp.deboarding.exitInterviewCompleted = true;
+  emp.deboarding.status = 'Completed';
+
+  // Audit log
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
+    action: 'Deboarding Completed & Archived',
+    target: emp.name,
+    detail: `Completed all 5 offboarding compliance steps for ${emp.name}. Workforce dossier archived.`
+  });
+
+  AppState.saveState();
+  renderDeboarding();
+  toast.success('Deboarding Finalized', `${emp.name} has been fully cleared and workforce record archived.`);
+}
+
+function reinstateStaff(empId) {
+  if (!AppState.canPerformUpperManagement()) {
+    toast.error('Clearance Denied', 'Only Upper Management (Rank 4+) can reinstate terminated personnel.');
+    return;
+  }
+
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp) return;
+
+  emp.status = 'Active';
+  emp.clockedIn = false;
+  emp.terminationReason = null;
+  emp.deboarding = null;
+
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${AppState.currentUser.name} (Upper Management)`,
+    action: 'Staff Reinstated',
+    target: emp.name,
+    detail: `Reinstated ${emp.name} (${emp.id}) to active workforce in ${emp.department}. System access restored.`
+  });
+
+  AppState.saveState();
+  renderDeboarding();
+  renderHR();
+  renderHRDepartmentCrews();
+  renderHRStaffRoster();
+  renderSwitchUserModalList();
+  toast.success('Associate Reinstated!', `${emp.name} has been restored to active roster in ${emp.department}.`);
+}
+
+// =========================================================================
+// 25. DOCUMENT HUB & POLICY REGISTRY
+// =========================================================================
+
+let activeDocumentCategory = 'All';
+
+function canStaffAccessDocument(doc, employee) {
+  if (!doc || !employee) return false;
+  // Terminated employees have ZERO document access
+  if (employee.status === 'Terminated') return false;
+
+  // Higher Management (Rank 4+) and HR members can access all documents
+  if (employee.rank >= 4 || employee.department === HR_DEPARTMENT_NAME || employee.department === 'Human Resources') {
+    return true;
+  }
+
+  // Explicit individual employee grant by HR or Management
+  if (Array.isArray(doc.grantedEmployeeIds) && doc.grantedEmployeeIds.includes(employee.id)) {
+    return true;
+  }
+
+  // Department check
+  const deptMatch = doc.targetDept === 'All' || doc.targetDept.toLowerCase() === employee.department.toLowerCase();
+
+  // Rank check
+  const rankMatch = employee.rank >= (doc.minRank || 1);
+
+  return deptMatch && rankMatch;
+}
+
+function filterDocumentsCategory(cat) {
+  activeDocumentCategory = cat;
+  document.querySelectorAll('.doc-cat-pill').forEach(btn => {
+    btn.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all doc-cat-pill';
+  });
+  const activeBtn = document.getElementById(`doc-filter-${cat.toLowerCase()}`);
+  if (activeBtn) {
+    activeBtn.className = 'px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary text-on-primary transition-all doc-cat-pill shadow-xs';
+  }
+  renderDocuments();
+}
+
+function renderDocuments() {
+  const grid = document.getElementById('documents-grid');
+  if (!grid) return;
+
+  const user = AppState.currentUser || { name: 'Staff', rank: 1, department: 'General Store', status: 'Active' };
+
+  // Update user clearance banner
+  const nameEl = document.getElementById('doc-user-name');
+  const rankBadge = document.getElementById('doc-user-rank-badge');
+  const deptBadge = document.getElementById('doc-user-dept-badge');
+  const uploadBtn = document.getElementById('doc-hub-upload-btn');
+
+  if (nameEl) nameEl.textContent = user.name;
+  if (rankBadge) {
+    rankBadge.textContent = `Rank ${user.rank} Clearance`;
+    rankBadge.className = `badge-pill font-mono text-[9px] rank-badge-${user.rank}`;
+  }
+  if (deptBadge) deptBadge.textContent = user.department;
+  if (uploadBtn) {
+    // Only HR and Upper Management can upload / authorize documents
+    uploadBtn.style.display = (AppState.canPerformHRFunctions() || user.rank >= 4) ? '' : 'none';
+  }
+
+  const allDocs = AppState.documents || [];
+  // Filter docs accessible by active user
+  const accessibleDocs = allDocs.filter(doc => canStaffAccessDocument(doc, user));
+
+  const accessibleCountEl = document.getElementById('doc-accessible-count');
+  if (accessibleCountEl) accessibleCountEl.textContent = accessibleDocs.length;
+
+  // Apply category and department filters
+  const deptSelectVal = document.getElementById('doc-dept-select-filter')?.value || 'All';
+  const searchQuery = (document.getElementById('document-search-input')?.value || '').toLowerCase().trim();
+
+  let filtered = accessibleDocs;
+
+  if (activeDocumentCategory === 'MyDept') {
+    filtered = filtered.filter(d => d.targetDept === user.department || d.targetDept === 'All');
+  } else if (activeDocumentCategory === 'SOP') {
+    filtered = filtered.filter(d => d.category === 'SOP');
+  } else if (activeDocumentCategory === 'Policy') {
+    filtered = filtered.filter(d => d.category === 'Policy' || d.category === 'Health & Safety');
+  } else if (activeDocumentCategory === 'Executive') {
+    filtered = filtered.filter(d => d.category === 'Executive Directive' || d.category === 'Financial' || d.minRank >= 4);
+  }
+
+  if (deptSelectVal !== 'All') {
+    filtered = filtered.filter(d => d.targetDept === deptSelectVal || d.targetDept === 'All');
+  }
+
+  if (searchQuery) {
+    filtered = filtered.filter(d => 
+      d.title.toLowerCase().includes(searchQuery) ||
+      d.id.toLowerCase().includes(searchQuery) ||
+      d.summary.toLowerCase().includes(searchQuery) ||
+      d.category.toLowerCase().includes(searchQuery) ||
+      d.targetDept.toLowerCase().includes(searchQuery)
+    );
+  }
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full p-12 text-center text-on-surface-variant bg-surface-container-low/40 rounded-2xl border border-dashed border-outline-variant/60">
+        <span class="material-symbols-outlined text-4xl mb-2 text-outline">description</span>
+        <h4 class="font-headline text-base font-bold text-on-surface">No Accessible Documents Found</h4>
+        <p class="text-xs text-on-surface-variant mt-1">No documentation matches your current filter or operational clearance level.</p>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(doc => {
+    let classBadgeColor = 'bg-surface-container text-on-surface-variant border-outline-variant/60';
+    if (doc.classification.includes('Executive')) {
+      classBadgeColor = 'bg-error-container/30 text-error border-error/25';
+    } else if (doc.classification.includes('Confidential') || doc.classification.includes('HR')) {
+      classBadgeColor = 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25';
+    } else if (doc.classification.includes('Department')) {
+      classBadgeColor = 'bg-primary/10 text-primary border-primary/20';
+    } else {
+      classBadgeColor = 'bg-secondary-container/40 text-secondary border-secondary/30';
+    }
+
+    let catIcon = 'description';
+    if (doc.category === 'Health & Safety') catIcon = 'health_and_safety';
+    if (doc.category === 'SOP') catIcon = 'rule';
+    if (doc.category === 'Financial') catIcon = 'account_balance';
+    if (doc.category === 'Supervisory') catIcon = 'supervisor_account';
+    if (doc.category === 'HR Master') catIcon = 'badge';
+
+    const isDirectGrant = Array.isArray(doc.grantedEmployeeIds) && doc.grantedEmployeeIds.includes(user.id);
+
+    return `
+      <div class="nexus-card p-5 border border-outline-variant/50 hover:border-primary/50 transition-all flex flex-col justify-between group">
+        <div>
+          <!-- Top: Category, Scope & Clearance -->
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="badge-pill bg-primary/10 text-primary font-mono text-[9px] font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-[13px]">${catIcon}</span>
+                <span>${doc.category}</span>
+              </span>
+              <span class="badge-pill font-mono text-[9px] font-bold border ${classBadgeColor}">
+                ${doc.classification}
+              </span>
+              ${isDirectGrant ? '<span class="badge-pill bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[9px] font-bold border border-purple-500/30">Direct Grant</span>' : ''}
+            </div>
+            <span class="text-[10px] font-mono text-on-surface-variant/80 shrink-0 font-semibold">${doc.version || 'v1.0'}</span>
+          </div>
+
+          <!-- Document Title & Code -->
+          <h4 class="font-headline text-sm font-extrabold text-on-surface group-hover:text-primary transition-colors leading-snug mb-1">
+            ${doc.title}
+          </h4>
+          <span class="text-[10px] font-mono text-on-surface-variant font-medium block mb-2">${doc.id}</span>
+
+          <!-- Abstract Summary -->
+          <p class="text-xs text-on-surface-variant leading-relaxed line-clamp-3 mb-3">
+            ${doc.summary}
+          </p>
+        </div>
+
+        <!-- Bottom: Metadata & Read Action -->
+        <div class="pt-3 border-t border-outline-variant/40 space-y-2.5">
+          <div class="flex items-center justify-between text-[10px] text-on-surface-variant font-mono">
+            <span>Scope: <strong class="text-on-surface font-sans">${doc.targetDept}</strong></span>
+            <span>Min: Rank ${doc.minRank || 1}</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="openViewDocumentModal('${doc.id}')" class="flex-1 py-2 px-3 bg-surface-container hover:bg-primary hover:text-white text-on-surface text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-2xs active:scale-95">
+              <span class="material-symbols-outlined text-[16px]">visibility</span>
+              <span>Read Document</span>
+            </button>
+            <button onclick="toast.success('Document Copied', 'Offline reference link generated for ${doc.id}');" class="p-2 border border-outline-variant/60 rounded-xl hover:bg-surface-container text-on-surface-variant transition-colors" title="Copy Reference Link">
+              <span class="material-symbols-outlined text-[16px]">link</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openViewDocumentModal(docId) {
+  const doc = (AppState.documents || []).find(d => d.id === docId);
+  if (!doc) return;
+
+  const user = AppState.currentUser;
+  if (!canStaffAccessDocument(doc, user)) {
+    toast.error('Clearance Denied', 'Your current role or department does not have authorization to view this document.');
+    return;
+  }
+
+  const catBadge = document.getElementById('view-doc-cat-badge');
+  const classBadge = document.getElementById('view-doc-class-badge');
+  const idEl = document.getElementById('view-doc-id');
+  const titleEl = document.getElementById('view-doc-title');
+  const metaEl = document.getElementById('view-doc-meta');
+  const bodyEl = document.getElementById('view-doc-content-body');
+
+  if (catBadge) catBadge.textContent = doc.category;
+  if (classBadge) classBadge.textContent = doc.classification;
+  if (idEl) idEl.textContent = `${doc.id} • ${doc.version || 'v1.0'}`;
+  if (titleEl) titleEl.textContent = doc.title;
+  if (metaEl) metaEl.textContent = `Author: ${doc.author || 'Store Management'} • Updated: ${doc.updatedAt || 'Recent'} • Target: ${doc.targetDept} (Min Rank ${doc.minRank || 1})`;
+  if (bodyEl) {
+    bodyEl.innerHTML = `
+      <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/40 mb-3 text-on-surface-variant">
+        <strong class="text-on-surface block mb-0.5">Abstract:</strong>
+        ${doc.summary}
+      </div>
+      <div class="space-y-3">
+        ${doc.content || '<p>Full document text currently maintained in secure physical archive.</p>'}
+      </div>
+    `;
+  }
+
+  openModal('modal-view-document');
+}
+
+function openUploadDocumentModal() {
+  const user = AppState.currentUser;
+  if (!AppState.canPerformHRFunctions() && user.rank < 4) {
+    toast.error('Clearance Denied', 'Only HR Personnel and Upper Management can upload or authorize operational documentation.');
+    return;
+  }
+  openModal('modal-upload-document');
+}
+
+function handleUploadDocumentSubmit(e) {
+  e.preventDefault();
+  const user = AppState.currentUser;
+  if (!AppState.canPerformHRFunctions() && user.rank < 4) {
+    toast.error('Clearance Denied', 'Authorization required to publish documentation.');
+    return;
+  }
+
+  const form = e.target;
+  const title = form.title.value.trim();
+  const category = form.category.value;
+  const classification = form.classification.value;
+  const targetDept = form.target_dept.value;
+  const minRank = parseInt(form.min_rank.value, 10) || 1;
+  const grantsRaw = (form.granted_employees.value || '').trim();
+  const summary = form.summary.value.trim();
+  const content = form.content.value.trim();
+
+  const grantedEmployeeIds = grantsRaw ? grantsRaw.split(',').map(s => s.trim().toUpperCase()).filter(Boolean) : [];
+
+  const newDoc = {
+    id: `DOC-${category.slice(0,3).toUpperCase()}-${Date.now().toString().slice(-4)}`,
+    title,
+    category,
+    targetDept,
+    minRank,
+    grantedEmployeeIds,
+    classification,
+    version: 'v1.0',
+    updatedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    author: `${user.name} (${user.role})`,
+    summary,
+    content: content.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br/>')
+  };
+
+  AppState.documents.unshift(newDoc);
+
+  // Security Audit Log
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${user.name} (${user.role})`,
+    action: 'Document Authorized & Published',
+    target: newDoc.id,
+    detail: `Published "${newDoc.title}". Scope: ${targetDept} (Min Rank ${minRank}). Direct grants: ${grantedEmployeeIds.length}`
+  });
+
+  // Notification
+  AppState.notifications.unshift({
+    id: `notif-${Date.now()}`,
+    title: `New Policy Published: ${newDoc.title}`,
+    message: `${newDoc.category} released by ${user.name}. Scope: ${targetDept}`,
+    timestamp: 'Just now',
+    read: false,
+    type: 'document_published'
+  });
+
+  AppState.saveState();
+  closeModal('modal-upload-document');
+  form.reset();
+  renderDocuments();
+  updateNotificationBadge();
+  toast.success('Document Authorized & Published', `"${newDoc.title}" is now accessible to eligible workforce members.`);
+}
+
+window.renderDeboarding = renderDeboarding;
+window.filterDeboardingList = filterDeboardingList;
+window.toggleDeboardingStep = toggleDeboardingStep;
+window.authorizeDeboardingPayroll = authorizeDeboardingPayroll;
+window.finalizeDeboarding = finalizeDeboarding;
+window.reinstateStaff = reinstateStaff;
+
+window.renderDocuments = renderDocuments;
+window.canStaffAccessDocument = canStaffAccessDocument;
+window.filterDocumentsCategory = filterDocumentsCategory;
+window.openViewDocumentModal = openViewDocumentModal;
+window.openUploadDocumentModal = openUploadDocumentModal;
+window.handleUploadDocumentSubmit = handleUploadDocumentSubmit;
+window.openTransferEmployeeModal = openTransferModal;
 
 // =========================================================================
 // 18. INITIALIZATION
