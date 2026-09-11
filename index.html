@@ -45,19 +45,21 @@
             "error-container": "#ffdad6",
             "on-error": "#ffffff",
             "on-error-container": "#93000a",
-            "surface": "#f8f9ff",
+            "surface": "#f6f8fb",
             "surface-dim": "#cbdbf5",
             "surface-bright": "#f8f9ff",
+            "surface-lowest": "#ffffff",
+            "surface-low": "#f1f5f9",
             "surface-container-lowest": "#ffffff",
             "surface-container-low": "#eff4ff",
             "surface-container": "#e5eeff",
             "surface-container-high": "#dce9ff",
             "surface-container-highest": "#d3e4fe",
-            "on-surface": "#0b1c30",
-            "on-surface-variant": "#44474c",
-            "outline": "#74777d",
-            "outline-variant": "#c4c6cd",
-            "background": "#f8f9ff"
+            "on-surface": "#091929",
+            "on-surface-variant": "#334155",
+            "outline": "#64748b",
+            "outline-variant": "#cbd5e1",
+            "background": "#f6f8fb"
           },
           fontFamily: {
             "headline": ["Hanken Grotesk", "sans-serif"],
@@ -1646,45 +1648,45 @@
     <main id="view-onboarding" class="view-section p-6 md:p-8 flex-1 flex flex-col gap-6 max-w-6xl mx-auto w-full hidden">
       
       <!-- Welcome Header -->
-      <div class="nexus-card p-6 relative overflow-hidden bg-gradient-to-r from-surface-lowest via-surface-lowest to-secondary-container/10">
+      <div class="nexus-card p-6 relative overflow-hidden bg-white/95 dark:bg-surface-lowest/95 backdrop-blur-xl border border-slate-200/90 dark:border-white/10 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <span class="badge-pill bg-secondary-container/40 text-secondary text-xs">Staff Duty Station</span>
-              <span class="text-xs text-on-surface-variant font-mono" id="onboard-user-id">NEX-8492</span>
+              <span class="badge-pill bg-secondary-container/40 text-secondary text-xs font-bold">Staff Duty Station</span>
+              <span class="text-xs text-slate-500 font-mono font-semibold" id="onboard-user-id">NEX-8492</span>
             </div>
-            <h2 class="font-headline text-2xl md:text-3xl font-bold text-primary dark:text-primary-fixed">
+            <h2 class="font-headline text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
               Welcome, <span id="onboard-user-name">Elena Rodriguez</span>
             </h2>
-            <p id="onboard-user-role" class="text-xs text-on-surface-variant font-medium mt-1">Senior Sales Associate &amp; Floor Lead • Apparel &amp; Styling</p>
+            <p id="onboard-user-role" class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1">Senior Sales Associate &amp; Floor Lead • Apparel &amp; Styling</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
             <!-- Escalate Floor Issue Button -->
-            <button onclick="openModal('modal-escalate-issue')" class="px-4 py-2.5 bg-error/10 text-error hover:bg-error/20 border border-error/30 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
+            <button onclick="openModal('modal-escalate-issue')" class="px-4 py-2.5 bg-error/10 text-error hover:bg-error/20 border border-error/30 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 shadow-xs active:scale-95">
               <span class="material-symbols-outlined text-[18px]">report_problem</span>
               <span>Escalate Floor Issue</span>
             </button>
 
             <!-- Digital Punch Clock Card & Compliance Tracker -->
-            <div class="flex flex-wrap items-center gap-4 p-4 rounded-2xl bg-surface-container border border-outline-variant/60 shadow-sm">
+            <div class="flex flex-wrap items-center gap-4 p-4 rounded-2xl bg-slate-50/90 dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800 shadow-xs">
               <div>
-                <span class="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider block font-semibold">Station Time</span>
-                <div id="live-digital-clock" class="font-mono text-lg font-bold text-primary dark:text-primary-fixed mt-0.5">--:--:-- --</div>
-                <div id="punch-clock-status" class="badge-pill bg-secondary-container/40 text-secondary border border-secondary/30 text-xs mt-1">
+                <span class="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">Station Time</span>
+                <div id="live-digital-clock" class="font-mono text-lg font-extrabold text-slate-900 dark:text-white mt-0.5">--:--:-- --</div>
+                <div id="punch-clock-status" class="badge-pill bg-secondary-container/50 text-secondary border border-secondary/40 text-xs mt-1 font-bold">
                   <span class="w-2 h-2 rounded-full bg-secondary live-pulse"></span>
                   <span>CLOCKED IN</span>
                 </div>
               </div>
 
               <!-- Break / Meal Controls -->
-              <div class="border-l border-outline-variant/60 pl-3 flex flex-col gap-1.5">
+              <div class="border-l border-slate-200 dark:border-slate-800 pl-3 flex flex-col gap-1.5">
                 <div class="flex items-center gap-1.5">
-                  <button id="btn-start-rest-break" onclick="startBreak('rest', 15)" class="px-2.5 py-1.5 bg-surface hover:bg-surface-lowest text-on-surface border border-outline-variant/60 rounded-lg text-[11px] font-semibold transition-all active:scale-95 flex items-center gap-1">
+                  <button id="btn-start-rest-break" onclick="startBreak('rest', 15)" class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] font-bold transition-all active:scale-95 flex items-center gap-1 shadow-2xs">
                     <span class="material-symbols-outlined text-[14px] text-primary">coffee</span>
                     <span>15m Rest</span>
                   </button>
-                  <button id="btn-start-meal-break" onclick="startBreak('meal', 30)" class="px-2.5 py-1.5 bg-surface hover:bg-surface-lowest text-on-surface border border-outline-variant/60 rounded-lg text-[11px] font-semibold transition-all active:scale-95 flex items-center gap-1">
+                  <button id="btn-start-meal-break" onclick="startBreak('meal', 30)" class="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] font-bold transition-all active:scale-95 flex items-center gap-1 shadow-2xs">
                     <span class="material-symbols-outlined text-[14px] text-amber-500">restaurant</span>
                     <span>30m Meal</span>
                   </button>
@@ -1695,16 +1697,16 @@
               </div>
 
               <!-- Clock In / Clock Out Main Action -->
-              <div class="border-l border-outline-variant/60 pl-4 flex flex-col gap-1.5">
+              <div class="border-l border-slate-200 dark:border-slate-800 pl-4 flex flex-col gap-1.5">
                 <button id="punch-clock-btn" onclick="handleStaffClockToggle()" class="px-4 py-2 bg-error text-white font-bold text-xs rounded-xl hover:bg-error/90 transition-all shadow-sm active:scale-95 flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[18px]">logout</span>
                   <span>Clock Out</span>
                 </button>
-                <button type="button" onclick="promptManualRFIDEntry()" class="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1 active:scale-95" title="Tap RFID / NFC Card or enter badge ID to punch clock">
+                <button type="button" onclick="promptManualRFIDEntry()" class="px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary dark:text-primary-fixed border border-primary/30 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center gap-1 active:scale-95" title="Tap RFID / NFC Card or enter badge ID to punch clock">
                   <span class="material-symbols-outlined text-[14px]">contactless</span>
                   <span>Tap RFID / NFC</span>
                 </button>
-                <span id="punch-clock-last-time" class="text-[10px] text-on-surface-variant font-mono text-center">Started at 08:45 AM</span>
+                <span id="punch-clock-last-time" class="text-[10px] text-slate-500 font-mono text-center">Started at 08:45 AM</span>
               </div>
             </div>
           </div>
@@ -2294,17 +2296,17 @@
         <div class="nexus-card p-6 md:p-8 relative overflow-hidden bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/70 shadow-2xl rounded-3xl">
           
           <!-- Mode Tabs: Credentials vs Passkey vs RFID/NFC -->
-          <div class="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-surface-container border border-outline-variant/50 mb-6 text-xs font-semibold">
-            <button id="login-tab-btn-creds" onclick="switchLoginPortalTab('creds')" class="py-2.5 px-3 rounded-xl bg-surface text-primary font-bold shadow-sm transition-all flex items-center justify-center gap-1.5">
+          <div class="apple-segmented-tabs mb-6">
+            <button type="button" id="login-tab-btn-creds" onclick="switchLoginPortalTab('creds')" class="apple-tab-item active">
               <span class="material-symbols-outlined text-[18px]">badge</span>
               <span class="hidden sm:inline">Credentials</span>
               <span class="sm:hidden">ID/Email</span>
             </button>
-            <button id="login-tab-btn-passkey" onclick="switchLoginPortalTab('passkey')" class="py-2.5 px-3 rounded-xl text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-1.5">
+            <button type="button" id="login-tab-btn-passkey" onclick="switchLoginPortalTab('passkey')" class="apple-tab-item">
               <span class="material-symbols-outlined text-[18px]">fingerprint</span>
               <span>Passkey</span>
             </button>
-            <button id="login-tab-btn-rfid" onclick="switchLoginPortalTab('rfid')" class="py-2.5 px-3 rounded-xl text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-1.5">
+            <button type="button" id="login-tab-btn-rfid" onclick="switchLoginPortalTab('rfid')" class="apple-tab-item">
               <span class="material-symbols-outlined text-[18px]">contactless</span>
               <span class="hidden sm:inline">RFID / NFC</span>
               <span class="sm:hidden">NFC</span>
@@ -2500,27 +2502,27 @@
 
           <!-- Bottom 1-Click Fast Fill for Credentials -->
           <div class="pt-4 mt-5 border-t border-outline-variant/40">
-            <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2 font-mono">Quick Populate Credentials:</span>
-            <div class="flex flex-wrap gap-1.5 text-xs">
-              <button type="button" onclick="fillPortalLogin('admin@nexus.com', 'nexus2026')" class="px-2 py-1 bg-surface-container hover:bg-surface-container-high rounded-lg text-[11px] font-semibold text-on-surface transition-colors flex items-center gap-1">
-                <span class="badge-pill text-[8px] rank-badge-5">R5</span>
-                <span>Admin (Marcus)</span>
+            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-2 font-mono">Quick Populate Credentials:</span>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <button type="button" onclick="fillPortalLogin('admin@nexus.com', 'nexus2026')" class="persona-chip py-1.5 px-3 text-xs flex items-center gap-1.5">
+                <span class="badge-pill text-[9px] rank-badge-5 font-bold">R5</span>
+                <span class="font-bold text-slate-900 dark:text-white text-[11px]">Admin (Marcus)</span>
               </button>
-              <button type="button" onclick="fillPortalLogin('e.rodriguez@nexusretail.com', '1234')" class="px-2 py-1 bg-surface-container hover:bg-surface-container-high rounded-lg text-[11px] font-semibold text-on-surface transition-colors flex items-center gap-1">
-                <span class="badge-pill text-[8px] rank-badge-3">R3</span>
-                <span>Lead (Elena)</span>
+              <button type="button" onclick="fillPortalLogin('e.rodriguez@nexusretail.com', '1234')" class="persona-chip py-1.5 px-3 text-xs flex items-center gap-1.5">
+                <span class="badge-pill text-[9px] rank-badge-3 font-bold">R3</span>
+                <span class="font-bold text-slate-900 dark:text-white text-[11px]">Lead (Elena)</span>
               </button>
-              <button type="button" onclick="fillPortalLogin('NEX-3401', '1234')" class="px-2 py-1 bg-surface-container hover:bg-surface-container-high rounded-lg text-[11px] font-semibold text-on-surface transition-colors flex items-center gap-1">
-                <span class="badge-pill text-[8px] rank-badge-2">R2</span>
-                <span>Inventory (David)</span>
+              <button type="button" onclick="fillPortalLogin('NEX-3401', '1234')" class="persona-chip py-1.5 px-3 text-xs flex items-center gap-1.5">
+                <span class="badge-pill text-[9px] rank-badge-2 font-bold">R2</span>
+                <span class="font-bold text-slate-900 dark:text-white text-[11px]">Inventory (David)</span>
               </button>
-              <button type="button" onclick="fillPortalLogin('NEX-1044', '1234')" class="px-2 py-1 bg-surface-container hover:bg-surface-container-high rounded-lg text-[11px] font-semibold text-on-surface transition-colors flex items-center gap-1">
-                <span class="badge-pill text-[8px] rank-badge-1">R1</span>
-                <span>Associate (Anita)</span>
+              <button type="button" onclick="fillPortalLogin('NEX-1044', '1234')" class="persona-chip py-1.5 px-3 text-xs flex items-center gap-1.5">
+                <span class="badge-pill text-[9px] rank-badge-1 font-bold">R1</span>
+                <span class="font-bold text-slate-900 dark:text-white text-[11px]">Associate (Anita)</span>
               </button>
-              <button type="button" onclick="fillPortalLogin('r.adams@nexusretail.com', '1234')" class="px-2 py-1 bg-surface-container hover:bg-surface-container-high rounded-lg text-[11px] font-semibold text-on-surface transition-colors flex items-center gap-1">
-                <span class="badge-pill text-[8px] rank-badge-4">HR</span>
-                <span>HR Director (Rachel)</span>
+              <button type="button" onclick="fillPortalLogin('r.adams@nexusretail.com', '1234')" class="persona-chip py-1.5 px-3 text-xs flex items-center gap-1.5">
+                <span class="badge-pill text-[9px] rank-badge-4 font-bold">HR</span>
+                <span class="font-bold text-slate-900 dark:text-white text-[11px]">HR Director (Rachel)</span>
               </button>
             </div>
           </div>
@@ -2715,95 +2717,106 @@
   <!-- MODAL: STAFF AUTHENTICATION & 200-EMPLOYEE DIRECTORY -->
   <!-- ========================================================================= -->
   <div id="modal-switch-user" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="modal-content w-full max-w-xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between pb-3 border-b border-outline-variant/50">
+    <div class="modal-content w-full max-w-xl p-6 md:p-8 relative max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-4 mb-1 border-b border-slate-200/60 dark:border-slate-700/60">
         <div>
-          <h3 class="font-headline text-lg font-bold text-on-surface">Staff Terminal Authentication</h3>
-          <p class="text-xs text-on-surface-variant">Log in to personal employee station or test across 200 staff profiles</p>
+          <h3 class="font-headline text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Staff Terminal Authentication</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5">Log in to personal employee station or test across 200 staff profiles</p>
         </div>
-        <button onclick="closeModal('modal-switch-user')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
-          <span class="material-symbols-outlined">close</span>
+        <button onclick="closeModal('modal-switch-user')" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-[20px]">close</span>
         </button>
       </div>
 
-      <!-- Tabs: Credential Login vs 200-Staff Directory -->
-      <div class="flex items-center border-b border-outline-variant/40 mt-2 mb-3">
-        <button id="tab-btn-auth" onclick="switchLoginModalTab('auth')" class="px-4 py-2 text-xs font-bold border-b-2 border-primary text-primary transition-colors">
-          Personal Login (PIN / ID)
+      <!-- Segmented Tabs: Apple macOS / iOS Style -->
+      <div class="apple-segmented-tabs my-3">
+        <button id="tab-btn-auth" onclick="switchLoginModalTab('auth')" class="apple-tab-item active">
+          <span class="material-symbols-outlined text-[16px]">badge</span>
+          <span>Personal Login (PIN / ID)</span>
         </button>
-        <button id="tab-btn-directory" onclick="switchLoginModalTab('directory')" class="px-4 py-2 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5">
+        <button id="tab-btn-directory" onclick="switchLoginModalTab('directory')" class="apple-tab-item">
+          <span class="material-symbols-outlined text-[16px]">groups</span>
           <span>200-Staff Directory</span>
-          <span class="badge-pill bg-surface-container text-[10px]">Instant Switch</span>
+          <span class="px-1.5 py-0.2 rounded-full bg-slate-200/70 dark:bg-slate-700 text-[9px] font-mono font-bold">INSTANT SWITCH</span>
         </button>
       </div>
 
       <!-- TAB 1: DIRECT CREDENTIAL LOGIN -->
-      <div id="tab-content-auth" class="space-y-4 py-2">
-        <form onsubmit="handleStaffLoginSubmit(event)" class="space-y-3">
+      <div id="tab-content-auth" class="space-y-4 py-1">
+        <form onsubmit="handleStaffLoginSubmit(event)" class="space-y-3.5">
           <div>
-            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Employee ID or Corporate Email *</label>
-            <input id="login-emp-identifier" type="text" placeholder="e.g. NEX-8492 or e.rodriguez@nexusretail.com" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-medium"/>
+            <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center justify-between">
+              <span>Employee ID or Corporate Email *</span>
+              <span class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">e.g. NEX-8492 or e.rodriguez@nexusretail.com</span>
+            </label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">account_circle</span>
+              <input id="login-emp-identifier" type="text" placeholder="Enter Work Email or Employee ID..." required class="w-full pl-10 pr-4 py-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-900 focus:border-slate-900 dark:focus:ring-white dark:focus:border-white font-medium text-slate-900 dark:text-white transition-all shadow-xs"/>
+            </div>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Terminal Security PIN *</label>
-            <input id="login-emp-pin" type="password" placeholder="1234" value="1234" required class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant/70 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none font-mono"/>
-            <p class="text-[11px] text-outline mt-1">Default test PIN for all associates: <span class="font-mono text-secondary font-bold">1234</span> (Admin: <span class="font-mono text-secondary font-bold">nexus2026</span>)</p>
+            <label class="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">Terminal Security PIN *</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">lock</span>
+              <input id="login-emp-pin" type="password" placeholder="1234" value="1234" required class="w-full pl-10 pr-4 py-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-slate-900 focus:border-slate-900 dark:focus:ring-white dark:focus:border-white font-mono text-slate-900 dark:text-white transition-all shadow-xs"/>
+            </div>
+            <p class="text-[11px] text-slate-600 dark:text-slate-400 font-medium mt-1.5">Default test PIN for all associates: <span class="font-mono text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200/80 dark:border-emerald-800/80">1234</span> (Admin: <span class="font-mono text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200/80 dark:border-emerald-800/80">nexus2026</span>)</p>
           </div>
 
-          <button type="submit" class="w-full py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary-container shadow-sm active:scale-95 flex items-center justify-center gap-1.5">
+          <button type="submit" class="w-full py-3 px-4 bg-slate-950 dark:bg-white text-white dark:text-slate-950 font-bold text-xs rounded-xl hover:bg-slate-900 dark:hover:bg-slate-100 shadow-md hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2">
             <span class="material-symbols-outlined text-[18px]">login</span>
             <span>Authenticate Session</span>
           </button>
 
           <div class="grid grid-cols-2 gap-2 pt-1">
-            <button type="button" onclick="handlePasskeyAuth(false)" class="py-2 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 text-on-surface">
-              <span class="material-symbols-outlined text-[16px] text-primary">fingerprint</span>
+            <button type="button" onclick="handlePasskeyAuth(false)" class="py-2.5 px-3 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold text-xs rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 text-slate-900 dark:text-white">
+              <span class="material-symbols-outlined text-[18px] text-slate-900 dark:text-slate-100">fingerprint</span>
               <span>Passkey Login</span>
             </button>
-            <button type="button" onclick="promptManualRFIDEntry()" class="py-2 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 text-on-surface">
-              <span class="material-symbols-outlined text-[16px] text-primary">contactless</span>
+            <button type="button" onclick="promptManualRFIDEntry()" class="py-2.5 px-3 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold text-xs rounded-xl shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 text-slate-900 dark:text-white">
+              <span class="material-symbols-outlined text-[18px] text-slate-900 dark:text-slate-100">contactless</span>
               <span>RFID/NFC Tap</span>
             </button>
           </div>
         </form>
 
         <!-- 1-Click Role Presets for Testing -->
-        <div class="pt-3 border-t border-outline-variant/40">
-          <span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2">1-Click Test Personas:</span>
+        <div class="pt-3.5 border-t border-slate-200/60 dark:border-slate-700/60">
+          <span class="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-2 font-mono">1-Click Test Personas:</span>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <button onclick="switchUser('NEX-0001')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+            <button type="button" onclick="switchUser('NEX-0001')" class="persona-chip">
               <span class="badge-pill text-[9px] rank-badge-5">Rank 5</span>
-              <div>
-                <div class="font-bold text-on-surface">Marcus Vance</div>
-                <div class="text-[10px] text-on-surface-variant">Global Administrator</div>
+              <div class="truncate">
+                <div class="font-bold text-slate-900 dark:text-white truncate">Marcus Vance</div>
+                <div class="text-[10px] text-slate-600 dark:text-slate-400 font-medium truncate">Global Administrator</div>
               </div>
             </button>
-            <button onclick="switchUser('NEX-2001')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+            <button type="button" onclick="switchUser('NEX-2001')" class="persona-chip">
               <span class="badge-pill text-[9px] rank-badge-4">Rank 4</span>
-              <div>
-                <div class="font-bold text-on-surface">Sophia Bennett</div>
-                <div class="text-[10px] text-on-surface-variant">Operations Manager</div>
+              <div class="truncate">
+                <div class="font-bold text-slate-900 dark:text-white truncate">Sophia Bennett</div>
+                <div class="text-[10px] text-slate-600 dark:text-slate-400 font-medium truncate">Operations Manager</div>
               </div>
             </button>
-            <button onclick="switchUser('NEX-8492')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+            <button type="button" onclick="switchUser('NEX-8492')" class="persona-chip">
               <span class="badge-pill text-[9px] rank-badge-3">Rank 3</span>
-              <div>
-                <div class="font-bold text-on-surface">Elena Rodriguez</div>
-                <div class="text-[10px] text-on-surface-variant">Floor Lead (Apparel)</div>
+              <div class="truncate">
+                <div class="font-bold text-slate-900 dark:text-white truncate">Elena Rodriguez</div>
+                <div class="text-[10px] text-slate-600 dark:text-slate-400 font-medium truncate">Floor Lead (Apparel)</div>
               </div>
             </button>
-            <button onclick="switchUser('NEX-3401')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+            <button type="button" onclick="switchUser('NEX-3401')" class="persona-chip">
               <span class="badge-pill text-[9px] rank-badge-2">Rank 2</span>
-              <div>
-                <div class="font-bold text-on-surface">David Chen</div>
-                <div class="text-[10px] text-on-surface-variant">Inventory Specialist</div>
+              <div class="truncate">
+                <div class="font-bold text-slate-900 dark:text-white truncate">David Chen</div>
+                <div class="text-[10px] text-slate-600 dark:text-slate-400 font-medium truncate">Inventory Specialist</div>
               </div>
             </button>
-            <button onclick="switchUser('NEX-1044')" class="p-2.5 rounded-xl border border-outline-variant/50 hover:border-primary text-left bg-surface-container-low/50 hover:bg-surface-container transition-all flex items-center gap-2">
+            <button type="button" onclick="switchUser('NEX-1044')" class="persona-chip">
               <span class="badge-pill text-[9px] rank-badge-1">Rank 1</span>
-              <div>
-                <div class="font-bold text-on-surface">Anita Jones</div>
-                <div class="text-[10px] text-on-surface-variant">Retail Associate</div>
+              <div class="truncate">
+                <div class="font-bold text-slate-900 dark:text-white truncate">Anita Jones</div>
+                <div class="text-[10px] text-slate-600 dark:text-slate-400 font-medium truncate">Retail Associate</div>
               </div>
             </button>
           </div>

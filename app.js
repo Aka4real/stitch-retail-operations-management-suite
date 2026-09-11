@@ -1046,13 +1046,13 @@ function switchLoginModalTab(tab) {
   const contentDir = document.getElementById('tab-content-directory');
 
   if (tab === 'auth') {
-    if (btnAuth) btnAuth.className = 'px-4 py-2 text-xs font-bold border-b-2 border-primary text-primary transition-colors';
-    if (btnDir) btnDir.className = 'px-4 py-2 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1.5';
+    if (btnAuth) btnAuth.className = 'apple-tab-item active';
+    if (btnDir) btnDir.className = 'apple-tab-item';
     if (contentAuth) contentAuth.classList.remove('hidden');
     if (contentDir) contentDir.classList.add('hidden');
   } else {
-    if (btnDir) btnDir.className = 'px-4 py-2 text-xs font-bold border-b-2 border-primary text-primary transition-colors flex items-center gap-1.5';
-    if (btnAuth) btnAuth.className = 'px-4 py-2 text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors';
+    if (btnDir) btnDir.className = 'apple-tab-item active';
+    if (btnAuth) btnAuth.className = 'apple-tab-item';
     if (contentDir) contentDir.classList.remove('hidden');
     if (contentAuth) contentAuth.classList.add('hidden');
     renderSwitchUserModalList();
@@ -1162,12 +1162,9 @@ function switchLoginPortalTab(tab) {
   const panelPasskey = document.getElementById('login-panel-passkey');
   const panelRfid = document.getElementById('login-panel-rfid');
 
-  const activeClass = 'py-2.5 px-3 rounded-xl bg-surface text-primary font-bold shadow-sm transition-all flex items-center justify-center gap-1.5';
-  const inactiveClass = 'py-2.5 px-3 rounded-xl text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-1.5';
-
-  if (btnCreds) btnCreds.className = tab === 'creds' ? activeClass : inactiveClass;
-  if (btnPasskey) btnPasskey.className = tab === 'passkey' ? activeClass : inactiveClass;
-  if (btnRfid) btnRfid.className = tab === 'rfid' ? activeClass : inactiveClass;
+  if (btnCreds) btnCreds.className = `apple-tab-item ${tab === 'creds' ? 'active' : ''}`;
+  if (btnPasskey) btnPasskey.className = `apple-tab-item ${tab === 'passkey' ? 'active' : ''}`;
+  if (btnRfid) btnRfid.className = `apple-tab-item ${tab === 'rfid' ? 'active' : ''}`;
 
   if (panelCreds) panelCreds.classList.toggle('hidden', tab !== 'creds');
   if (panelPasskey) panelPasskey.classList.toggle('hidden', tab !== 'passkey');
@@ -4184,29 +4181,29 @@ function renderMyDutiesList() {
     }
 
     return `
-      <div class="p-4 rounded-2xl bg-surface dark:bg-surface-lowest border border-outline-variant/70 shadow-sm space-y-3.5 hover:border-primary/50 transition-all">
+      <div class="p-4 rounded-2xl bg-white dark:bg-surface-lowest border border-slate-200/90 dark:border-white/10 shadow-sm space-y-3.5 hover:border-primary/40 transition-all">
         <!-- Duty Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <div class="flex items-center gap-2 flex-wrap">
               ${statusBadge}
-              <span class="badge-pill text-[10px] ${duty.priority === 'High' || duty.priority === 'Urgent' ? 'bg-error-container/30 text-error font-bold' : 'bg-surface-container text-on-surface-variant'}">${duty.priority}</span>
+              <span class="badge-pill text-[10px] ${duty.priority === 'High' || duty.priority === 'Urgent' ? 'bg-error-container/40 text-error font-bold' : 'bg-surface-container text-on-surface-variant font-semibold'}">${duty.priority}</span>
               <span class="font-mono text-xs text-on-surface-variant">Zone: ${duty.zone}</span>
               <span class="font-mono text-xs text-on-surface-variant">&bull; Due: ${duty.due}</span>
             </div>
-            <h4 class="font-headline text-base font-bold text-on-surface mt-1">${duty.task}</h4>
+            <h4 class="font-headline text-base font-bold text-slate-900 dark:text-white mt-1">${duty.task}</h4>
           </div>
 
           <div class="flex items-center gap-2">
             ${isUserLead ? `
-              <span class="badge-pill bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold flex items-center gap-1">
+              <span class="badge-pill bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-xs font-bold flex items-center gap-1">
                 <span class="material-symbols-outlined text-[14px]">stars</span>
                 <span>You are Team Lead</span>
               </span>
             ` : `
               <div class="text-left sm:text-right">
                 <span class="text-[10px] text-on-surface-variant block uppercase font-semibold">Team Lead</span>
-                <span class="text-xs font-bold text-on-surface flex items-center gap-1">
+                <span class="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
                   <span class="material-symbols-outlined text-amber-500 text-[14px]">stars</span>
                   <span>${leadName}</span>
                 </span>
@@ -4226,20 +4223,20 @@ function renderMyDutiesList() {
         ` : ''}
 
         <!-- Team Members Roster Display -->
-        <div class="p-2.5 rounded-xl bg-surface-container-low/50 border border-outline-variant/40 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="font-semibold text-on-surface-variant">Assigned Team (${assignees.length}):</span>
+            <span class="font-semibold text-slate-700 dark:text-slate-300">Assigned Team (${assignees.length}):</span>
             <div class="flex flex-wrap gap-1.5">
               ${assignees.map(a => `
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 ${a.id === user.id ? 'bg-primary text-white font-bold' : (a.isLead ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold' : 'bg-surface-container text-on-surface')}">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1 ${a.id === user.id ? 'bg-primary text-white font-bold shadow-xs' : (a.isLead ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/30' : 'bg-surface-container text-slate-800 dark:text-slate-200 border border-outline-variant/40')}">
                   ${a.isLead ? '★ ' : ''}${a.name} ${a.id === user.id ? '(You)' : ''}
                 </span>
               `).join('')}
             </div>
           </div>
           <div class="flex items-center gap-2 font-mono text-xs">
-            <span class="text-on-surface-variant">Completion:</span>
-            <span class="font-bold text-primary">${progressPercent}%</span>
+            <span class="text-on-surface-variant font-medium">Completion:</span>
+            <span class="font-bold text-primary dark:text-primary-fixed">${progressPercent}%</span>
           </div>
         </div>
 
@@ -4250,12 +4247,12 @@ function renderMyDutiesList() {
 
         <!-- Subtasks Checklist -->
         <div class="space-y-2">
-          <span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider block">Station Checklist:</span>
+          <span class="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">Station Checklist:</span>
           <div class="space-y-1.5">
             ${checklist.map((step, idx) => `
-              <label class="flex items-center gap-2.5 p-2 rounded-xl bg-surface dark:bg-surface-lowest border border-outline-variant/50 hover:border-primary cursor-pointer text-xs transition-colors">
+              <label class="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-900/50 dark:hover:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 hover:border-primary/40 cursor-pointer text-xs transition-colors">
                 <input type="checkbox" ${step.done ? 'checked' : ''} ${duty.status === 'Pending Approval' || duty.status === 'Approved' ? 'disabled' : ''} onchange="toggleDutyChecklistItem(${duty.id}, ${idx}, this.checked)" class="w-4 h-4 rounded text-secondary focus:ring-secondary"/>
-                <span class="${step.done ? 'line-through text-on-surface-variant' : 'text-on-surface font-medium'} flex-1">${step.text}</span>
+                <span class="${step.done ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-slate-100 font-semibold'} flex-1">${step.text}</span>
               </label>
             `).join('')}
           </div>
@@ -4490,28 +4487,28 @@ function renderSwitchUserModalList() {
       : `<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center font-bold text-primary">${emp.initials || 'EM'}</div>`;
 
     return `
-      <div onclick="switchUser('${emp.id}')" class="flex items-center justify-between p-3 rounded-xl border border-outline-variant/60 hover:border-primary hover:bg-surface-container cursor-pointer transition-all ${isCurrent ? 'ring-2 ring-primary bg-surface-container' : ''}">
+      <div onclick="switchUser('${emp.id}')" class="flex items-center justify-between p-3 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 hover:border-slate-400 dark:hover:border-slate-500 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 shadow-xs hover:shadow-sm cursor-pointer transition-all active:scale-[0.99] ${isCurrent ? 'ring-2 ring-slate-900 dark:ring-white bg-white dark:bg-slate-800' : ''}">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="relative">
+          <div class="relative shrink-0">
             ${avatarHtml}
-            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full ${emp.clockedIn ? 'bg-secondary' : 'bg-outline'} border-2 border-surface"></span>
+            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full ${emp.clockedIn ? 'bg-emerald-500' : 'bg-slate-400'} border-2 border-white dark:border-slate-900"></span>
           </div>
           <div class="min-w-0">
-            <div class="font-bold text-xs text-on-surface flex items-center gap-1.5 truncate">
+            <div class="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5 truncate">
               <span class="truncate">${emp.name}</span>
               <span class="badge-pill text-[9px] rank-badge-${emp.rank}">Rank ${emp.rank}</span>
-              ${isCurrent ? '<span class="text-[9px] bg-primary text-white px-1.5 py-0.2 rounded font-bold">ACTIVE</span>' : ''}
+              ${isCurrent ? '<span class="text-[9px] bg-slate-950 dark:bg-white text-white dark:text-slate-950 px-1.5 py-0.2 rounded font-bold">ACTIVE</span>' : ''}
             </div>
-            <div class="text-[11px] text-on-surface-variant font-mono truncate">${emp.id} &bull; ${emp.role}</div>
-            <div class="text-[10px] text-outline truncate">${emp.department} &bull; ${emp.zone} &bull; PIN: 1234</div>
+            <div class="text-[11px] text-slate-600 dark:text-slate-300 font-mono truncate font-medium">${emp.id} &bull; ${emp.role}</div>
+            <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate">${emp.department} &bull; ${emp.zone}</div>
           </div>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <span class="badge-pill text-[9px] ${emp.clockedIn ? 'bg-secondary-container/40 text-secondary' : 'bg-surface-container text-on-surface-variant'}">
+          <span class="badge-pill text-[9px] ${emp.clockedIn ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-600'}">
             ${emp.clockedIn ? 'On Shift' : 'Off Duty'}
           </span>
-          <button type="button" class="px-3 py-1 bg-surface-container hover:bg-primary hover:text-white rounded-lg text-xs font-semibold transition-colors">
-            Login &rarr;
+          <button type="button" class="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all active:scale-95">
+            Switch &rarr;
           </button>
         </div>
       </div>
