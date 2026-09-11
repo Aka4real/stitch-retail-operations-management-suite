@@ -25,7 +25,7 @@ function loadState() {
 
   return {
     departments: [
-      'Apparel & Fashion', 'Electronics & Gadgets', 'Logistics & Bay Storage',
+      'Human Resources & Talent', 'Apparel & Fashion', 'Electronics & Gadgets', 'Logistics & Bay Storage',
       'Customer Relations', 'Security & Safety', 'Facilities & Maintenance',
       'Food & Beverage', 'Cashier & Front End', 'Beauty & Cosmetics', 'Home Goods & Furniture'
     ],
@@ -35,6 +35,9 @@ function loadState() {
     ],
     staff: [
       { id: 'NEX-0001', name: 'Marcus Vance', role: 'Global Administrator', rank: 5, dept: 'Executive Operations', zone: 'Central Mall HQ', clockedIn: true, clockInTime: '07:30 AM' },
+      { id: 'NEX-0003', name: 'Rachel Adams', role: 'HR Director', rank: 4, dept: 'Human Resources & Talent', zone: 'Central Mall HQ', clockedIn: true, clockInTime: '08:15 AM' },
+      { id: 'NEX-0004', name: 'Benjamin Hayes', role: 'People Operations Lead', rank: 3, dept: 'Human Resources & Talent', zone: 'Central Mall HQ', clockedIn: true, clockInTime: '08:30 AM' },
+      { id: 'NEX-0005', name: 'Samantha Clark', role: 'Talent Acquisition Specialist', rank: 2, dept: 'Human Resources & Talent', zone: 'Central Mall HQ', clockedIn: true, clockInTime: '08:45 AM' },
       { id: 'NEX-8492', name: 'Elena Rodriguez', role: 'Senior Sales Lead', rank: 3, dept: 'Apparel & Fashion', zone: 'North Wing #42', clockedIn: true, clockInTime: '08:45 AM' },
       { id: 'NEX-3401', name: 'David Chen', role: 'Inventory Specialist', rank: 2, dept: 'Logistics & Bay Storage', zone: 'Storage Bay B', clockedIn: true, clockInTime: '09:00 AM' },
       { id: 'NEX-1044', name: 'Anita Jones', role: 'Fashion Consultant', rank: 1, dept: 'Apparel & Fashion', zone: 'North Wing #42', clockedIn: true, clockInTime: '09:15 AM' },
@@ -211,6 +214,26 @@ async function handleToolCall(name, args) {
   switch (name) {
     case 'get_shift_attendance': {
       let filtered = state.staff;
+
+      // RBAC cloaking: only HR team and Upper Management can see HR personnel
+      const HR_DEPT = 'Human Resources & Talent';
+      const HR_ROLES = ['HR Director', 'People Operations Lead', 'Talent Acquisition Specialist', 'Employee Relations Consultant'];
+      const reqId = args.requester_id;
+      const reqRank = args.requester_rank !== undefined ? Number(args.requester_rank) : null;
+      let canSeeHR = true;
+      if (reqId) {
+        const caller = state.staff.find(s => s.id === reqId);
+        if (caller) {
+          canSeeHR = caller.dept === HR_DEPT || caller.rank >= 4;
+        }
+      } else if (reqRank !== null) {
+        canSeeHR = reqRank >= 4;
+      }
+
+      if (!canSeeHR) {
+        filtered = filtered.filter(s => s.dept !== HR_DEPT && !HR_ROLES.includes(s.role));
+      }
+
       if (args.department) filtered = filtered.filter(s => s.dept.toLowerCase().includes(args.department.toLowerCase()));
       if (args.zone) filtered = filtered.filter(s => s.zone.toLowerCase().includes(args.zone.toLowerCase()));
       if (args.clocked_in_only !== false) filtered = filtered.filter(s => s.clockedIn);
@@ -364,6 +387,12 @@ async function handleToolCall(name, args) {
       }
       const employee = state.staff.find(s => s.id === code);
       if (employee) {
+        const HR_DEPT = 'Human Resources & Talent';
+        const HR_ROLES = ['HR Director', 'People Operations Lead', 'Talent Acquisition Specialist', 'Employee Relations Consultant'];
+        const isHR = employee.dept === HR_DEPT || HR_ROLES.includes(employee.role);
+        if (isHR && args.requester_rank !== undefined && Number(args.requester_rank) < 4 && args.requester_dept !== HR_DEPT) {
+          throw new Error(`Security Exception: Insufficient clearance to inspect Human Resources personnel badge.`);
+        }
         return { type: 'STAFF_BADGE', employee: employee };
       }
       throw new Error(`Barcode/Code "${args.code}" not found in retail registry.`);

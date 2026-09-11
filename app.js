@@ -32,7 +32,22 @@ const LAST_NAMES = [
   "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts"
 ];
 
+const HR_DEPARTMENT_NAME = "Human Resources & Talent";
+
+const HR_PROTECTED_ROLES = [
+  "HR Director",
+  "People Operations Lead",
+  "Talent Acquisition Specialist",
+  "Employee Relations Consultant"
+];
+
 const DEPARTMENTS = [
+  { 
+    name: "Human Resources & Talent", 
+    roles: ["HR Director", "People Operations Lead", "Talent Acquisition Specialist", "Employee Relations Consultant"], 
+    zone: "Central Mall HQ", 
+    isHR: true 
+  },
   { name: "Apparel & Fashion", roles: ["Fashion Sales Stylist", "Wardrobe Consultant", "Fitting Room Specialist", "Merchandising Associate"], zone: "North Wing #42" },
   { name: "Electronics & Gadgets", roles: ["Audio/Visual Tech Specialist", "Mobile Device Consultant", "Electronics Floor Lead", "Hardware Support Associate"], zone: "South Atrium" },
   { name: "Logistics & Bay Storage", roles: ["Inventory Stocker", "Receiving Dock Specialist", "Forklift & Bay Operator", "Logistics Coordinator"], zone: "Storage Bay B" },
@@ -78,6 +93,54 @@ function generate200MockEmployees() {
       clockedIn: true,
       clockInTime: '08:00 AM',
       hireDate: 'May 10, 2020'
+    },
+    {
+      id: 'NEX-0003',
+      name: 'Rachel Adams',
+      role: 'HR Director',
+      rank: 4,
+      department: 'Human Resources & Talent',
+      zone: 'Central Mall HQ',
+      email: 'r.adams@nexusretail.com',
+      pin: '1234',
+      avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+      initials: 'RA',
+      permissions: ['assign_tasks', 'manage_staff'],
+      clockedIn: true,
+      clockInTime: '08:15 AM',
+      hireDate: 'Mar 14, 2021'
+    },
+    {
+      id: 'NEX-0004',
+      name: 'Benjamin Hayes',
+      role: 'People Operations Lead',
+      rank: 3,
+      department: 'Human Resources & Talent',
+      zone: 'Central Mall HQ',
+      email: 'b.hayes@nexusretail.com',
+      pin: '1234',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+      initials: 'BH',
+      permissions: ['assign_tasks', 'manage_staff'],
+      clockedIn: true,
+      clockInTime: '08:30 AM',
+      hireDate: 'Nov 02, 2022'
+    },
+    {
+      id: 'NEX-0005',
+      name: 'Samantha Clark',
+      role: 'Talent Acquisition Specialist',
+      rank: 2,
+      department: 'Human Resources & Talent',
+      zone: 'Central Mall HQ',
+      email: 's.clark@nexusretail.com',
+      pin: '1234',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      initials: 'SC',
+      permissions: ['assign_tasks'],
+      clockedIn: true,
+      clockInTime: '09:00 AM',
+      hireDate: 'Jan 10, 2023'
     },
     {
       id: 'NEX-8492',
@@ -257,15 +320,72 @@ const AppState = {
 
   // Employees Roster (Auto-generates 200 staff if missing or outdated)
   employees: (function() {
+    let list;
     try {
       const stored = JSON.parse(localStorage.getItem('nexus_employees'));
       if (Array.isArray(stored) && stored.length >= 200) {
-        return stored;
+        list = stored;
       }
     } catch(e) {}
-    const initial = generate200MockEmployees();
-    localStorage.setItem('nexus_employees', JSON.stringify(initial));
-    return initial;
+    if (!list) {
+      list = generate200MockEmployees();
+    }
+    // Guarantee HR Department staff exist in roster
+    const hrDirector = list.find(e => e.id === 'NEX-0003');
+    if (!hrDirector) {
+      list.splice(2, 0,
+        {
+          id: 'NEX-0003',
+          name: 'Rachel Adams',
+          role: 'HR Director',
+          rank: 4,
+          department: 'Human Resources & Talent',
+          zone: 'Central Mall HQ',
+          email: 'r.adams@nexusretail.com',
+          pin: '1234',
+          avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+          initials: 'RA',
+          permissions: ['assign_tasks', 'manage_staff'],
+          clockedIn: true,
+          clockInTime: '08:15 AM',
+          hireDate: 'Mar 14, 2021'
+        },
+        {
+          id: 'NEX-0004',
+          name: 'Benjamin Hayes',
+          role: 'People Operations Lead',
+          rank: 3,
+          department: 'Human Resources & Talent',
+          zone: 'Central Mall HQ',
+          email: 'b.hayes@nexusretail.com',
+          pin: '1234',
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+          initials: 'BH',
+          permissions: ['assign_tasks', 'manage_staff'],
+          clockedIn: true,
+          clockInTime: '08:30 AM',
+          hireDate: 'Nov 02, 2022'
+        },
+        {
+          id: 'NEX-0005',
+          name: 'Samantha Clark',
+          role: 'Talent Acquisition Specialist',
+          rank: 2,
+          department: 'Human Resources & Talent',
+          zone: 'Central Mall HQ',
+          email: 's.clark@nexusretail.com',
+          pin: '1234',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          initials: 'SC',
+          permissions: ['assign_tasks'],
+          clockedIn: true,
+          clockInTime: '09:00 AM',
+          hireDate: 'Jan 10, 2023'
+        }
+      );
+    }
+    localStorage.setItem('nexus_employees', JSON.stringify(list));
+    return list;
   })(),
 
   // Current Logged-in User Session (Default to Global Admin Marcus Vance)
@@ -277,6 +397,38 @@ const AppState = {
 
   isManager() {
     return this.currentUser && this.currentUser.rank >= 4;
+  },
+
+  // HR & Higher Management RBAC Clearances
+  isHRMember() {
+    const u = this.currentUser;
+    if (!u) return false;
+    return u.department === HR_DEPARTMENT_NAME || u.department === 'Human Resources';
+  },
+
+  isUpperManagement() {
+    const u = this.currentUser;
+    if (!u) return false;
+    return u.rank >= 4; // Rank 4: Operations/Store Manager, Rank 5: Global Administrator / VP
+  },
+
+  canSeeHRRoles() {
+    return this.isHRMember() || this.isUpperManagement();
+  },
+
+  canAssignRoles() {
+    const u = this.currentUser;
+    if (!u) return false;
+    // Only HR staff (Rank >= 2 in HR team) or Upper Management (Rank >= 4)
+    return (this.isHRMember() && u.rank >= 2) || this.isUpperManagement();
+  },
+
+  canPerformHRFunctions() {
+    return this.isHRMember() || this.isUpperManagement();
+  },
+
+  canPerformUpperManagement() {
+    return this.isUpperManagement();
   },
 
   hasPermission(permKey) {
@@ -829,17 +981,36 @@ function updateSessionUI() {
     }
   }
 
+  // CRITICAL REQUIREMENT: "ONLY STAFF IN THAT TEAM AND HIGHER MANAGEMENT CAN SEE HR ROLES"
+  // Completely hide the HR nav link for non-HR and non-upper-management
+  const hrLink = document.getElementById('sidebar-nav-hr');
+  if (hrLink) {
+    if (AppState.canPerformHRFunctions()) {
+      hrLink.style.display = '';
+      hrLink.classList.remove('hidden');
+    } else {
+      hrLink.style.display = 'none';
+      hrLink.classList.add('hidden');
+    }
+  }
+
   // CRITICAL REQUIREMENT: "normal employee should not even see or know that there is a manager page"
   // Completely hide the manager nav link for non-managers
   const mgmtLink = document.getElementById('sidebar-nav-management');
   if (mgmtLink) {
-    if (isMgr) {
+    if (AppState.isUpperManagement()) {
       mgmtLink.style.display = '';
       mgmtLink.classList.remove('hidden');
     } else {
       mgmtLink.style.display = 'none';
       mgmtLink.classList.add('hidden');
     }
+  }
+
+  // Provision button in switch modal
+  const provisionContainer = document.getElementById('switch-modal-provision-container');
+  if (provisionContainer) {
+    provisionContainer.style.display = AppState.canPerformHRFunctions() ? '' : 'none';
   }
 
   // Update Notification Badge
@@ -856,8 +1027,10 @@ function switchUser(empId) {
     closeModal('modal-switch-user');
     toast.success('Session Authenticated', `Active: ${emp.name} (Rank ${emp.rank} • ${emp.department})`);
 
-    // If switching to normal staff (rank < 4) and was on management page, silently route to onboarding
-    if (!AppState.isManager() && AppState.currentView === 'management') {
+    // If switching to non-HR / non-management staff and was on HR or management page, redirect appropriately
+    if (!AppState.canPerformHRFunctions() && AppState.currentView === 'hr') {
+      navigateTo('dashboard');
+    } else if (!AppState.isManager() && AppState.currentView === 'management') {
       navigateTo('onboarding');
     } else {
       navigateTo(AppState.currentView);
@@ -956,12 +1129,24 @@ function navigateTo(viewId) {
 
   // CRITICAL REQUIREMENT: "normal employee should not even see or know that there is a manager page"
   // If non-manager attempts to route to 'management', silently redirect to 'onboarding'
-  if (viewId === 'management' && !AppState.isManager()) {
+  if (viewId === 'management' && !AppState.isUpperManagement()) {
     AppState.currentView = 'onboarding';
     window.location.hash = 'onboarding';
     renderNavActive('onboarding');
     renderOnboarding();
     closeMobileDrawer();
+    return;
+  }
+
+  // CRITICAL REQUIREMENT: "NO HR OR UPPER MANAGEMENT SHOULD NOT BE ABLE TO PERFORM HR FUNCTION"
+  // If non-HR / non-management attempts to route to 'hr', redirect to 'dashboard'
+  if (viewId === 'hr' && !AppState.canPerformHRFunctions()) {
+    AppState.currentView = 'dashboard';
+    window.location.hash = 'dashboard';
+    renderNavActive('dashboard');
+    renderDashboard();
+    closeMobileDrawer();
+    toast.error('Clearance Denied', 'The HR & Team Roster is strictly restricted to HR Personnel and Upper Management.');
     return;
   }
 
@@ -1482,6 +1667,24 @@ function exportSalesReport() {
 function renderHR() {
   renderHRDutiesTable();
   renderHRDepartmentCrews();
+
+  // Sync hr-dept-filter dropdown options with cloaking
+  const deptFilterElem = document.getElementById('hr-dept-filter');
+  if (deptFilterElem) {
+    const canSeeHR = AppState.canSeeHRRoles();
+    const currentVal = deptFilterElem.value;
+    const hrOpt = Array.from(deptFilterElem.options).find(o => o.value === HR_DEPARTMENT_NAME);
+    if (canSeeHR && !hrOpt) {
+      const opt = document.createElement('option');
+      opt.value = HR_DEPARTMENT_NAME;
+      opt.textContent = HR_DEPARTMENT_NAME;
+      deptFilterElem.appendChild(opt);
+    } else if (!canSeeHR && hrOpt) {
+      hrOpt.remove();
+      if (currentVal === HR_DEPARTMENT_NAME) deptFilterElem.value = 'ALL';
+    }
+  }
+
   renderHRStaffRoster();
 }
 
@@ -1537,6 +1740,7 @@ function renderHRDepartmentCrews() {
   if (!container) return;
 
   const depts = [
+    { name: "Human Resources & Talent", zone: "Central Mall HQ", icon: "badge", isHR: true },
     { name: "Apparel & Fashion", zone: "North Wing #42", icon: "styler" },
     { name: "Electronics & Gadgets", zone: "South Atrium", icon: "devices" },
     { name: "Logistics & Bay Storage", zone: "Storage Bay B", icon: "warehouse" },
@@ -1550,12 +1754,15 @@ function renderHRDepartmentCrews() {
   ];
 
   container.innerHTML = depts.map(dept => {
+    // If user cannot see HR roles and this is HR, skip displaying the card
+    if (dept.isHR && !AppState.canSeeHRRoles()) return '';
+
     const activeStaff = AppState.employees.filter(e => e.department === dept.name && e.status !== 'Terminated');
     const clockedCount = activeStaff.filter(e => e.clockedIn).length;
     const lead = activeStaff.find(e => e.rank >= 3)?.name || 'Unassigned';
 
     return `
-      <div class="p-4 rounded-2xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all">
+      <div class="p-4 rounded-2xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 shadow-sm flex flex-col justify-between hover:border-primary/50 transition-all ${dept.isHR ? 'ring-1 ring-primary/40 bg-primary/5' : ''}">
         <div>
           <div class="flex items-start justify-between gap-2 mb-2">
             <div class="flex items-center gap-2">
@@ -1563,7 +1770,10 @@ function renderHRDepartmentCrews() {
                 <span class="material-symbols-outlined text-[18px]">${dept.icon}</span>
               </div>
               <div>
-                <h4 class="font-bold text-xs text-on-surface leading-tight">${dept.name}</h4>
+                <h4 class="font-bold text-xs text-on-surface leading-tight flex items-center gap-1">
+                  <span>${dept.name}</span>
+                  ${dept.isHR ? '<span class="badge-pill bg-primary text-white font-mono text-[8px] font-bold">HR CORE</span>' : ''}
+                </h4>
                 <p class="text-[10px] text-on-surface-variant font-mono">${dept.zone}</p>
               </div>
             </div>
@@ -1588,14 +1798,21 @@ function renderHRDepartmentCrews() {
         </div>
 
         <div class="flex items-center justify-between gap-1.5 pt-2 border-t border-outline-variant/40">
-          <button onclick="openDissolveTeamModal('${dept.name}')" class="flex-1 py-1.5 px-2 bg-surface-container hover:bg-surface-container-high text-on-surface text-[11px] font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 active:scale-95" title="Disband active shift assignments and return associates to reserve">
-            <span class="material-symbols-outlined text-[14px]">cancel</span>
-            <span>Dissolve Crew</span>
-          </button>
-          <button onclick="openSackTeamModal('${dept.name}')" class="py-1.5 px-2.5 bg-error/10 hover:bg-error/20 text-error text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1 active:scale-95" title="Mass terminate all associates in this department">
-            <span class="material-symbols-outlined text-[14px]">gavel</span>
-            <span>Sack Team</span>
-          </button>
+          ${AppState.canPerformUpperManagement() ? `
+            <button onclick="openDissolveTeamModal('${dept.name}')" class="flex-1 py-1.5 px-2 bg-surface-container hover:bg-surface-container-high text-on-surface text-[11px] font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 active:scale-95" title="Disband active shift assignments and return associates to reserve">
+              <span class="material-symbols-outlined text-[14px]">cancel</span>
+              <span>Dissolve Crew</span>
+            </button>
+            <button onclick="openSackTeamModal('${dept.name}')" class="py-1.5 px-2.5 bg-error/10 hover:bg-error/20 text-error text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1 active:scale-95" title="Mass terminate all associates in this department">
+              <span class="material-symbols-outlined text-[14px]">gavel</span>
+              <span>Sack Team</span>
+            </button>
+          ` : `
+            <div class="flex items-center justify-center gap-1 text-[10px] text-outline w-full py-1">
+              <span class="material-symbols-outlined text-[12px]">lock</span>
+              <span>Team actions locked (Upper Mgmt Rank 4+)</span>
+            </div>
+          `}
         </div>
       </div>
     `;
@@ -1606,7 +1823,14 @@ function renderHRStaffRoster(filteredList) {
   const tbody = document.getElementById('hr-full-roster-body');
   if (!tbody) return;
 
-  const list = filteredList || AppState.employees.filter(e => e.status !== 'Terminated');
+  let list = filteredList || AppState.employees.filter(e => e.status !== 'Terminated');
+
+  // CRITICAL REQUIREMENT: "ONLY STAFF IN THAT TEAM AND HIGHER MANAGEMENT CAN SEE HR ROLES"
+  // If viewing user is not in the HR team and not upper management, filter out HR department staff and protected roles
+  if (!AppState.canSeeHRRoles()) {
+    list = list.filter(e => e.department !== HR_DEPARTMENT_NAME && !HR_PROTECTED_ROLES.includes(e.role));
+  }
+
   const countBadge = document.getElementById('hr-roster-count-badge');
   if (countBadge) countBadge.textContent = `${list.length} Associates`;
 
@@ -1683,8 +1907,12 @@ function filterHRStaffRoster() {
   const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
   const dept = deptFilter ? deptFilter.value : 'ALL';
 
+  const canSeeHR = AppState.canSeeHRRoles();
   const filtered = AppState.employees.filter(emp => {
     if (emp.status === 'Terminated') return false;
+    if (!canSeeHR && (emp.department === HR_DEPARTMENT_NAME || HR_PROTECTED_ROLES.includes(emp.role))) {
+      return false;
+    }
     const matchDept = dept === 'ALL' || emp.department === dept;
     const matchQuery = !query || 
       emp.name.toLowerCase().includes(query) ||
@@ -1699,6 +1927,11 @@ function filterHRStaffRoster() {
 // --- MODAL CONTROLS & HANDLERS ---
 
 function openTransferModal(empId) {
+  if (!AppState.canPerformHRFunctions()) {
+    toast.error('Clearance Denied', 'Transferring staff between teams is strictly restricted to HR Personnel and Upper Management.');
+    return;
+  }
+
   const emp = AppState.employees.find(e => e.id === empId);
   if (!emp) return;
 
@@ -1710,17 +1943,21 @@ function openTransferModal(empId) {
   if (avatar) avatar.textContent = emp.initials || 'NA';
 
   const deptSelect = document.getElementById('transfer-target-dept');
-  if (deptSelect) deptSelect.value = emp.department;
+  if (deptSelect) {
+    const visibleDepts = DEPARTMENTS.filter(d => !d.isHR || AppState.canSeeHRRoles());
+    deptSelect.innerHTML = visibleDepts.map(d => `<option value="${d.name}" ${d.name === emp.department ? 'selected' : ''}>${d.name}</option>`).join('');
+  }
 
   const roleInput = document.getElementById('transfer-target-role');
   if (roleInput) roleInput.value = emp.role;
 
-  autoUpdateTransferZone(deptSelect.value);
+  autoUpdateTransferZone(deptSelect ? deptSelect.value : emp.department);
   openModal('modal-transfer-employee');
 }
 
 function autoUpdateTransferZone(deptName) {
   const zoneMap = {
+    "Human Resources & Talent": "Central Mall HQ",
     "Apparel & Fashion": "North Wing #42",
     "Electronics & Gadgets": "South Atrium",
     "Logistics & Bay Storage": "Storage Bay B",
@@ -1740,11 +1977,28 @@ function autoUpdateTransferZone(deptName) {
 
 function handleTransferEmployeeSubmit(e) {
   e.preventDefault();
+  if (!AppState.canPerformHRFunctions()) {
+    toast.error('Clearance Denied', 'Transferring associates is strictly restricted to HR Personnel and Upper Management.');
+    return;
+  }
+
   const form = e.target;
   const empId = form.emp_id.value;
   const targetDept = form.target_dept.value;
   const targetZone = form.target_zone.value;
   const targetRole = form.target_role.value.trim();
+
+  // If transferring into HR Team, require HR Lead or Upper Management
+  if (targetDept === HR_DEPARTMENT_NAME && !AppState.isUpperManagement() && !(AppState.isHRMember() && AppState.currentUser.rank >= 3)) {
+    toast.error('Clearance Denied', 'Transferring personnel into the Human Resources & Talent department requires HR Lead or Upper Management clearance.');
+    return;
+  }
+
+  // If assigning an HR role, ensure viewer has HR role clearance
+  if (HR_PROTECTED_ROLES.includes(targetRole) && !AppState.canSeeHRRoles()) {
+    toast.error('Security Rejection', 'Unauthorized to assign protected Human Resources roles.');
+    return;
+  }
 
   const emp = AppState.employees.find(e => e.id === empId);
   if (!emp) return;
@@ -1761,7 +2015,7 @@ function handleTransferEmployeeSubmit(e) {
 
   AppState.auditLogs.unshift({
     timestamp: 'Just now',
-    actor: `${AppState.currentUser.name} (Manager)`,
+    actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
     action: 'Associate Transferred',
     target: emp.name,
     detail: `Transferred from ${oldDept} to ${targetDept} [${targetZone}]`
@@ -1776,8 +2030,25 @@ function handleTransferEmployeeSubmit(e) {
 }
 
 function openTerminateModal(empId) {
+  if (!AppState.canPerformHRFunctions()) {
+    toast.error('Clearance Denied', 'Terminating or sacking staff is strictly restricted to HR Personnel and Upper Management.');
+    return;
+  }
+
   const emp = AppState.employees.find(e => e.id === empId);
   if (!emp) return;
+
+  // Upper Management protection: non-upper-management cannot sack Rank 4+ staff
+  if (emp.rank >= 4 && !AppState.isUpperManagement()) {
+    toast.error('Security Restriction', 'Only Upper Management (Rank 4+) can terminate managerial or executive personnel.');
+    return;
+  }
+
+  // HR Team protection: only Higher Management or higher-ranking HR can terminate HR personnel
+  if (emp.department === HR_DEPARTMENT_NAME && !AppState.isUpperManagement() && !(AppState.isHRMember() && AppState.currentUser.rank > emp.rank)) {
+    toast.error('Security Restriction', 'Terminating HR personnel requires higher HR rank or Upper Management clearance.');
+    return;
+  }
 
   document.getElementById('terminate-emp-id').value = emp.id;
   document.getElementById('terminate-emp-name').textContent = emp.name;
@@ -1792,6 +2063,11 @@ function openTerminateModal(empId) {
 
 function handleTerminateEmployeeSubmit(e) {
   e.preventDefault();
+  if (!AppState.canPerformHRFunctions()) {
+    toast.error('Clearance Denied', 'Terminating staff is strictly restricted to HR Personnel and Upper Management.');
+    return;
+  }
+
   const form = e.target;
   const empId = form.emp_id.value;
   const reason = form.terminate_reason.value;
@@ -1799,6 +2075,11 @@ function handleTerminateEmployeeSubmit(e) {
 
   const emp = AppState.employees.find(e => e.id === empId);
   if (!emp) return;
+
+  if (emp.rank >= 4 && !AppState.isUpperManagement()) {
+    toast.error('Security Restriction', 'Only Upper Management (Rank 4+) can terminate managerial or executive personnel.');
+    return;
+  }
 
   // Mark as terminated & clocked out
   emp.status = 'Terminated';
@@ -1826,7 +2107,7 @@ function handleTerminateEmployeeSubmit(e) {
   // Audit log
   AppState.auditLogs.unshift({
     timestamp: 'Just now',
-    actor: `${AppState.currentUser.name} (Manager)`,
+    actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
     action: 'Associate Sacked / Terminated',
     target: emp.name,
     detail: `Terminated from ${emp.department}. Reason: ${reason}. Notes: ${notes || 'None'}`
@@ -1853,6 +2134,16 @@ function handleTerminateEmployeeSubmit(e) {
 }
 
 function openDissolveTeamModal(deptName) {
+  if (!AppState.canPerformUpperManagement()) {
+    toast.error('Clearance Denied', 'Dissolving shift crews requires Upper Management clearance (Rank 4+).');
+    return;
+  }
+
+  if (deptName === HR_DEPARTMENT_NAME && AppState.currentUser.rank < 5) {
+    toast.error('Executive Restriction', 'Only the Global Administrator (Rank 5) can dissolve the Human Resources team.');
+    return;
+  }
+
   const staff = AppState.employees.filter(e => e.department === deptName && e.status !== 'Terminated');
   document.getElementById('team-action-dept').value = deptName;
   document.getElementById('team-action-type').value = 'dissolve';
@@ -1871,6 +2162,16 @@ function openDissolveTeamModal(deptName) {
 }
 
 function openSackTeamModal(deptName) {
+  if (!AppState.canPerformUpperManagement()) {
+    toast.error('Clearance Denied', 'Sacking entire teams requires Upper Management clearance (Rank 4+).');
+    return;
+  }
+
+  if (deptName === HR_DEPARTMENT_NAME && AppState.currentUser.rank < 5) {
+    toast.error('Executive Restriction', 'Only the Global Administrator (Rank 5) can terminate the Human Resources department.');
+    return;
+  }
+
   const staff = AppState.employees.filter(e => e.department === deptName && e.status !== 'Terminated' && e.rank < 5);
   document.getElementById('team-action-dept').value = deptName;
   document.getElementById('team-action-type').value = 'sack';
@@ -1890,10 +2191,20 @@ function openSackTeamModal(deptName) {
 
 function handleTeamActionSubmit(e) {
   e.preventDefault();
+  if (!AppState.canPerformUpperManagement()) {
+    toast.error('Clearance Denied', 'Sacking or dissolving teams requires Upper Management clearance (Rank 4+).');
+    return;
+  }
+
   const form = e.target;
   const deptName = form.dept_name.value;
   const actionType = form.action_type.value;
   const reason = form.team_reason.value.trim();
+
+  if (deptName === HR_DEPARTMENT_NAME && AppState.currentUser.rank < 5) {
+    toast.error('Executive Restriction', 'Only the Global Administrator (Rank 5) can terminate the Human Resources department.');
+    return;
+  }
 
   if (actionType === 'dissolve') {
     // Unassign duties in this department
@@ -1957,6 +2268,18 @@ function handleTeamActionSubmit(e) {
       read: false,
       type: 'team_sacked'
     });
+
+    toast.error('Team Sacked', `All ${sackedList.length} associates in ${deptName} have been permanently terminated.`);
+  }
+
+  AppState.saveState();
+  closeModal('modal-sack-team');
+  renderHR();
+  renderManagement();
+  renderShiftAttendanceFeed();
+  renderSwitchUserModalList();
+  updateNotificationBadge();
+}
 
     toast.error('Team Sacked', `All ${sackedList.length} associates in ${deptName} have been permanently terminated.`);
   }
@@ -2932,7 +3255,11 @@ function renderPermissionsMatrix() {
   if (!tbody) return;
 
   const searchQuery = (document.getElementById('mgmt-perms-search')?.value || '').toLowerCase().trim();
+  const canSeeHR = AppState.canSeeHRRoles();
   const filtered = AppState.employees.filter(emp => {
+    if (!canSeeHR && (emp.department === HR_DEPARTMENT_NAME || HR_PROTECTED_ROLES.includes(emp.role))) {
+      return false;
+    }
     if (!searchQuery) return true;
     return emp.name.toLowerCase().includes(searchQuery) ||
            emp.id.toLowerCase().includes(searchQuery) ||
@@ -2972,7 +3299,7 @@ function renderPermissionsMatrix() {
           </div>
         </td>
         <td>
-          <select onchange="handleRankChange('${emp.id}', this.value)" ${isSuperAdmin ? 'disabled' : ''} class="text-xs font-semibold rounded-lg px-2.5 py-1 bg-surface dark:bg-surface-lowest border border-outline-variant/80 focus:ring-1 focus:ring-primary outline-none cursor-pointer">
+          <select onchange="handleRankChange('${emp.id}', this.value)" ${(!AppState.canAssignRoles() || isSuperAdmin) ? 'disabled' : ''} class="text-xs font-semibold rounded-lg px-2.5 py-1 bg-surface dark:bg-surface-lowest border border-outline-variant/80 focus:ring-1 focus:ring-primary outline-none cursor-pointer">
             <option value="5" ${emp.rank === 5 ? 'selected' : ''}>Rank 5: Executive Admin</option>
             <option value="4" ${emp.rank === 4 ? 'selected' : ''}>Rank 4: Operations Manager</option>
             <option value="3" ${emp.rank === 3 ? 'selected' : ''}>Rank 3: Floor Lead</option>
@@ -2982,7 +3309,7 @@ function renderPermissionsMatrix() {
         </td>
         ${permsDef.map(p => {
           const has = emp.rank === 5 || (Array.isArray(emp.permissions) && emp.permissions.includes(p.key));
-          const disabled = emp.rank === 5 || isSelf;
+          const disabled = emp.rank === 5 || isSelf || !AppState.isUpperManagement();
           return `
             <td class="text-center">
               <label class="switch">
@@ -3005,22 +3332,57 @@ function renderPermissionsMatrix() {
 }
 
 function handleRankChange(empId, newRankStr) {
+  if (!AppState.canAssignRoles()) {
+    toast.error('Clearance Denied', 'Only Human Resources personnel and Upper Management are authorized to alter employee ranks or roles.');
+    renderPermissionsMatrix();
+    return;
+  }
+
   const rank = parseInt(newRankStr, 10);
   const emp = AppState.employees.find(e => e.id === empId);
   if (!emp) return;
 
+  // Protect HR team personnel
+  if ((emp.department === HR_DEPARTMENT_NAME || HR_PROTECTED_ROLES.includes(emp.role)) && !AppState.isUpperManagement()) {
+    toast.error('Security Restriction', 'Only Upper Management can alter the clearance rank of Human Resources personnel.');
+    renderPermissionsMatrix();
+    return;
+  }
+
+  // Ceiling check: non-admin (rank < 5) cannot grant a rank equal to or above their own
+  if (AppState.currentUser.rank < 5 && rank >= AppState.currentUser.rank) {
+    toast.error('Clearance Ceiling', `You (Rank ${AppState.currentUser.rank}) cannot assign a security rank equal to or higher than your own (Rank ${rank}).`);
+    renderPermissionsMatrix();
+    return;
+  }
+
   const oldRank = emp.rank;
   emp.rank = rank;
 
-  if (rank === 4) {
-    emp.role = 'Operations Manager';
-    if (!emp.permissions.includes('manage_staff')) emp.permissions.push('manage_staff');
-    if (!emp.permissions.includes('view_financials')) emp.permissions.push('view_financials');
-  } else if (rank === 3) {
-    emp.role = 'Floor Supervisor';
-  } else if (rank <= 2) {
-    emp.role = 'Retail Associate';
-    emp.permissions = emp.permissions.filter(p => p !== 'manage_staff');
+  if (emp.department === HR_DEPARTMENT_NAME) {
+    if (rank === 4) {
+      emp.role = 'HR Director';
+      if (!emp.permissions.includes('manage_staff')) emp.permissions.push('manage_staff');
+      if (!emp.permissions.includes('view_financials')) emp.permissions.push('view_financials');
+    } else if (rank === 3) {
+      emp.role = 'People Operations Lead';
+    } else if (rank === 2) {
+      emp.role = 'Talent Acquisition Specialist';
+    } else {
+      emp.role = 'Employee Relations Consultant';
+      emp.permissions = emp.permissions.filter(p => p !== 'manage_staff');
+    }
+  } else {
+    if (rank === 4) {
+      emp.role = 'Operations Manager';
+      if (!emp.permissions.includes('manage_staff')) emp.permissions.push('manage_staff');
+      if (!emp.permissions.includes('view_financials')) emp.permissions.push('view_financials');
+    } else if (rank === 3) {
+      emp.role = 'Floor Supervisor';
+    } else if (rank <= 2) {
+      emp.role = 'Retail Associate';
+      emp.permissions = emp.permissions.filter(p => p !== 'manage_staff');
+    }
   }
 
   const audit = {
@@ -3028,18 +3390,24 @@ function handleRankChange(empId, newRankStr) {
     actor: `${AppState.currentUser.name} (Rank ${AppState.currentUser.rank})`,
     action: 'Rank Modified',
     target: emp.name,
-    detail: `Adjusted clearance from Rank ${oldRank} to Rank ${rank}`
+    detail: `Adjusted clearance from Rank ${oldRank} to Rank ${rank} (${emp.role})`
   };
   AppState.auditLogs.unshift(audit);
   AppState.saveState();
 
-  toast.success('Rank Elevation Updated', `${emp.name} is now Rank ${rank}`);
+  toast.success('Rank Elevation Updated', `${emp.name} is now Rank ${rank} (${emp.role})`);
   renderPermissionsMatrix();
   renderAuditLogs();
   updateSessionUI();
 }
 
 function handlePermissionToggle(empId, permKey, isChecked) {
+  if (!AppState.isUpperManagement() && !AppState.canAssignRoles()) {
+    toast.error('Clearance Denied', 'Only authorized leadership can modify security permissions.');
+    renderPermissionsMatrix();
+    return;
+  }
+
   const emp = AppState.employees.find(e => e.id === empId);
   if (!emp) return;
 
@@ -3065,8 +3433,69 @@ function handlePermissionToggle(empId, permKey, isChecked) {
   renderAuditLogs();
 }
 
+function openAddEmployeeModal() {
+  if (!AppState.canPerformHRFunctions()) {
+    toast.error('Clearance Denied', 'Only Human Resources personnel and Upper Management are authorized to employ or provision staff.');
+    return;
+  }
+
+  const deptSelect = document.querySelector('#modal-add-employee select[name="emp_dept"]');
+  if (deptSelect) {
+    const canSeeHR = AppState.canSeeHRRoles();
+    const availableDepts = DEPARTMENTS.filter(d => canSeeHR || !d.isHR);
+    deptSelect.innerHTML = availableDepts.map(d => `<option value="${d.name}">${d.name}</option>`).join('');
+  }
+
+  const rankSelect = document.querySelector('#modal-add-employee select[name="emp_rank"]');
+  if (rankSelect) {
+    const curRank = AppState.currentUser.rank;
+    let rankOptions = '';
+    if (curRank >= 5) {
+      rankOptions = `
+        <option value="1">Rank 1: Associate (Standard floor duties)</option>
+        <option value="2">Rank 2: Specialist (Inventory / Ops)</option>
+        <option value="3" selected>Rank 3: Floor Lead (Task dispatch)</option>
+        <option value="4">Rank 4: Operations Manager (Staff management)</option>
+        <option value="5">Rank 5: Executive Administrator</option>
+      `;
+    } else if (curRank === 4) {
+      rankOptions = `
+        <option value="1">Rank 1: Associate (Standard floor duties)</option>
+        <option value="2">Rank 2: Specialist (Inventory / Ops)</option>
+        <option value="3" selected>Rank 3: Floor Lead (Task dispatch)</option>
+        <option value="4">Rank 4: Operations Manager (Staff management)</option>
+      `;
+    } else if (curRank === 3) {
+      rankOptions = `
+        <option value="1">Rank 1: Associate (Standard floor duties)</option>
+        <option value="2" selected>Rank 2: Specialist (Inventory / Ops)</option>
+      `;
+    } else if (curRank === 2) {
+      rankOptions = `
+        <option value="1" selected>Rank 1: Associate (Standard floor duties)</option>
+      `;
+    } else {
+      rankOptions = `<option value="1">Rank 1: Associate</option>`;
+    }
+    rankSelect.innerHTML = rankOptions;
+  }
+
+  openModal('modal-add-employee');
+}
+
 function handleAddNewEmployee(e) {
   e.preventDefault();
+
+  if (!AppState.canPerformHRFunctions()) {
+    toast.error('Clearance Denied', 'Only Human Resources personnel and Upper Management are authorized to employ or provision staff.');
+    return;
+  }
+
+  if (!AppState.canAssignRoles()) {
+    toast.error('Clearance Denied', 'Your security rank does not permit assigning roles or provisioning personnel.');
+    return;
+  }
+
   const form = e.target;
   const name = form.emp_name.value.trim();
   const email = form.emp_email.value.trim();
@@ -3079,6 +3508,22 @@ function handleAddNewEmployee(e) {
   if (!name || !email) {
     toast.error('Validation Error', 'Full Name and Email are mandatory');
     return;
+  }
+
+  // RBAC ceiling: non-admins cannot assign rank equal to or above their own
+  if (AppState.currentUser.rank < 5 && rank >= AppState.currentUser.rank) {
+    toast.error('Clearance Ceiling', `You (Rank ${AppState.currentUser.rank}) cannot provision staff with Rank ${rank} (must be strictly lower).`);
+    return;
+  }
+
+  // Gating HR roles / department
+  const isTargetingHR = department === HR_DEPARTMENT_NAME || HR_PROTECTED_ROLES.includes(role);
+  if (isTargetingHR) {
+    // Only Upper Management or HR leadership (Rank >= 3) can provision HR personnel
+    if (!AppState.isUpperManagement() && !(AppState.isHRMember() && AppState.currentUser.rank >= 3)) {
+      toast.error('Restricted Role', 'Only Upper Management or HR Leadership can provision Human Resources roles.');
+      return;
+    }
   }
 
   const newId = `NEX-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -3116,7 +3561,7 @@ function handleAddNewEmployee(e) {
     actor: `${AppState.currentUser.name} (Rank ${AppState.currentUser.rank})`,
     action: 'Employee Provisioned',
     target: name,
-    detail: `Created ${newId} with Rank ${rank} in ${department}`
+    detail: `Created ${newId} (${role}) with Rank ${rank} in ${department}`
   });
 
   AppState.saveState();
@@ -3127,7 +3572,7 @@ function handleAddNewEmployee(e) {
   closeModal('modal-add-employee');
   form.reset();
 
-  toast.success('Staff Member Provisioned!', `${name} (${newId}) added with PIN "${pin}"`);
+  toast.success('Staff Member Provisioned!', `${name} (${newId}) registered with PIN "${pin}"`);
   renderManagement();
   renderHR();
 }
@@ -3536,7 +3981,7 @@ const PALETTE_ACTIONS = [
   { label: 'Switch Active User Session', icon: 'switch_account', action: () => openModal('modal-switch-user') },
   { label: 'Punch Clock (Clock In / Out)', icon: 'punch_clock', action: () => { navigateTo('onboarding'); handleStaffClockToggle(); } },
   { label: 'Escalate Floor Issue (Report Hazard / Block)', icon: 'report_problem', action: () => openModal('modal-escalate-issue') },
-  { label: 'Add New Staff Employee', icon: 'person_add', action: () => { navigateTo('management'); openModal('modal-add-employee'); } },
+  { label: 'Add New Staff Employee', icon: 'person_add', action: () => openAddEmployeeModal() },
   { label: 'Assign New Duty Task', icon: 'assignment_add', action: () => navigateTo('assign-task') },
   { label: 'Add New Product SKU', icon: 'add_box', action: () => { navigateTo('inventory'); openModal('modal-add-product'); } },
   { label: 'Record New Sale / Transaction', icon: 'receipt_long', action: () => { navigateTo('sales'); openModal('modal-add-transaction'); } },
@@ -3548,8 +3993,17 @@ function filterPaletteActions(query) {
   const list = document.getElementById('palette-results');
   if (!list) return;
 
+  const canHR = AppState.canPerformHRFunctions();
+  const canMgmt = AppState.isUpperManagement();
+  const visibleActions = PALETTE_ACTIONS.filter(a => {
+    if (a.label.includes('HR') && !canHR) return false;
+    if (a.label.includes('Staff Employee') && !canHR) return false;
+    if (a.label.includes('Manager Portal') && !canMgmt) return false;
+    return true;
+  });
+
   const q = query.toLowerCase().trim();
-  const filtered = PALETTE_ACTIONS.filter(a => a.label.toLowerCase().includes(q));
+  const filtered = visibleActions.filter(a => a.label.toLowerCase().includes(q));
 
   if (filtered.length === 0) {
     list.innerHTML = `<div class="p-4 text-center text-sm text-on-surface-variant">No matching commands</div>`;
@@ -3579,10 +4033,38 @@ function renderSwitchUserModalList() {
   const list = document.getElementById('switch-user-list');
   if (!list) return;
 
+  const canSeeHR = AppState.canSeeHRRoles();
+
+  // Sync directory-dept-filter dropdown options to cloaking rule
+  const deptFilterElem = document.getElementById('directory-dept-filter');
+  if (deptFilterElem) {
+    const currentVal = deptFilterElem.value;
+    const hrOpt = Array.from(deptFilterElem.options).find(o => o.value === HR_DEPARTMENT_NAME);
+    if (!canSeeHR && hrOpt) {
+      hrOpt.remove();
+      if (currentVal === HR_DEPARTMENT_NAME) deptFilterElem.value = '';
+    } else if (canSeeHR && !hrOpt) {
+      const opt = document.createElement('option');
+      opt.value = HR_DEPARTMENT_NAME;
+      opt.textContent = HR_DEPARTMENT_NAME;
+      deptFilterElem.appendChild(opt);
+    }
+  }
+
+  // Sync provision button container in switch modal
+  const provisionContainer = document.getElementById('switch-modal-provision-container');
+  if (provisionContainer) {
+    provisionContainer.style.display = AppState.canPerformHRFunctions() ? '' : 'none';
+  }
+
   const searchQuery = (document.getElementById('directory-search-input')?.value || '').toLowerCase().trim();
   const deptFilter = document.getElementById('directory-dept-filter')?.value || '';
 
   const filtered = AppState.employees.filter(emp => {
+    // CRITICAL: Hide HR department and protected roles from non-HR and non-upper-management
+    if (!canSeeHR && (emp.department === HR_DEPARTMENT_NAME || HR_PROTECTED_ROLES.includes(emp.role))) {
+      return false;
+    }
     const matchesDept = !deptFilter || emp.department === deptFilter;
     const matchesSearch = !searchQuery || 
       emp.name.toLowerCase().includes(searchQuery) ||

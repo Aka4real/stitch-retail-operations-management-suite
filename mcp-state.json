@@ -1,0 +1,312 @@
+{
+  "departments": [
+    "Human Resources & Talent",
+    "Apparel & Fashion",
+    "Electronics & Gadgets",
+    "Logistics & Bay Storage",
+    "Customer Relations",
+    "Security & Safety",
+    "Facilities & Maintenance",
+    "Food & Beverage",
+    "Cashier & Front End",
+    "Beauty & Cosmetics",
+    "Home Goods & Furniture"
+  ],
+  "zones": [
+    "North Wing #42",
+    "Storage Bay B",
+    "West Gallery",
+    "East Promenade",
+    "Central Mall HQ",
+    "South Atrium",
+    "Service Core A",
+    "Food Court Deck",
+    "Upper Mezzanine"
+  ],
+  "staff": [
+    {
+      "id": "NEX-0001",
+      "name": "Marcus Vance",
+      "role": "Global Administrator",
+      "rank": 5,
+      "dept": "Executive Operations",
+      "zone": "Central Mall HQ",
+      "clockedIn": true,
+      "clockInTime": "07:30 AM"
+    },
+    {
+      "id": "NEX-0003",
+      "name": "Rachel Adams",
+      "role": "HR Director",
+      "rank": 4,
+      "dept": "Human Resources & Talent",
+      "zone": "Central Mall HQ",
+      "clockedIn": true,
+      "clockInTime": "08:15 AM"
+    },
+    {
+      "id": "NEX-0004",
+      "name": "Benjamin Hayes",
+      "role": "People Operations Lead",
+      "rank": 3,
+      "dept": "Human Resources & Talent",
+      "zone": "Central Mall HQ",
+      "clockedIn": true,
+      "clockInTime": "08:30 AM"
+    },
+    {
+      "id": "NEX-0005",
+      "name": "Samantha Clark",
+      "role": "Talent Acquisition Specialist",
+      "rank": 2,
+      "dept": "Human Resources & Talent",
+      "zone": "Central Mall HQ",
+      "clockedIn": true,
+      "clockInTime": "08:45 AM"
+    },
+    {
+      "id": "NEX-8492",
+      "name": "Elena Rodriguez",
+      "role": "Senior Sales Lead",
+      "rank": 3,
+      "dept": "Apparel & Fashion",
+      "zone": "North Wing #42",
+      "clockedIn": true,
+      "clockInTime": "08:45 AM"
+    },
+    {
+      "id": "NEX-3401",
+      "name": "David Chen",
+      "role": "Inventory Specialist",
+      "rank": 2,
+      "dept": "Logistics & Bay Storage",
+      "zone": "Storage Bay B",
+      "clockedIn": true,
+      "clockInTime": "09:00 AM"
+    },
+    {
+      "id": "NEX-1044",
+      "name": "Anita Jones",
+      "role": "Fashion Consultant",
+      "rank": 1,
+      "dept": "Apparel & Fashion",
+      "zone": "North Wing #42",
+      "clockedIn": true,
+      "clockInTime": "09:15 AM"
+    },
+    {
+      "id": "NEX-1001",
+      "name": "James Smith",
+      "role": "Dock Receiver",
+      "rank": 1,
+      "dept": "Logistics & Bay Storage",
+      "zone": "Storage Bay B",
+      "clockedIn": true,
+      "clockInTime": "08:00 AM"
+    }
+  ],
+  "duties": [
+    {
+      "id": 1789087398065,
+      "title": "Restock Display Aisle 3",
+      "zone": "North Wing #42",
+      "department": "Apparel & Fashion",
+      "lead": "Elena Rodriguez",
+      "priority": "High",
+      "status": "In Progress",
+      "checklist": [
+        {
+          "id": 1,
+          "text": "Unpack cartons",
+          "done": false
+        },
+        {
+          "id": 2,
+          "text": "Hang outerwear",
+          "done": false
+        },
+        {
+          "id": 3,
+          "text": "Steam wrinkles",
+          "done": false
+        }
+      ],
+      "dispatched_at": "2026-09-11T00:43:18.065Z"
+    },
+    {
+      "id": 1789086241097,
+      "title": "Restock Display Aisle 3",
+      "zone": "North Wing #42",
+      "department": "Apparel & Fashion",
+      "lead": "Elena Rodriguez",
+      "priority": "High",
+      "status": "In Progress",
+      "checklist": [
+        {
+          "id": 1,
+          "text": "Unpack cartons",
+          "done": false
+        },
+        {
+          "id": 2,
+          "text": "Hang outerwear",
+          "done": false
+        },
+        {
+          "id": 3,
+          "text": "Steam wrinkles",
+          "done": false
+        }
+      ],
+      "dispatched_at": "2026-09-11T00:24:01.097Z"
+    },
+    {
+      "id": 1789086224044,
+      "title": "Restock Display Aisle 3",
+      "zone": "North Wing #42",
+      "department": "Apparel & Fashion",
+      "lead": "Elena Rodriguez",
+      "priority": "High",
+      "status": "In Progress",
+      "checklist": [
+        {
+          "id": 1,
+          "text": "Unpack cartons",
+          "done": false
+        },
+        {
+          "id": 2,
+          "text": "Hang outerwear",
+          "done": false
+        },
+        {
+          "id": 3,
+          "text": "Steam wrinkles",
+          "done": false
+        }
+      ],
+      "dispatched_at": "2026-09-11T00:23:44.045Z"
+    },
+    {
+      "id": 201,
+      "title": "Inventory Audit - North Wing",
+      "zone": "North Wing #42",
+      "lead": "Elena Rodriguez",
+      "status": "Pending Approval",
+      "priority": "High"
+    },
+    {
+      "id": 202,
+      "title": "Display Window Restyling",
+      "zone": "East Promenade",
+      "lead": "Elena Rodriguez",
+      "status": "In Progress",
+      "priority": "Medium"
+    },
+    {
+      "id": 203,
+      "title": "Storage Bay B Inventory Sorting",
+      "zone": "Storage Bay B",
+      "lead": "David Chen",
+      "status": "In Progress",
+      "priority": "High"
+    }
+  ],
+  "escalations": [
+    {
+      "id": "ESC-072",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Broken olive oil bottle in aisle 3 via SDK test",
+      "status": "Open",
+      "reported_at": "2026-09-11T00:43:18.072Z"
+    },
+    {
+      "id": "ESC-104",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Broken olive oil bottle in aisle 3 via SDK test",
+      "status": "Open",
+      "reported_at": "2026-09-11T00:24:01.104Z"
+    },
+    {
+      "id": "ESC-051",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Broken olive oil bottle in aisle 3 via SDK test",
+      "status": "Open",
+      "reported_at": "2026-09-11T00:23:44.051Z"
+    },
+    {
+      "id": "ESC-533",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Test olive oil bottle broken in aisle 3.",
+      "status": "Open",
+      "reported_at": "2026-09-10T23:55:43.533Z"
+    },
+    {
+      "id": "ESC-101",
+      "category": "Stock Depletion",
+      "zone": "North Wing #42",
+      "urgency": "Urgent",
+      "desc": "Depleted size S/M mannequins during rush.",
+      "status": "Open"
+    },
+    {
+      "id": "ESC-102",
+      "category": "Sensor Malfunction",
+      "zone": "Storage Bay B",
+      "urgency": "Normal",
+      "desc": "Dock 3 sensor sticking.",
+      "status": "Open"
+    }
+  ],
+  "inventory": [
+    {
+      "sku": "EL-OM-27",
+      "name": "OLED Monitor 27\"",
+      "stock": 175,
+      "max": 200,
+      "bay": "Bay B-4",
+      "price": 349.99
+    },
+    {
+      "sku": "FA-WP-L",
+      "name": "Winter Parka - L",
+      "stock": 12,
+      "max": 80,
+      "bay": "Bay A-1",
+      "price": 129.5
+    },
+    {
+      "sku": "EL-WE-P",
+      "name": "Wireless Earbuds Pro",
+      "stock": 0,
+      "max": 150,
+      "bay": "Bay B-2",
+      "price": 89.99
+    },
+    {
+      "sku": "HG-EC-B",
+      "name": "Ergo Office Chair",
+      "stock": 45,
+      "max": 60,
+      "bay": "Bay C-3",
+      "price": 219
+    }
+  ],
+  "swaps": [
+    {
+      "id": "SWAP-101",
+      "requester": "Anita Jones",
+      "target": "Elena Rodriguez",
+      "shift": "Wed Oct 25 - Morning",
+      "status": "Pending Coworker"
+    }
+  ]
+}
