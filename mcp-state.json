@@ -107,6 +107,87 @@
   ],
   "duties": [
     {
+      "id": 1789098492148,
+      "title": "Restock Display Aisle 3",
+      "zone": "North Wing #42",
+      "department": "Apparel & Fashion",
+      "lead": "Elena Rodriguez",
+      "priority": "High",
+      "status": "In Progress",
+      "checklist": [
+        {
+          "id": 1,
+          "text": "Unpack cartons",
+          "done": false
+        },
+        {
+          "id": 2,
+          "text": "Hang outerwear",
+          "done": false
+        },
+        {
+          "id": 3,
+          "text": "Steam wrinkles",
+          "done": false
+        }
+      ],
+      "dispatched_at": "2026-09-11T03:48:12.148Z"
+    },
+    {
+      "id": 1789091899555,
+      "title": "Restock Display Aisle 3",
+      "zone": "North Wing #42",
+      "department": "Apparel & Fashion",
+      "lead": "Elena Rodriguez",
+      "priority": "High",
+      "status": "In Progress",
+      "checklist": [
+        {
+          "id": 1,
+          "text": "Unpack cartons",
+          "done": false
+        },
+        {
+          "id": 2,
+          "text": "Hang outerwear",
+          "done": false
+        },
+        {
+          "id": 3,
+          "text": "Steam wrinkles",
+          "done": false
+        }
+      ],
+      "dispatched_at": "2026-09-11T01:58:19.555Z"
+    },
+    {
+      "id": 1789090955788,
+      "title": "Restock Display Aisle 3",
+      "zone": "North Wing #42",
+      "department": "Apparel & Fashion",
+      "lead": "Elena Rodriguez",
+      "priority": "High",
+      "status": "In Progress",
+      "checklist": [
+        {
+          "id": 1,
+          "text": "Unpack cartons",
+          "done": false
+        },
+        {
+          "id": 2,
+          "text": "Hang outerwear",
+          "done": false
+        },
+        {
+          "id": 3,
+          "text": "Steam wrinkles",
+          "done": false
+        }
+      ],
+      "dispatched_at": "2026-09-11T01:42:35.788Z"
+    },
+    {
       "id": 1789088505395,
       "title": "Restock Display Aisle 3",
       "zone": "North Wing #42",
@@ -295,6 +376,33 @@
   ],
   "escalations": [
     {
+      "id": "ESC-155",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Broken olive oil bottle in aisle 3 via SDK test",
+      "status": "Open",
+      "reported_at": "2026-09-11T03:48:12.155Z"
+    },
+    {
+      "id": "ESC-561",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Broken olive oil bottle in aisle 3 via SDK test",
+      "status": "Open",
+      "reported_at": "2026-09-11T01:58:19.561Z"
+    },
+    {
+      "id": "ESC-796",
+      "category": "Spill / Slip Hazard",
+      "zone": "North Wing #42",
+      "urgency": "Emergency",
+      "desc": "Broken olive oil bottle in aisle 3 via SDK test",
+      "status": "Open",
+      "reported_at": "2026-09-11T01:42:35.796Z"
+    },
+    {
       "id": "ESC-404",
       "category": "Spill / Slip Hazard",
       "zone": "North Wing #42",
@@ -378,7 +486,7 @@
     {
       "sku": "EL-OM-27",
       "name": "OLED Monitor 27\"",
-      "stock": 205,
+      "stock": 235,
       "max": 200,
       "bay": "Bay B-4",
       "price": 349.99
