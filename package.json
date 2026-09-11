@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Nexus Retail Management Suite - High performance corporate retail operations dashboard and store intelligence.",
   "scripts": {
+    "build": "node -e \"console.log('Static build complete')\"",
     "start": "node local-server.js",
     "dev": "node local-server.js",
     "serve": "node local-server.js"

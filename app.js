@@ -8,6 +8,33 @@
  */
 
 // =========================================================================
+// 0. SERVERLESS / NODE ENVIRONMENT SHIM (PREVENTS FUNCTION_INVOCATION_FAILED)
+// =========================================================================
+if (typeof window === 'undefined') {
+  global.window = global;
+  global.localStorage = {
+    _data: {},
+    getItem(k) { return this._data[k] || null; },
+    setItem(k, v) { this._data[k] = String(v); },
+    removeItem(k) { delete this._data[k]; },
+    clear() { this._data = {}; }
+  };
+  global.document = {
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    getElementById: () => null,
+    querySelector: () => null,
+    querySelectorAll: () => [],
+    createElement: () => ({ setAttribute: () => {}, appendChild: () => {}, style: {}, innerHTML: '', classList: { add: () => {}, remove: () => {} } }),
+    body: { classList: { add: () => {}, remove: () => {}, contains: () => false }, appendChild: () => {} },
+    documentElement: { classList: { add: () => {}, remove: () => {}, toggle: () => {} } }
+  };
+  global.navigator = { userAgent: 'node', clipboard: { writeText: () => Promise.resolve() } };
+  global.location = { hash: '', search: '', pathname: '/', reload: () => {} };
+  global.customElements = { define: () => {} };
+}
+
+// =========================================================================
 // 1. 200 MOCK EMPLOYEES GENERATOR
 // =========================================================================
 
@@ -7169,3 +7196,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 4000);
 });
+
+// Serverless Function handler fallback if Vercel routes root requests to app.js
+if (typeof module !== 'undefined' && module.exports) {
+  const fs = require('fs');
+  const path = require('path');
+  module.exports = (req, res) => {
+    try {
+      const indexPath = path.join(__dirname, 'index.html');
+      const html = fs.readFileSync(indexPath, 'utf8');
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(html);
+    } catch(err) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/"></head><body>Loading Nexus Retail Operations...</body></html>');
+    }
+  };
+}
