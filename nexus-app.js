@@ -1743,7 +1743,9 @@ function applyTheme() {
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
+    modal.classList.remove('hidden');
     modal.classList.add('open');
+    modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     if (modalId === 'modal-switch-user') {
       renderSwitchUserModalList();
@@ -1755,6 +1757,8 @@ function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
     modal.classList.remove('open');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
     document.body.style.overflow = '';
   }
 }
@@ -7168,6 +7172,13 @@ function initTelemetrySSE() {
 // =========================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Ensure all modals are strictly closed and hidden on initialization
+  document.querySelectorAll('.modal-backdrop').forEach(m => {
+    m.classList.remove('open');
+    m.classList.add('hidden');
+    m.style.display = 'none';
+  });
+
   applyTheme();
   initCommandPalette();
   initRFIDAndNFCSystem();

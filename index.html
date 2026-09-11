@@ -17,6 +17,20 @@
   <!-- Custom Design System Styles -->
   <link rel="stylesheet" href="styles.css"/>
 
+  <!-- Critical Modal Isolation: Never allow modals to display unless .open is explicitly active -->
+  <style>
+    .modal-backdrop:not(.open) {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    .modal-backdrop.open {
+      display: flex !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+  </style>
+
   <!-- Tailwind Configuration according to DESIGN.md -->
   <script id="tailwind-config">
     tailwind.config = {
@@ -2645,7 +2659,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: ADD PRODUCT SKU -->
   <!-- ========================================================================= -->
-  <div id="modal-add-product" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-add-product" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div>
@@ -2704,7 +2718,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: RECORD TRANSACTION -->
   <!-- ========================================================================= -->
-  <div id="modal-add-transaction" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-add-transaction" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-lg p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200/80 dark:border-slate-800">
         <div>
@@ -2767,7 +2781,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: EDIT EMPLOYEE PROFILE -->
   <!-- ========================================================================= -->
-  <div id="modal-edit-profile" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-edit-profile" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div>
@@ -2824,7 +2838,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: STAFF AUTHENTICATION & 200-EMPLOYEE DIRECTORY -->
   <!-- ========================================================================= -->
-  <div id="modal-switch-user" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-switch-user" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-xl p-6 md:p-8 relative max-h-[90vh] flex flex-col">
       <div class="flex items-center justify-between pb-4 mb-1 border-b border-slate-200/60 dark:border-slate-700/60">
         <div>
@@ -2968,7 +2982,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: ESCALATE FLOOR ISSUE (TO TEAM LEAD OR MANAGER) -->
   <!-- ========================================================================= -->
-  <div id="modal-escalate-issue" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-escalate-issue" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div class="flex items-center gap-2.5">
@@ -3053,7 +3067,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: MANAGER ELEVATION LOGIN -->
   <!-- ========================================================================= -->
-  <div id="modal-manager-login" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-manager-login" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div class="flex items-center gap-2.5">
@@ -3100,7 +3114,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: ADD NEW STAFF / PROVISION EMPLOYEE -->
   <!-- ========================================================================= -->
-  <div id="modal-add-employee" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-add-employee" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div>
@@ -3192,7 +3206,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: SUPABASE DATABASE SYNC & CREDENTIALS -->
   <!-- ========================================================================= -->
-  <div id="modal-supabase-sync" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-supabase-sync" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div class="flex items-center gap-2">
@@ -3254,7 +3268,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: TERMINATE / SACK EMPLOYEE -->
   <!-- ========================================================================= -->
-  <div id="modal-terminate-employee" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-terminate-employee" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-error/40 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div class="flex items-center gap-2">
@@ -3321,7 +3335,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: TRANSFER EMPLOYEE TO TEAM / DEPARTMENT -->
   <!-- ========================================================================= -->
-  <div id="modal-transfer-employee" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-transfer-employee" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div class="flex items-center gap-2">
@@ -3390,7 +3404,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: DISSOLVE OR SACK ENTIRE TEAM -->
   <!-- ========================================================================= -->
-  <div id="modal-sack-team" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-sack-team" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-error/40 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div class="flex items-center gap-2">
@@ -3446,7 +3460,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: MOBILE FLOOR AUDIT & BARCODE / QR SCANNER -->
   <!-- ========================================================================= -->
-  <div id="modal-barcode-scanner" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-barcode-scanner" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-xl bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div class="flex items-center gap-2">
@@ -3540,7 +3554,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: REQUEST PEER-TO-PEER SHIFT SWAP -->
   <!-- ========================================================================= -->
-  <div id="modal-shift-swap" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-shift-swap" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div class="flex items-center gap-2">
@@ -3613,7 +3627,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: END-OF-SHIFT HANDOVER BRIEFING REPORT -->
   <!-- ========================================================================= -->
-  <div id="modal-handover-report" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-handover-report" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-3xl max-h-[90vh] flex flex-col p-6 relative">
       <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200/80 dark:border-slate-800 no-print">
         <div class="flex items-center gap-2">
@@ -3655,7 +3669,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: BREAK & LABOR LAW COMPLIANCE TIMER -->
   <!-- ========================================================================= -->
-  <div id="modal-break-compliance" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-break-compliance" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-md bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-2xl shadow-2xl p-6 relative">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
         <div class="flex items-center gap-2">
@@ -3731,7 +3745,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL: DEPARTMENT CREW MEMBERS ROSTER & STATUS -->
   <!-- ========================================================================= -->
-  <div id="modal-crew-members" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div id="modal-crew-members" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
     <div class="modal-content w-full max-w-3xl max-h-[88vh] flex flex-col p-6 relative">
       <!-- Modal Header -->
       <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-200/80 dark:border-slate-800">
