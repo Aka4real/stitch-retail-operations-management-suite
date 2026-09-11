@@ -7196,20 +7196,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 4000);
 });
-
-// Serverless Function handler fallback if Vercel routes root requests to app.js
-if (typeof module !== 'undefined' && module.exports) {
-  const fs = require('fs');
-  const path = require('path');
-  module.exports = (req, res) => {
-    try {
-      const indexPath = path.join(__dirname, 'index.html');
-      const html = fs.readFileSync(indexPath, 'utf8');
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(html);
-    } catch(err) {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/"></head><body>Loading Nexus Retail Operations...</body></html>');
-    }
-  };
-}
