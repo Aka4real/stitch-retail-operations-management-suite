@@ -855,6 +855,61 @@ const AppState = {
     ];
   })(),
 
+  // Purchase Reminders & Vendor Procurement Orders Store
+  purchaseReminders: (function() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('nexus_purchase_reminders'));
+      if (Array.isArray(stored) && stored.length > 0) return stored;
+    } catch(e) {}
+    return [
+      {
+        id: 'PO-4928',
+        sku: 'EL-WE-P',
+        item: 'Wireless Earbuds Pro',
+        category: 'Electronics',
+        vendor: 'SoundTech Logistics',
+        moq: 100,
+        unitCost: 45.00,
+        totalCost: 4500,
+        currentStock: 0,
+        status: 'Pending Approval',
+        priority: 'Urgent',
+        destinationBay: 'Storage Bay B-2',
+        createdAt: 'Today, 08:15 AM'
+      },
+      {
+        id: 'PO-4929',
+        sku: 'FA-WP-L',
+        item: 'Winter Parka - L',
+        category: 'Fashion',
+        vendor: 'Alpine Apparel',
+        moq: 50,
+        unitCost: 65.00,
+        totalCost: 3250,
+        currentStock: 12,
+        status: 'Pending Approval',
+        priority: 'High',
+        destinationBay: 'Bay A-1',
+        createdAt: 'Today, 09:30 AM'
+      },
+      {
+        id: 'PO-4930',
+        sku: 'FA-MWS-M',
+        item: 'Merino Wool Sweater',
+        category: 'Fashion',
+        vendor: 'Milano Knitwear',
+        moq: 40,
+        unitCost: 48.00,
+        totalCost: 1920,
+        currentStock: 8,
+        status: 'Pending Approval',
+        priority: 'Medium',
+        destinationBay: 'North Wing #42',
+        createdAt: 'Yesterday, 04:45 PM'
+      }
+    ];
+  })(),
+
   saveState() {
     localStorage.setItem('nexus_inventory', JSON.stringify(this.inventory));
     localStorage.setItem('nexus_transactions', JSON.stringify(this.transactions));
@@ -866,6 +921,7 @@ const AppState = {
     localStorage.setItem('nexus_shift_schedules', JSON.stringify(this.shiftSchedules));
     localStorage.setItem('nexus_shift_swaps', JSON.stringify(this.shiftSwaps));
     localStorage.setItem('nexus_exec_ai_history', JSON.stringify(this.execAIHistory));
+    localStorage.setItem('nexus_purchase_reminders', JSON.stringify(this.purchaseReminders));
     localStorage.setItem('nexus_current_user_id', this.currentUserId);
   }
 };
@@ -1859,6 +1915,7 @@ function renderHourlyRevenueChart() {
 let activeCategoryFilter = 'All';
 
 function renderInventory() {
+  renderPurchaseReminders();
   const kpiVal = document.getElementById('inv-kpi-total-val');
   if (kpiVal) kpiVal.textContent = `$${(AppState.inventory.reduce((sum, i) => sum + (i.stock * i.price), 0)).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
 
@@ -2029,6 +2086,311 @@ function handleAddProductSubmit(e) {
   renderInventory();
   toast.success('Product Added', `${name} is now tracked in inventory`);
 }
+
+// =========================================================================
+// 9b. PURCHASE REMINDERS & VENDOR PROCUREMENT ENGINE
+// =========================================================================
+
+function renderPurchaseReminders() {
+  const container = document.getElementById('purchase-reminders-list');
+  const badgeEl = document.getElementById('purchase-reminders-badge');
+  if (!container) return;
+
+  const reminders = AppState.purchaseReminders || [];
+  const pendingCount = reminders.filter(p => p.status === 'Pending Approval').length;
+
+  if (badgeEl) {
+    if (pendingCount > 0) {
+      badgeEl.textContent = `${pendingCount} Pending`;
+      badgeEl.className = 'badge-pill bg-amber-500/15 text-amber-600 dark:text-amber-400 font-mono font-bold text-[11px] border border-amber-500/25';
+    } else {
+      badgeEl.textContent = 'All Authorized';
+      badgeEl.className = 'badge-pill bg-secondary-container/40 text-secondary font-mono font-bold text-[11px] border border-secondary/30';
+    }
+  }
+
+  if (reminders.length === 0) {
+    container.innerHTML = `
+      <div class="p-6 text-center text-on-surface-variant text-xs">
+        <span class="material-symbols-outlined text-3xl mb-1 text-secondary opacity-70">task_alt</span>
+        <p class="font-medium text-on-surface">All Purchase Orders Handled</p>
+        <p class="text-[11px] text-on-surface-variant mt-0.5">No replenishment requisitions awaiting authorization.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = reminders.map(po => {
+    const isApproved = po.status === 'Approved & Dispatched';
+    const isSnoozed = po.status.includes('Snoozed');
+
+    // Retrieve live stock from AppState.inventory
+    const invItem = AppState.inventory.find(i => i.sku === po.sku || i.name.toLowerCase() === po.item.toLowerCase());
+    const liveStock = invItem !== undefined ? invItem.stock : po.currentStock;
+
+    let stockBadgeClass = 'bg-error-container/30 text-error border-error/20';
+    if (liveStock > 15) {
+      stockBadgeClass = 'bg-secondary-container/30 text-secondary border-secondary/20';
+    } else if (liveStock > 0) {
+      stockBadgeClass = 'bg-tertiary-container/30 text-on-tertiary-container border-tertiary/20';
+    }
+
+    let priorityBadge = '';
+    if (po.priority === 'Urgent') {
+      priorityBadge = `<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-error/15 text-error border border-error/25 uppercase font-mono tracking-wider">Urgent</span>`;
+    } else if (po.priority === 'High') {
+      priorityBadge = `<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25 uppercase font-mono tracking-wider">High</span>`;
+    } else {
+      priorityBadge = `<span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-surface-container text-on-surface-variant border border-outline-variant/50 uppercase font-mono tracking-wider">Standard</span>`;
+    }
+
+    let actionSection = '';
+    if (isApproved) {
+      actionSection = `
+        <div class="mt-2.5 p-2.5 bg-secondary-container/15 rounded-xl border border-secondary/30 flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 text-secondary text-xs font-bold">
+              <span class="material-symbols-outlined text-[16px]">verified</span>
+              <span>PO Dispatched to Vendor</span>
+            </div>
+            <span class="text-[10px] font-mono text-on-surface-variant font-semibold">${po.id}</span>
+          </div>
+          <div class="text-[11px] text-on-surface-variant flex items-center justify-between">
+            <span>Authorized by: <strong class="text-on-surface font-semibold">${po.approvedBy || 'Executive Management'}</strong></span>
+            <span class="font-mono text-[10px] text-on-surface-variant/80">${po.approvedAt || 'Today'}</span>
+          </div>
+          <div class="flex items-center justify-between text-[10px] font-mono text-secondary pt-1.5 border-t border-secondary/20">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[13px] animate-pulse">local_shipping</span>
+              <span>Replenishment: +${po.moq} units &bull; ${po.destinationBay || 'Inbound Dock'}</span>
+            </span>
+            <span class="text-secondary font-bold">Inbound</span>
+          </div>
+        </div>
+      `;
+    } else if (isSnoozed) {
+      actionSection = `
+        <div class="mt-2.5 p-2 bg-surface-container/70 rounded-xl border border-outline-variant/50 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-1.5 text-on-surface-variant text-xs">
+            <span class="material-symbols-outlined text-[16px] text-amber-500">alarm</span>
+            <span class="text-[11px]">Snoozed for 24h &bull; <span class="font-mono">${po.snoozedAt || 'Deferred'}</span></span>
+          </div>
+          <button onclick="approvePurchaseReminder('${po.id}')" class="px-2.5 py-1 bg-primary hover:bg-primary-container text-on-primary text-[11px] font-semibold rounded-lg transition-all shadow-sm active:scale-95 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[13px]">check</span>
+            <span>Approve Now</span>
+          </button>
+        </div>
+      `;
+    } else {
+      actionSection = `
+        <div class="mt-2.5 flex items-center gap-2">
+          <button onclick="approvePurchaseReminder('${po.id}')" class="flex-1 py-1.5 px-3 bg-primary hover:bg-primary-container text-on-primary text-xs font-semibold rounded-lg transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5 group">
+            <span class="material-symbols-outlined text-[15px] group-hover:scale-110 transition-transform">check_circle</span>
+            <span>Approve PO</span>
+          </button>
+          <button onclick="snoozePurchaseReminder('${po.id}')" class="px-3 py-1.5 text-xs font-medium border border-outline-variant/70 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">schedule</span>
+            <span>Snooze</span>
+          </button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="p-3.5 bg-surface-container-low/60 rounded-xl border border-outline-variant/40 hover:border-outline-variant transition-all">
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-on-surface tracking-tight">${po.item}</span>
+              ${priorityBadge}
+            </div>
+            <div class="text-[11px] text-on-surface-variant font-mono mt-0.5">SKU: ${po.sku} &bull; ${po.id}</div>
+          </div>
+          <span class="badge-pill font-mono text-[11px] border ${stockBadgeClass}">Stock: ${liveStock}</span>
+        </div>
+
+        <div class="text-[11px] text-on-surface-variant space-y-1 mb-2 bg-surface/50 dark:bg-surface-lowest/40 p-2.5 rounded-lg border border-outline-variant/30">
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant/80">Vendor Supplier:</span>
+            <span class="font-medium text-on-surface">${po.vendor}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant/80">Order Quantity (MOQ):</span>
+            <span class="font-mono font-semibold text-primary dark:text-primary-fixed">${po.moq} units</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant/80">Invoiced Cost:</span>
+            <span class="font-mono font-bold text-on-surface">$${(po.totalCost || (po.moq * po.unitCost)).toLocaleString()} <span class="font-normal text-on-surface-variant/70">($${po.unitCost.toFixed(2)}/ea)</span></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant/80">Target Storage Bay:</span>
+            <span class="font-medium text-on-surface">${po.destinationBay || 'Storage Bay B-2'}</span>
+          </div>
+        </div>
+
+        ${actionSection}
+      </div>
+    `;
+  }).join('');
+}
+
+function approvePurchaseReminder(poId) {
+  // 1. RBAC Clearance Check: Only Upper Management (Rank >= 4) or accounts holding 'approve_pos'
+  const isExecutive = AppState.isUpperManagement() || AppState.hasPermission('approve_pos');
+  const user = AppState.currentUser || { name: 'Staff', role: 'Associate', rank: 1 };
+
+  if (!isExecutive) {
+    toast.error(
+      'Clearance Denied',
+      `Executive or Managerial authorization required. Active account (${user.name} • Rank ${user.rank}) lacks "approve_pos" clearance.`
+    );
+
+    // Audit log unauthorized attempt
+    AppState.auditLogs.unshift({
+      timestamp: 'Just now',
+      actor: `${user.name} (${user.role || 'Staff'})`,
+      action: 'PO Authorization Denied',
+      target: poId,
+      detail: `Unauthorized PO approval attempt blocked. Required clearance: Executive / Rank 4+ or 'approve_pos' permission.`
+    });
+    AppState.saveState();
+    if (typeof renderAuditLogs === 'function') renderAuditLogs();
+    return;
+  }
+
+  // 2. Locate Reminder
+  const po = AppState.purchaseReminders.find(p => p.id === poId);
+  if (!po) {
+    toast.error('PO Not Found', `Purchase order ${poId} does not exist in registry.`);
+    return;
+  }
+
+  if (po.status === 'Approved & Dispatched') {
+    toast.info('Already Dispatched', `PO ${poId} was already authorized by ${po.approvedBy || 'an executive'}.`);
+    return;
+  }
+
+  const approverName = user.name;
+  const approverRole = user.role || 'Executive Management';
+  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', Today';
+  const totalCost = po.totalCost || (po.moq * po.unitCost);
+
+  // 3. Mark PO as Approved & Dispatched
+  po.status = 'Approved & Dispatched';
+  po.approvedBy = approverName;
+  po.approvedRole = approverRole;
+  po.approvedAt = timestamp;
+
+  // 4. Replenish Inventory
+  let targetItem = AppState.inventory.find(i => i.sku === po.sku || i.name.toLowerCase() === po.item.toLowerCase());
+  let oldStock = 0;
+  if (targetItem) {
+    oldStock = targetItem.stock;
+    targetItem.stock += po.moq;
+    if (targetItem.stock > 15) {
+      targetItem.status = 'In Stock';
+    } else if (targetItem.stock > 0) {
+      targetItem.status = 'Reorder Now';
+    } else {
+      targetItem.status = 'Out of Stock';
+    }
+    po.currentStock = targetItem.stock;
+  } else {
+    targetItem = {
+      id: Date.now(),
+      name: po.item,
+      sku: po.sku,
+      category: po.category || 'General',
+      stock: po.moq,
+      max: po.moq * 2,
+      price: po.unitCost * 1.5,
+      status: 'In Stock'
+    };
+    AppState.inventory.unshift(targetItem);
+    po.currentStock = targetItem.stock;
+  }
+
+  // 5. Append Financial Ledger Expense
+  const newTx = {
+    id: Date.now(),
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    desc: `Vendor PO Fulfillment: ${po.item} (${po.moq} units @ $${po.unitCost.toFixed(2)}/ea - ${po.vendor})`,
+    category: 'Procurement',
+    type: 'expense',
+    amount: totalCost,
+    status: 'Completed'
+  };
+  AppState.transactions.unshift(newTx);
+
+  // 6. Append to Cryptographic Security Audit Log
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${approverName} (${approverRole})`,
+    action: 'PO Authorization & Dispatch',
+    target: `${po.id} (${po.item})`,
+    detail: `Authorized replenishment purchase order of ${po.moq} units ($${totalCost.toLocaleString()}) to ${po.vendor}. SKU ${po.sku} replenished from ${oldStock} to ${targetItem.stock} units.`
+  });
+
+  // 7. Post to Executive AI Operations Cockpit Activity Ledger
+  if (Array.isArray(AppState.execAIHistory)) {
+    AppState.execAIHistory.unshift({
+      id: `po-exec-${Date.now()}`,
+      type: 'procurement',
+      badge: 'PO DISPATCHED',
+      title: `Vendor Order ${po.id} Authorized by Executive`,
+      detail: `${approverName} signed off on ${po.id} (${po.item}). Invoiced $${totalCost.toLocaleString()} to ${po.vendor}. ${po.moq} units dispatched to ${po.destinationBay || 'Inbound Receiving Bay'}. Stock level restored to ${targetItem.stock}.`,
+      timestamp: 'Just now',
+      status: 'Inbound'
+    });
+  }
+
+  // 8. Push System Notification
+  if (Array.isArray(AppState.notifications)) {
+    AppState.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      title: `PO ${po.id} Approved & Dispatched`,
+      message: `${po.item} replenishment order (${po.moq} units) confirmed with ${po.vendor}. Authorized by ${approverName}.`,
+      timestamp: 'Just now',
+      read: false,
+      type: 'procurement',
+      poId: po.id
+    });
+  }
+
+  // 9. Persist State to LocalStorage
+  AppState.saveState();
+
+  // 10. Re-render Affected Views & Subsystems
+  renderPurchaseReminders();
+  renderInventory();
+  renderSales();
+  renderDashboard();
+  if (typeof renderExecAIFeed === 'function') renderExecAIFeed();
+  if (typeof renderAuditLogs === 'function') renderAuditLogs();
+  updateNotificationBadge();
+
+  // 11. Informative Executive Confirmation Toast
+  toast.success(
+    'Purchase Order Authorized',
+    `PO ${po.id} approved by ${approverName}. Dispatched ${po.moq} units to ${po.vendor} ($${totalCost.toLocaleString()}). Inventory restored to ${targetItem.stock} units.`
+  );
+}
+
+function snoozePurchaseReminder(poId) {
+  const po = AppState.purchaseReminders.find(p => p.id === poId);
+  if (!po) return;
+
+  po.status = 'Snoozed (24h)';
+  po.snoozedAt = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', Today';
+  AppState.saveState();
+
+  renderPurchaseReminders();
+  toast.info('Reminder Snoozed', `${po.item} replenishment alert deferred for 24 hours.`);
+}
+
+window.renderPurchaseReminders = renderPurchaseReminders;
+window.approvePurchaseReminder = approvePurchaseReminder;
+window.snoozePurchaseReminder = snoozePurchaseReminder;
 
 // =========================================================================
 // 10. SALES & FINANCIAL TRACKING
@@ -6126,9 +6488,83 @@ function executeOmniCommand(query, source = 'cockpit') {
     let replyHtml = '';
 
     // -----------------------------------------------------------------------
+    // INTENT 0: APPROVE / DISPATCH VENDOR PURCHASE ORDERS & REMINDERS
+    // -----------------------------------------------------------------------
+    if ((lower.includes('approve') || lower.includes('dispatch') || lower.includes('authorize')) && 
+        (lower.includes('po') || lower.includes('purchase') || lower.includes('reminder') || lower.includes('vendor') || lower.includes('procurement'))) {
+      
+      const isExecutive = AppState.isUpperManagement() || AppState.hasPermission('approve_pos');
+      if (!isExecutive) {
+        replyHtml = `
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2 text-error font-bold text-xs">
+              <span class="material-symbols-outlined text-sm">lock</span>
+              <span>CLEARANCE DENIED (RANK INSUFFICIENT)</span>
+            </div>
+            <p class="text-xs text-on-surface-variant">Vendor Purchase Order authorization requires Executive Clearance (Rank 4+ or 'approve_pos' permission). Your session is logged.</p>
+          </div>
+        `;
+        toast.error('Clearance Denied', 'Executive clearance required to approve Vendor Purchase Orders.');
+      } else {
+        const pendingPOs = AppState.purchaseReminders.filter(p => p.status === 'Pending Approval');
+        if (pendingPOs.length > 0) {
+          const approvedCount = pendingPOs.length;
+          const diffLines = pendingPOs.map(p => `
+            <div class="flex justify-between items-center py-0.5">
+              <span><strong>${p.item}</strong> (${p.vendor})</span>
+              <span class="text-secondary font-bold font-mono">+${p.moq} units ($${(p.totalCost || (p.moq * p.unitCost)).toLocaleString()})</span>
+            </div>
+          `).join('');
+
+          pendingPOs.forEach(p => approvePurchaseReminder(p.id));
+
+          resultRecord = {
+            id: `exec-${Date.now()}`,
+            query: rawQuery,
+            badge: '✓ EXECUTED: PO DISPATCH',
+            badgeClass: 'bg-secondary-container text-secondary',
+            title: `Authorized ${approvedCount} Vendor Purchase Orders`,
+            detail: `Executive sign-off executed. Procurement orders dispatched to suppliers, financial ledger debited, and store inventory stock restored.`,
+            diffHtml: diffLines,
+            actionHtml: `
+              <button onclick="navigateTo('inventory')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Inspect Inventory &rarr;</button>
+              <button onclick="navigateTo('sales')" class="px-3 py-1 border border-outline-variant/60 rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container">View Ledger</button>
+            `,
+            timestamp: 'Just now'
+          };
+
+          replyHtml = `
+            <div class="space-y-2">
+              <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
+                <span class="badge-pill bg-secondary text-white font-mono text-[9px] font-bold">✓ EXECUTED (EXECUTIVE)</span>
+                <span class="text-[10px] font-mono text-on-surface-variant">${approvedCount} POs Dispatched</span>
+              </div>
+              <p class="font-bold text-on-surface text-xs">All pending purchase reminders have been authorized and dispatched to vendors.</p>
+              <div class="text-[11px] p-2 bg-surface-lowest rounded-xl font-mono space-y-1">
+                ${diffLines}
+              </div>
+            </div>
+          `;
+        } else {
+          resultRecord = {
+            id: `exec-${Date.now()}`,
+            query: rawQuery,
+            badge: 'REGISTRY SYNCHRONIZED',
+            badgeClass: 'bg-surface-container text-on-surface',
+            title: 'No Pending Purchase Orders in Queue',
+            detail: 'All vendor purchase reminders have already been authorized and dispatched, or none are currently awaiting executive approval.',
+            timestamp: 'Just now'
+          };
+          replyHtml = `<p class="text-xs">No pending vendor purchase reminders currently require executive authorization. All requisitions are satisfied.</p>`;
+          toast.info('No Pending POs', 'Procurement queue is clear.');
+        }
+      }
+    }
+
+    // -----------------------------------------------------------------------
     // INTENT 1: APPROVE / SIGN OFF PENDING DUTIES
     // -----------------------------------------------------------------------
-    if (lower.includes('approve') || lower.includes('sign off') || lower.includes('sign-off') || (lower.includes('duty') && lower.includes('all'))) {
+    else if (lower.includes('approve') || lower.includes('sign off') || lower.includes('sign-off') || (lower.includes('duty') && lower.includes('all'))) {
       const pending = AppState.tasks.filter(t => t.status === 'Pending Approval');
       if (pending.length > 0) {
         pending.forEach(d => {
@@ -7183,6 +7619,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCommandPalette();
   initRFIDAndNFCSystem();
   updateSessionUI();
+  renderPurchaseReminders();
   startLiveDigitalClock();
   initTelemetrySSE();
 

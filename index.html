@@ -573,34 +573,16 @@
         <section class="lg:col-span-4 flex flex-col gap-5">
           <div class="nexus-card p-5">
             <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/50">
-              <h3 class="font-headline text-base font-bold text-on-surface">Purchase Reminders</h3>
-              <span class="badge-pill bg-tertiary-container/30 text-on-tertiary-container">3 Pending</span>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-primary dark:text-primary-fixed">local_shipping</span>
+                <h3 class="font-headline text-base font-bold text-on-surface">Purchase Reminders</h3>
+              </div>
+              <span id="purchase-reminders-badge" class="badge-pill bg-tertiary-container/30 text-on-tertiary-container font-mono font-bold text-[11px]">3 Pending</span>
             </div>
 
-            <div class="space-y-3.5">
-              <div class="p-3 bg-surface-container-low/50 rounded-xl border border-outline-variant/40">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-bold text-on-surface">Wireless Earbuds Pro</span>
-                  <span class="badge-pill bg-error-container/30 text-error">Stock 0</span>
-                </div>
-                <p class="text-[11px] text-on-surface-variant mb-2">Vendor: SoundTech Logistics • MOQ: 100 units</p>
-                <div class="flex gap-2">
-                  <button onclick="toast.success('Purchase Order Approved', 'PO #4928 dispatched to vendor')" class="flex-1 py-1 bg-primary text-on-primary text-xs font-semibold rounded-lg hover:bg-primary-container">Approve</button>
-                  <button onclick="toast.info('Reminder Snoozed', 'Will alert again in 24 hours')" class="px-2.5 py-1 text-xs border border-outline-variant rounded-lg hover:bg-surface-container">Snooze</button>
-                </div>
-              </div>
-
-              <div class="p-3 bg-surface-container-low/50 rounded-xl border border-outline-variant/40">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-bold text-on-surface">Winter Parka - L</span>
-                  <span class="badge-pill bg-tertiary-container/30 text-on-tertiary-container">Stock 12</span>
-                </div>
-                <p class="text-[11px] text-on-surface-variant mb-2">Vendor: Alpine Apparel • MOQ: 50 units</p>
-                <div class="flex gap-2">
-                  <button onclick="toast.success('Purchase Order Approved', 'PO #4929 dispatched to vendor')" class="flex-1 py-1 bg-primary text-on-primary text-xs font-semibold rounded-lg hover:bg-primary-container">Approve</button>
-                  <button onclick="toast.info('Reminder Snoozed', 'Will alert again in 24 hours')" class="px-2.5 py-1 text-xs border border-outline-variant rounded-lg hover:bg-surface-container">Snooze</button>
-                </div>
-              </div>
+            <!-- Dynamic Container populated by renderPurchaseReminders() -->
+            <div id="purchase-reminders-list" class="space-y-3.5">
+              <!-- Rendered dynamically by renderPurchaseReminders() in nexus-app.js -->
             </div>
           </div>
         </section>
