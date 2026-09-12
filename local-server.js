@@ -294,6 +294,254 @@ function requestHandler(req, res) {
     return;
   }
 
+  // API Route 6: GET /api/ai/status - Gemini AI Copilot Brain Status
+  if (urlPath === '/api/ai/status' && req.method === 'GET') {
+    const hasServerKey = Boolean(process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
+    let toolCount = 11;
+    try {
+      const { MCP_TOOLS } = require('./mcp-server.js');
+      toolCount = MCP_TOOLS.length;
+    } catch (e) {}
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      configured: hasServerKey,
+      engine: 'Google Gemini 3.8 / 2.5 Flash',
+      defaultModel: 'gemini-2.5-flash',
+      availableModels: [
+        'gemini-2.5-flash',
+        'gemini-1.5-pro',
+        'gemini-2.0-flash',
+        'gemini-3.8-flash'
+      ],
+      mcpToolsCount: toolCount,
+      features: [
+        'Multi-hop autonomous tool execution',
+        'Direct connection to 11 MCP store tools',
+        'Executive RBAC enforcement (Ranks 1-5)',
+        'Constitutional dismissal protection & 4-Executive Quorum'
+      ]
+    }, null, 2));
+    return;
+  }
+
+  // API Route 7: POST /api/ai/chat - Gemini 3.8 Agentic Chat & Tool Calling Loop
+  if (urlPath === '/api/ai/chat' && req.method === 'POST') {
+    const auth = verifyAuth(req, '*');
+    if (!auth.authorized) {
+      res.writeHead(auth.status, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: auth.error }));
+      return;
+    }
+
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body);
+        const userPrompt = payload.message || '';
+        const userHistory = payload.history || [];
+        const caller = payload.currentUser || { name: 'Executive Administrator', rank: 5, role: 'Global Admin', department: 'Executive Operations' };
+        const modelName = payload.model || 'gemini-2.5-flash';
+
+        const apiKey = req.headers['x-gemini-key'] || payload.apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+
+        if (!apiKey) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            success: false,
+            needsKey: true,
+            error: 'MISSING_API_KEY',
+            message: 'No Google Gemini API Key configured. Please supply a key in Copilot Settings or set GEMINI_API_KEY in server environment.'
+          }));
+          return;
+        }
+
+        // Build Gemini System Instruction with full store knowledge & strict RBAC rules
+        const { state, MCP_TOOLS, handleToolCall } = require('./mcp-server.js');
+        const activeStaffCount = state.staff.filter(s => s.clockedIn).length;
+        const openEscCount = state.escalations.filter(e => e.status === 'Open').length;
+        const lowStockCount = state.inventory.filter(i => i.stock <= 15).length;
+        const pendingDutiesCount = state.duties.filter(d => d.status === 'Pending Approval').length;
+
+        const systemInstruction = `
+You are the Executive AI Operations Copilot for Nexus Retail Operations Management Suite (Store #104).
+You have real-time visibility into the entire retail complex:
+- 9 Floor Zones: North Wing #42, Storage Bay B, West Gallery, East Promenade, Central Mall HQ, South Atrium, Service Core A, Food Court Deck, Upper Mezzanine.
+- 11 Store Departments: Executive Operations, Human Resources & Talent, Logistics & Bay Storage, Apparel & Fashion, Electronics & Gadgets, Customer Relations, Security & Safety, Facilities & Maintenance, Food & Beverage, Cashier & Front End, Beauty & Cosmetics.
+- Current Store Snapshot: ${activeStaffCount} staff clocked in, ${openEscCount} open floor hazards, ${lowStockCount} low-stock SKUs, ${pendingDutiesCount} duties awaiting sign-off.
+
+CURRENT CALLER IDENTITY & CLEARANCE:
+- Name: ${caller.name}
+- Role: ${caller.role}
+- Rank: ${caller.rank} (Scale 1 to 5)
+- Department: ${caller.department}
+- Clearance Tier: ${caller.rank >= 4 ? 'Executive Upper Management' : (caller.rank === 3 ? 'Floor Supervisor / Lead' : 'General Associate')}
+
+STRICT ROLE-BASED ACCESS CONTROL (RBAC) & CONSTITUTIONAL RULES:
+1. Rank 1-2 (General Associates): Can ONLY query floor status, check attendance, lookup barcodes, and check their own duties. They are STRICTLY FORBIDDEN from executing executive actions: sacking/firing staff, approving duties, restocking inventory, resolving safety hazards, or initiating evacuations. If they attempt these, DECLINE politely with: "Clearance Denied: As a Rank ${caller.rank} (${caller.role}), you do not possess executive clearance to perform this action. Rank 4+ clearance required."
+2. Rank 3 (Floor Leads / Supervisors): Can dispatch floor duties, log punches, and audit shift breaks. CANNOT execute staff dismissals or financial purchase order sign-offs.
+3. Rank 4 (Upper Management / HR Directors): Can authorize completed duties, adjust inventory, audit statutory labor compliance, and initiate regular staff dismissals (Rank < 4).
+4. Rank 5 (Global Administrator / Marcus Vance): Full Level 5 Omni-Access across all store operations, including emergency evacuations and PO sign-offs.
+5. CONSTITUTIONAL DISMISSAL GOVERNANCE:
+   - Dynamic Protection: The highest-ranking officer currently in the organization CANNOT be dismissed by anyone under any circumstances.
+   - 4-Executive Quorum: Any Upper Management personnel (Rank 4+) can ONLY be dismissed if at least 4 Upper Management executives co-sign the dismissal dossier. Deboarding and severance payout remain locked until this quorum is met.
+   - General Staff (Rank < 4): Requires 1 Upper Management sign-off.
+   - Executive Veto: Any higher-ranking manager can veto and reject a pending dismissal proposal.
+
+TOOL CALLING:
+- You have direct access to standard Model Context Protocol (MCP) tools.
+- When an authorized user asks to perform an action (e.g. check attendance, dispatch duty, sign off duty, adjust stock, escalate/resolve incident), call the appropriate tool.
+- Always provide clear, executive-grade responses detailing exactly what store records were inspected or updated.
+`;
+
+        // Format MCP tools for Gemini function declarations
+        const functionDeclarations = MCP_TOOLS.map(tool => ({
+          name: tool.name,
+          description: tool.description,
+          parameters: tool.inputSchema
+        }));
+
+        // Convert user history to Gemini contents format
+        const contents = [];
+        for (const item of userHistory.slice(-8)) {
+          contents.push({
+            role: item.role === 'user' ? 'user' : 'model',
+            parts: [{ text: item.text || item.content || '' }]
+          });
+        }
+        contents.push({
+          role: 'user',
+          parts: [{ text: userPrompt }]
+        });
+
+        // Gemini Agentic Execution Loop
+        let finalReply = '';
+        const executedToolCalls = [];
+        let maxLoops = 5;
+
+        while (maxLoops > 0) {
+          maxLoops--;
+
+          const geminiReqBody = {
+            contents: contents,
+            systemInstruction: {
+              parts: [{ text: systemInstruction }]
+            },
+            tools: [{ functionDeclarations }],
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 1024
+            }
+          };
+
+          const targetModel = modelName.startsWith('gemini-') ? modelName : 'gemini-2.5-flash';
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
+
+          const geminiRes = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(geminiReqBody)
+          });
+
+          if (!geminiRes.ok) {
+            const errText = await geminiRes.text();
+            throw new Error(`Gemini API Error (${geminiRes.status}): ${errText}`);
+          }
+
+          const geminiData = await geminiRes.json();
+          const candidate = geminiData.candidates?.[0];
+          if (!candidate) {
+            throw new Error('Gemini returned no response candidates.');
+          }
+
+          const parts = candidate.content?.parts || [];
+          const functionCallPart = parts.find(p => p.functionCall);
+
+          if (functionCallPart) {
+            const fCall = functionCallPart.functionCall;
+            const toolName = fCall.name;
+            const toolArgs = fCall.args || {};
+
+            // Executive RBAC check prior to execution
+            const executiveTools = ['sign_off_duty', 'adjust_inventory_stock', 'resolve_floor_incident'];
+            if (executiveTools.includes(toolName) && caller.rank < 4) {
+              const rejectionResult = {
+                error: 'CLEARANCE_DENIED',
+                message: `Action denied: Caller ${caller.name} holds Rank ${caller.rank}, which is insufficient for ${toolName}. Requires Rank 4+ Executive clearance.`
+              };
+              executedToolCalls.push({ name: toolName, args: toolArgs, result: rejectionResult, allowed: false });
+
+              contents.push({
+                role: 'model',
+                parts: [{ functionCall: fCall }]
+              });
+              contents.push({
+                role: 'function',
+                parts: [{
+                  functionResponse: {
+                    name: toolName,
+                    response: { output: rejectionResult }
+                  }
+                }]
+              });
+              continue;
+            }
+
+            // Execute MCP tool via handleToolCall
+            let toolOutput;
+            try {
+              toolOutput = await handleToolCall(toolName, {
+                ...toolArgs,
+                requester_id: caller.id,
+                requester_rank: caller.rank,
+                requester_dept: caller.department
+              });
+            } catch (toolErr) {
+              toolOutput = { error: toolErr.message };
+            }
+
+            executedToolCalls.push({ name: toolName, args: toolArgs, result: toolOutput, allowed: true });
+
+            // Push function call and response back to dialogue contents
+            contents.push({
+              role: 'model',
+              parts: [{ functionCall: fCall }]
+            });
+            contents.push({
+              role: 'function',
+              parts: [{
+                functionResponse: {
+                  name: toolName,
+                  response: { output: toolOutput }
+                }
+              }]
+            });
+          } else {
+            // Text response arrived
+            const textPart = parts.find(p => p.text);
+            finalReply = textPart ? textPart.text : 'Directive processed.';
+            break;
+          }
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: true,
+          reply: finalReply,
+          toolCalls: executedToolCalls,
+          model: modelName
+        }, null, 2));
+
+      } catch (chatErr) {
+        console.error('Gemini Chat Error:', chatErr);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: chatErr.message }));
+      }
+    });
+    return;
+  }
+
   // Static File Server
   let reqPath = decodeURI(urlPath);
   if (reqPath === '/' || reqPath === '') {

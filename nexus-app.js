@@ -8268,9 +8268,456 @@ function executeOmniCommand(query, source = 'cockpit') {
   }, 350);
 }
 
+// =========================================================================
+// 20. GEMINI 3.8 COPILOT BRAIN & MCP AGENTIC ORCHESTRATION ENGINE
+// =========================================================================
+
+// Copilot UI State & Modal Handlers
+function toggleCopilot() {
+  const drawer = document.getElementById('copilot-drawer');
+  const dot = document.getElementById('copilot-unread-dot');
+  if (!drawer) return;
+
+  const isHidden = drawer.classList.contains('hidden');
+  if (isHidden) {
+    drawer.classList.remove('hidden');
+    if (dot) dot.classList.add('hidden');
+    const input = document.getElementById('copilot-user-input');
+    if (input) setTimeout(() => input.focus(), 150);
+    const thread = document.getElementById('copilot-chat-thread');
+    if (thread) thread.scrollTop = thread.scrollHeight;
+    updateGeminiBrainUI();
+  } else {
+    drawer.classList.add('hidden');
+  }
+}
+
+// Keyboard shortcut: Ctrl+/ or Cmd+/ to toggle Copilot
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+    e.preventDefault();
+    toggleCopilot();
+  }
+});
+
+function openGeminiSettingsModal() {
+  const modal = document.getElementById('modal-gemini-settings');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+
+  const storedKey = localStorage.getItem('nexus_gemini_api_key') || '';
+  const storedModel = localStorage.getItem('nexus_gemini_model') || 'gemini-2.5-flash';
+
+  const keyInput = document.getElementById('gemini-api-key-input');
+  const modelSelect = document.getElementById('gemini-model-select');
+
+  if (keyInput) keyInput.value = storedKey;
+  if (modelSelect) modelSelect.value = storedModel;
+
+  updateGeminiModalStatus();
+}
+
+function closeGeminiSettingsModal() {
+  const modal = document.getElementById('modal-gemini-settings');
+  if (!modal) return;
+  modal.classList.add('hidden');
+  modal.style.display = 'none';
+}
+
+function toggleGeminiKeyVisibility() {
+  const input = document.getElementById('gemini-api-key-input');
+  const icon = document.getElementById('gemini-key-vis-icon');
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (icon) icon.textContent = 'visibility_off';
+  } else {
+    input.type = 'password';
+    if (icon) icon.textContent = 'visibility';
+  }
+}
+
+async function updateGeminiModalStatus() {
+  const icon = document.getElementById('gemini-modal-status-icon');
+  const title = document.getElementById('gemini-modal-status-title');
+  const desc = document.getElementById('gemini-modal-status-desc');
+  const tag = document.getElementById('gemini-modal-status-tag');
+  const banner = document.getElementById('gemini-modal-status-banner');
+
+  const clientKey = localStorage.getItem('nexus_gemini_api_key');
+  let serverConfigured = false;
+
+  try {
+    const res = await fetch('/api/ai/status', { method: 'GET' });
+    if (res.ok) {
+      const data = await res.json();
+      serverConfigured = data.configured;
+    }
+  } catch (e) {}
+
+  if (clientKey || serverConfigured) {
+    if (banner) banner.className = 'p-3 rounded-2xl border flex items-center justify-between bg-emerald-500/10 border-emerald-500/30';
+    if (icon) icon.className = 'w-3 h-3 rounded-full bg-emerald-500 animate-pulse';
+    if (title) title.textContent = 'Gemini Brain Active & Online';
+    if (desc) desc.textContent = clientKey ? 'Authenticated via client key. Real-time tool execution enabled.' : 'Authenticated via server GEMINI_API_KEY environment.';
+    if (tag) {
+      tag.className = 'badge-pill bg-emerald-500 text-white font-mono text-[10px] font-bold';
+      tag.textContent = 'ACTIVE';
+    }
+  } else {
+    if (banner) banner.className = 'p-3 rounded-2xl border flex items-center justify-between bg-surface-container/50 border-outline-variant/50';
+    if (icon) icon.className = 'w-3 h-3 rounded-full bg-amber-400 animate-pulse';
+    if (title) title.textContent = 'Awaiting API Key';
+    if (desc) desc.textContent = 'Using local fallback engine until Gemini API key is supplied.';
+    if (tag) {
+      tag.className = 'badge-pill bg-amber-500/20 text-amber-700 dark:text-amber-300 font-mono text-[10px] font-bold';
+      tag.textContent = 'LOCAL FALLBACK';
+    }
+  }
+}
+
+async function saveGeminiSettings() {
+  const keyInput = document.getElementById('gemini-api-key-input');
+  const modelSelect = document.getElementById('gemini-model-select');
+
+  const newKey = (keyInput ? keyInput.value : '').trim();
+  const newModel = (modelSelect ? modelSelect.value : 'gemini-2.5-flash');
+
+  if (newKey) {
+    localStorage.setItem('nexus_gemini_api_key', newKey);
+  } else {
+    localStorage.removeItem('nexus_gemini_api_key');
+  }
+  localStorage.setItem('nexus_gemini_model', newModel);
+
+  updateGeminiBrainUI();
+  closeGeminiSettingsModal();
+
+  if (newKey) {
+    toast.success('Gemini Brain Connected', `Activated ${newModel} with real-time MCP store tools.`);
+  } else {
+    toast.info('Settings Saved', `Configured model ${newModel}. Using local fallback engine.`);
+  }
+}
+
+async function testGeminiConnection() {
+  const testBtn = document.getElementById('btn-test-gemini');
+  const keyInput = document.getElementById('gemini-api-key-input');
+  const modelSelect = document.getElementById('gemini-model-select');
+
+  const key = (keyInput ? keyInput.value : '').trim() || localStorage.getItem('nexus_gemini_api_key');
+  const model = (modelSelect ? modelSelect.value : 'gemini-2.5-flash');
+
+  if (!key) {
+    toast.error('API Key Missing', 'Please enter a Gemini API Key to test connection.');
+    return;
+  }
+
+  if (testBtn) {
+    testBtn.disabled = true;
+    testBtn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">sync</span><span>Testing...</span>`;
+  }
+
+  try {
+    // Quick test ping to Google Gemini endpoint
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: 'Respond with exactly: "PONG - GEMINI LIVE"' }] }]
+      })
+    });
+
+    if (testBtn) {
+      testBtn.disabled = false;
+      testBtn.innerHTML = `<span class="material-symbols-outlined text-sm">sync</span><span>Test Connection</span>`;
+    }
+
+    if (res.ok) {
+      toast.success('Connection Verified', `Successfully connected to Google Gemini API (${model})!`);
+      updateGeminiModalStatus();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      const msg = err.error?.message || `HTTP ${res.status}`;
+      toast.error('Connection Failed', msg);
+    }
+  } catch (err) {
+    if (testBtn) {
+      testBtn.disabled = false;
+      testBtn.innerHTML = `<span class="material-symbols-outlined text-sm">sync</span><span>Test Connection</span>`;
+    }
+    toast.error('Connection Error', err.message);
+  }
+}
+
+async function updateGeminiBrainUI() {
+  const badge = document.getElementById('copilot-brain-badge');
+  const dot = document.getElementById('gemini-brain-dot');
+  const subtitle = document.getElementById('copilot-brain-subtitle');
+
+  const clientKey = localStorage.getItem('nexus_gemini_api_key');
+  const model = localStorage.getItem('nexus_gemini_model') || 'gemini-2.5-flash';
+  let serverConfigured = false;
+
+  try {
+    const res = await fetch('/api/ai/status');
+    if (res.ok) {
+      const d = await res.json();
+      serverConfigured = d.configured;
+    }
+  } catch (e) {}
+
+  const isOnline = Boolean(clientKey || serverConfigured);
+  const modelShortName = model.replace('gemini-', 'GEMINI ').toUpperCase();
+
+  if (badge) {
+    badge.textContent = modelShortName;
+    badge.className = isOnline 
+      ? 'badge-pill bg-emerald-500 text-white text-[9px] font-mono font-bold cursor-pointer hover:bg-emerald-600 transition-colors' 
+      : 'badge-pill bg-white/20 text-white text-[9px] font-mono font-bold cursor-pointer hover:bg-white/30 transition-colors';
+  }
+
+  if (dot) {
+    dot.className = isOnline 
+      ? 'absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-slate-900 animate-pulse'
+      : 'absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 border border-slate-900';
+  }
+
+  if (subtitle) {
+    subtitle.textContent = isOnline
+      ? 'Powered by Google Gemini 3.8 • Autonomous Tools Active'
+      : 'Local Fallback Engine • Click to add Gemini Key';
+  }
+}
+
+// Append messages into the Copilot chat thread
+function appendCopilotMessage(sender, content, toolCalls = []) {
+  const thread = document.getElementById('copilot-chat-thread');
+  if (!thread) return;
+
+  const msgDiv = document.createElement('div');
+  msgDiv.className = sender === 'user' ? 'flex justify-end' : 'flex gap-2 items-start';
+
+  if (sender === 'user') {
+    msgDiv.innerHTML = `
+      <div class="bg-primary text-white p-3 rounded-2xl rounded-tr-sm text-xs max-w-[85%] shadow-sm">
+        ${content}
+      </div>
+    `;
+  } else {
+    let toolsHtml = '';
+    if (toolCalls && toolCalls.length > 0) {
+      toolsHtml = `
+        <div class="space-y-1 mb-2">
+          ${toolCalls.map(tc => `
+            <div class="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-container-highest/60 text-[10px] font-mono ${tc.allowed === false ? 'text-error border border-error/30' : 'text-secondary border border-secondary/30'}">
+              <span class="material-symbols-outlined text-[13px]">${tc.allowed === false ? 'block' : 'build_circle'}</span>
+              <span><strong>${tc.name}</strong> ${tc.allowed === false ? '(Clearance Denied)' : '(Executed)'}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    msgDiv.innerHTML = `
+      <div class="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 text-[11px] font-bold">
+        AI
+      </div>
+      <div class="flex-1 bg-surface-container p-3 rounded-2xl rounded-tl-sm text-xs text-on-surface space-y-1 border border-outline-variant/40 max-w-[90%]">
+        ${toolsHtml}
+        <div>${content}</div>
+      </div>
+    `;
+  }
+
+  thread.appendChild(msgDiv);
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function handleCopilotSubmit(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById('copilot-user-input');
+  if (!input) return;
+  const query = input.value.trim();
+  if (!query) return;
+  input.value = '';
+  executeCopilotDirective(query);
+}
+
+function sendCopilotSuggestedPrompt(prompt) {
+  executeCopilotDirective(prompt);
+}
+
 // Global Copilot router wrapper
 function executeCopilotCommand(query) {
-  executeOmniCommand(query, 'copilot');
+  executeCopilotDirective(query);
+}
+
+// Main AI Copilot Brain Execution Routine
+async function executeCopilotDirective(query) {
+  if (!query || !query.trim()) return;
+  const rawQuery = query.trim();
+
+  // 1. Render User Message
+  appendCopilotMessage('user', rawQuery);
+
+  // 2. Render Thinking Bubble
+  const thread = document.getElementById('copilot-chat-thread');
+  const thinkingId = `gemini-thinking-${Date.now()}`;
+  if (thread) {
+    const thinkingEl = document.createElement('div');
+    thinkingEl.id = thinkingId;
+    thinkingEl.className = 'flex gap-2 items-start';
+    thinkingEl.innerHTML = `
+      <div class="w-6 h-6 rounded-lg bg-primary text-white flex items-center justify-center shrink-0 text-[11px] font-bold animate-pulse">
+        AI
+      </div>
+      <div class="bg-surface-container p-2.5 rounded-xl text-xs text-on-surface-variant font-mono flex items-center gap-2 border border-primary/20">
+        <span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+        <span>Gemini 3.8 reasoning across store telemetry...</span>
+      </div>
+    `;
+    thread.appendChild(thinkingEl);
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  const clientKey = localStorage.getItem('nexus_gemini_api_key') || '';
+  const modelName = localStorage.getItem('nexus_gemini_model') || 'gemini-2.5-flash';
+
+  const caller = {
+    id: AppState.currentUser ? AppState.currentUser.id : 'NEX-0001',
+    name: AppState.currentUser ? AppState.currentUser.name : 'Marcus Vance',
+    role: AppState.currentUser ? AppState.currentUser.role : 'Global Administrator',
+    rank: AppState.currentUser ? AppState.currentUser.rank : 5,
+    department: AppState.currentUser ? AppState.currentUser.department : 'Executive Operations'
+  };
+
+  let geminiSuccess = false;
+
+  // ATTEMPT 1: Call Local Server AI Route (/api/ai/chat)
+  try {
+    const res = await fetch('/api/ai/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer nexus_live_agent_admin_9x82',
+        'x-api-key': 'nexus_live_agent_admin_9x82',
+        'x-gemini-key': clientKey
+      },
+      body: JSON.stringify({
+        message: rawQuery,
+        model: modelName,
+        currentUser: caller
+      })
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        geminiSuccess = true;
+        const tEl = document.getElementById(thinkingId);
+        if (tEl) tEl.remove();
+
+        // Process any returned tool calls into local AppState
+        if (data.toolCalls && data.toolCalls.length > 0) {
+          data.toolCalls.forEach(tc => {
+            if (tc.name === 'sign_off_duty' && tc.result?.duty) {
+              const d = AppState.tasks.find(t => t.id === tc.args?.duty_id);
+              if (d) { d.status = 'Signed Off'; d.signedOffBy = caller.name; }
+            } else if (tc.name === 'dispatch_shift_duty' && tc.result?.duty) {
+              AppState.tasks.unshift({
+                id: tc.result.duty.id,
+                title: tc.result.duty.title,
+                task: tc.result.duty.title,
+                zone: tc.result.duty.zone,
+                department: tc.result.duty.department,
+                associate: tc.result.duty.lead,
+                status: tc.result.duty.status,
+                priority: tc.result.duty.priority
+              });
+            } else if (tc.name === 'adjust_inventory_stock' && tc.result?.sku) {
+              const item = AppState.inventory.find(i => i.sku === tc.result.sku);
+              if (item) item.stock = tc.result.updated_stock;
+            } else if (tc.name === 'resolve_floor_incident' && tc.result?.escalation) {
+              const esc = AppState.escalations.find(e => e.id === tc.result.escalation.id);
+              if (esc) esc.status = 'Resolved';
+            }
+          });
+
+          AppState.saveState();
+          renderMyDutiesList();
+          renderInventory();
+          renderDashboard();
+          renderFloorMap();
+        }
+
+        // Format and render reply
+        let formattedReply = (data.reply || '').replace(/\n/g, '<br/>');
+        appendCopilotMessage('assistant', formattedReply, data.toolCalls);
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('Could not connect to /api/ai/chat, attempting direct client execution...', err.message);
+  }
+
+  // ATTEMPT 2: Direct Client-Side Gemini Call (if client key is set)
+  if (!geminiSuccess && clientKey) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${clientKey}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: rawQuery }] }],
+          systemInstruction: {
+            parts: [{ text: `You are Nexus Retail Operations Copilot for Store #104. Caller is ${caller.name} (${caller.role}, Rank ${caller.rank}). Strictly enforce Rank permissions: Rank 1-2 cannot fire staff or approve duties. The highest ranking officer is immune to dismissal. 4 higher management approvals are required to sack Upper Management.` }]
+          }
+        })
+      });
+
+      if (res.ok) {
+        const d = await res.json();
+        const text = d.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const tEl = document.getElementById(thinkingId);
+          if (tEl) tEl.remove();
+          appendCopilotMessage('assistant', text.replace(/\n/g, '<br/>'));
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Client-side Gemini API call failed:', err.message);
+    }
+  }
+
+  // ATTEMPT 3: FALLBACK TO LOCAL AUTONOMOUS OMNI-ENGINE
+  const tEl = document.getElementById(thinkingId);
+  if (tEl) tEl.remove();
+
+  executeOmniCommand(rawQuery, 'copilot');
+
+  // If no Gemini key was set, append polite config banner
+  if (!clientKey) {
+    const threadEl = document.getElementById('copilot-chat-thread');
+    if (threadEl) {
+      const tipDiv = document.createElement('div');
+      tipDiv.className = 'p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-700 dark:text-amber-300 flex items-center justify-between mt-1';
+      tipDiv.innerHTML = `
+        <div class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[15px]">tips_and_updates</span>
+          <span>Running via Local Engine. Activate full <strong>Google Gemini 3.8</strong> multi-hop reasoning by adding your API key.</span>
+        </div>
+        <button onclick="openGeminiSettingsModal()" class="px-2 py-0.5 bg-amber-500 text-white rounded-md text-[10px] font-bold shrink-0 hover:bg-amber-600 transition-colors">
+          Add Key
+        </button>
+      `;
+      threadEl.appendChild(tipDiv);
+      threadEl.scrollTop = threadEl.scrollHeight;
+    }
+  }
 }
 
 function toggleCopilotVoiceInput() {
@@ -8295,7 +8742,7 @@ function toggleCopilotVoiceInput() {
   recognition.onresult = (event) => {
     const transcript = event.results[0][0].transcript;
     if (input) input.value = transcript;
-    executeOmniCommand(transcript, 'copilot');
+    executeCopilotDirective(transcript);
   };
 
   recognition.onerror = () => {

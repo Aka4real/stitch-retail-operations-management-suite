@@ -4092,22 +4092,29 @@
   <!-- Slide-Up Copilot Window -->
   <div id="copilot-drawer" class="copilot-floating-drawer hidden">
     <!-- Header -->
-    <div class="p-3.5 bg-gradient-to-r from-primary to-slate-800 text-white flex items-center justify-between">
+    <div class="p-3.5 bg-gradient-to-r from-primary via-slate-900 to-primary-container text-white flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shadow-sm">
+        <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shadow-sm relative">
           <span class="material-symbols-outlined text-[20px] text-white">psychology</span>
+          <span id="gemini-brain-dot" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-amber-400 border border-slate-900" title="Gemini 3.8 Engine Status"></span>
         </div>
         <div>
           <div class="flex items-center gap-1.5">
             <h3 class="font-headline text-xs font-bold text-white">Executive AI Operations Copilot</h3>
-            <span id="copilot-omni-pill" class="badge-pill bg-secondary text-white text-[9px] font-mono font-bold">R5 OMNI-ACCESS</span>
+            <span id="copilot-brain-badge" class="badge-pill bg-white/20 text-white text-[9px] font-mono font-bold cursor-pointer hover:bg-white/30 transition-colors" onclick="openGeminiSettingsModal()" title="Click to configure Gemini Model & API Key">GEMINI 3.8</span>
+            <span id="copilot-omni-pill" class="badge-pill bg-secondary text-white text-[9px] font-mono font-bold">R5 OMNI</span>
           </div>
-          <p class="text-[10px] text-white/70 font-mono">Complete Store Orchestration &bull; Voice Enabled</p>
+          <p id="copilot-brain-subtitle" class="text-[10px] text-white/70 font-mono">Powered by Google Gemini &bull; Real-Time MCP Tools</p>
         </div>
       </div>
-      <button onclick="toggleCopilot()" class="p-1 rounded-full text-white/80 hover:text-white" title="Minimize Copilot">
-        <span class="material-symbols-outlined text-[18px]">expand_more</span>
-      </button>
+      <div class="flex items-center gap-1">
+        <button onclick="openGeminiSettingsModal()" class="p-1 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors" title="Gemini AI Brain Settings">
+          <span class="material-symbols-outlined text-[18px]">settings</span>
+        </button>
+        <button onclick="toggleCopilot()" class="p-1 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors" title="Minimize Copilot">
+          <span class="material-symbols-outlined text-[18px]">expand_more</span>
+        </button>
+      </div>
     </div>
 
     <!-- Suggested Quick Action Chips -->
@@ -4157,6 +4164,103 @@
         <span class="material-symbols-outlined text-[18px]">send</span>
       </button>
     </form>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: GEMINI 3.8 AI BRAIN CONFIGURATION -->
+  <!-- ========================================================================= -->
+  <div id="modal-gemini-settings" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-outline-variant/60 rounded-3xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+            <span class="material-symbols-outlined text-2xl">neurology</span>
+          </div>
+          <div>
+            <h3 class="font-headline font-bold text-base text-on-surface">Nexus Copilot Brain Configuration</h3>
+            <p class="text-xs text-on-surface-variant font-mono">Google Gemini 3.8 &bull; MCP Tool Protocol &bull; Executive RBAC</p>
+          </div>
+        </div>
+        <button onclick="closeGeminiSettingsModal()" class="p-1.5 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Status Banner -->
+        <div id="gemini-modal-status-banner" class="p-3 rounded-2xl border flex items-center justify-between bg-surface-container/50 border-outline-variant/50">
+          <div class="flex items-center gap-2">
+            <span id="gemini-modal-status-icon" class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
+            <div>
+              <div id="gemini-modal-status-title" class="font-bold text-on-surface">Awaiting API Key</div>
+              <div id="gemini-modal-status-desc" class="text-[11px] text-on-surface-variant">Using local fallback engine until Gemini API key is configured.</div>
+            </div>
+          </div>
+          <span id="gemini-modal-status-tag" class="badge-pill bg-amber-500/20 text-amber-700 dark:text-amber-300 font-mono text-[10px] font-bold">LOCAL FALLBACK</span>
+        </div>
+
+        <!-- Model Selection -->
+        <div class="space-y-1.5">
+          <label class="block font-bold text-on-surface">Gemini Model Family</label>
+          <select id="gemini-model-select" class="w-full px-3 py-2 text-xs bg-surface-container-lowest border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none">
+            <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (Recommended: Ultra-fast agentic reasoning &amp; tool chaining)</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep complex analysis &amp; multi-modal reasoning)</option>
+            <option value="gemini-2.0-flash">Gemini 2.0 Flash (Next-generation high efficiency model)</option>
+            <option value="gemini-3.8-flash">Gemini 3.8 Flash (Frontier agentic model gateway)</option>
+          </select>
+          <p class="text-[10px] text-on-surface-variant">Models support native tool execution (JSON-RPC 2.0) across all store operations.</p>
+        </div>
+
+        <!-- API Key Input -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center">
+            <label class="font-bold text-on-surface">Google Gemini API Key</label>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline text-[10px] flex items-center gap-0.5">
+              <span>Get Free Key (Google AI Studio)</span>
+              <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+            </a>
+          </div>
+          <div class="relative">
+            <input type="password" id="gemini-api-key-input" placeholder="AIzaSy..." class="w-full px-3 py-2 pr-10 text-xs font-mono bg-surface-container-lowest border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+            <button type="button" onclick="toggleGeminiKeyVisibility()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface">
+              <span id="gemini-key-vis-icon" class="material-symbols-outlined text-sm">visibility</span>
+            </button>
+          </div>
+          <p class="text-[10px] text-on-surface-variant">Stored securely in your browser's local cache or configured as <code>GEMINI_API_KEY</code> on your server.</p>
+        </div>
+
+        <!-- System Overview & MCP Architecture Specs -->
+        <div class="p-3 bg-surface-container-low rounded-2xl border border-outline-variant/40 space-y-2">
+          <div class="font-bold text-on-surface flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm text-secondary">verified</span>
+            <span>System Capabilities &amp; Governance Locks</span>
+          </div>
+          <ul class="text-[11px] text-on-surface-variant space-y-1">
+            <li class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> <strong>Full Store Awareness:</strong> 9 retail zones, 11 departments, 200 staff, real-time inventory bays.</li>
+            <li class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> <strong>11 MCP Tools:</strong> Attendance, Labor law compliance, Duty dispatch, Barcode/SKU, Stock mutations.</li>
+            <li class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> <strong>Executive RBAC Guard:</strong> Sacking, PO approvals, and emergency broadcasts restricted to Rank 4/5.</li>
+            <li class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> <strong>Constitutional Protection:</strong> Highest-ranking officer dynamic immunity; 4-Executive Quorum for Upper Management.</li>
+          </ul>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="flex items-center justify-between pt-3 border-t border-outline-variant/50">
+          <button type="button" onclick="testGeminiConnection()" id="btn-test-gemini" class="px-3.5 py-2 border border-outline-variant/60 hover:bg-surface-container rounded-xl text-xs font-semibold text-on-surface flex items-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-sm">sync</span>
+            <span>Test Connection</span>
+          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="closeGeminiSettingsModal()" class="px-3.5 py-2 text-xs font-semibold text-on-surface-variant hover:bg-surface-container rounded-xl transition-colors">
+              Cancel
+            </button>
+            <button type="button" onclick="saveGeminiSettings()" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">save</span>
+              <span>Save &amp; Activate</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ========================================================================= -->
