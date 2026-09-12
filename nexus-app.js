@@ -458,6 +458,42 @@ const AppState = {
     return this.isUpperManagement();
   },
 
+  // Dynamic Organizational Rank Analysis & Dismissal Governance
+  getHighestRank() {
+    if (!this.employees || this.employees.length === 0) return 5;
+    const activeStaff = this.employees.filter(e => e.status !== 'Terminated');
+    if (activeStaff.length === 0) return 5;
+    return Math.max(...activeStaff.map(e => Number(e.rank) || 1));
+  },
+
+  isHighestRanking(emp) {
+    if (!emp) return false;
+    return Number(emp.rank) === this.getHighestRank();
+  },
+
+  isUpperManagementStaff(emp) {
+    if (!emp) return false;
+    return Number(emp.rank) >= 4;
+  },
+
+  getRequiredSignOffCount(targetEmp) {
+    if (!targetEmp) return 1;
+    if (this.isHighestRanking(targetEmp)) return Infinity; // Immune: cannot be sacked
+    if (Number(targetEmp.rank) >= 4) return 4; // Upper management requires 4 higher management sign-offs
+    return 1; // Standard associates require 1 upper management sign-off
+  },
+
+  canSignOffTermination(targetEmp) {
+    const u = this.currentUser;
+    if (!u || u.status === 'Terminated') return false;
+    if (targetEmp && u.id === targetEmp.id) return false; // Anti-tampering: strictly cannot sign off on own sacking!
+    if (!targetEmp || targetEmp.rank < 4) {
+      return this.isUpperManagement() || (this.isHRMember() && u.rank >= 4);
+    }
+    // Upper Management target requires higher management (rank >= 4)
+    return u.rank >= 4;
+  },
+
   hasPermission(permKey) {
     if (!this.currentUser) return false;
     if (this.currentUser.rank === 5) return true; // Super admin has all permissions
@@ -2744,6 +2780,7 @@ function renderHR() {
   }
 
   renderHRStaffRoster();
+  updateHRPendingDismissalBanner();
 }
 
 function renderHRDutiesTable() {
@@ -3171,12 +3208,18 @@ function renderHRStaffRoster(filteredList) {
           <span class="badge-pill text-[9px] ${rankPillClass} mt-0.5">Rank ${emp.rank} Clearance</span>
         </td>
         <td>
-          ${emp.clockedIn
-            ? `<span class="badge-pill bg-secondary-container text-secondary text-[10px] font-bold flex items-center gap-1 w-fit">
-                <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
-                <span>On Shift (${emp.clockInTime || 'Active'})</span>
+          ${emp.pendingTermination
+            ? `<span class="badge-pill bg-purple-500/15 text-purple-700 dark:text-purple-300 text-[10px] font-bold flex items-center gap-1 w-fit border border-purple-500/25">
+                <span class="material-symbols-outlined text-[13px]">how_to_reg</span>
+                <span>${emp.rank >= 4 ? `Quorum (${emp.pendingTermination.signOffs?.length || 0}/4)` : 'Sign-Off Pending'}</span>
                </span>`
-            : `<span class="badge-pill bg-surface-container text-outline text-[10px] font-medium w-fit">Off Duty</span>`
+            : (emp.clockedIn
+              ? `<span class="badge-pill bg-secondary-container text-secondary text-[10px] font-bold flex items-center gap-1 w-fit">
+                  <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                  <span>On Shift (${emp.clockInTime || 'Active'})</span>
+                 </span>`
+              : `<span class="badge-pill bg-surface-container text-outline text-[10px] font-medium w-fit">Off Duty</span>`
+            )
           }
         </td>
         <td class="text-right">
@@ -3185,12 +3228,24 @@ function renderHRStaffRoster(filteredList) {
               <span class="material-symbols-outlined text-[16px]">swap_horiz</span>
               <span class="hidden sm:inline">Transfer</span>
             </button>
-            ${emp.rank < 5 ? `
-              <button onclick="openTerminateModal('${emp.id}')" class="p-1.5 text-error hover:bg-error/10 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-bold" title="Terminate / Sack Associate">
-                <span class="material-symbols-outlined text-[16px]">person_remove</span>
-                <span class="hidden sm:inline">Sack</span>
+            ${emp.pendingTermination ? `
+              <button onclick="navigateTo('deboarding')" class="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-bold" title="Review dismissal sign-off in Deboarding Center">
+                <span class="material-symbols-outlined text-[16px]">how_to_reg</span>
+                <span class="hidden sm:inline">Sign-Off</span>
               </button>
-            ` : ''}
+            ` : (
+              !AppState.isHighestRanking(emp) ? `
+                <button onclick="openTerminateModal('${emp.id}')" class="p-1.5 text-error hover:bg-error/10 rounded-lg transition-colors flex items-center gap-1 text-[11px] font-bold" title="Initiate Dismissal / Sack Associate">
+                  <span class="material-symbols-outlined text-[16px]">person_remove</span>
+                  <span class="hidden sm:inline">Sack</span>
+                </button>
+              ` : `
+                <span class="p-1 text-outline/70 flex items-center gap-0.5 text-[10px] font-mono" title="Dynamic Governance Lock: Highest ranking personnel cannot be dismissed">
+                  <span class="material-symbols-outlined text-[14px] text-amber-500">shield</span>
+                  <span class="hidden md:inline">Top Rank</span>
+                </span>
+              `
+            )}
           </div>
         </td>
       </tr>
@@ -3332,6 +3387,52 @@ function handleTransferEmployeeSubmit(e) {
   renderFloorMap();
 }
 
+function refreshAllWorkforceViews() {
+  renderHR();
+  renderHRDepartmentCrews();
+  renderHRStaffRoster();
+  if (typeof currentCrewModalDept !== 'undefined' && currentCrewModalDept) {
+    renderCrewMembersModal();
+  }
+  renderManagement();
+  renderShiftAttendanceFeed();
+  renderSwitchUserModalList();
+  updateNotificationBadge();
+  updateHRPendingDismissalBanner();
+  if (typeof renderDeboarding === 'function') {
+    renderDeboarding();
+  }
+}
+
+function updateHRPendingDismissalBanner() {
+  const banner = document.getElementById('hr-pending-dismissal-banner');
+  if (!banner) return;
+  const pending = AppState.employees.filter(e => e.pendingTermination && e.status !== 'Terminated');
+  if (pending.length === 0) {
+    banner.classList.add('hidden');
+    banner.innerHTML = '';
+    return;
+  }
+  banner.classList.remove('hidden');
+  banner.innerHTML = `
+    <div class="p-4 bg-purple-500/10 border border-purple-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-xl">how_to_reg</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-xs text-on-surface">Executive Sign-Off Pending (${pending.length} Separation Dossier${pending.length > 1 ? 's' : ''})</h4>
+          <p class="text-[11px] text-on-surface-variant">${pending.map(p => `${p.name} (Rank ${p.rank})`).join(', ')} currently awaiting Upper Management sign-off / quorum.</p>
+        </div>
+      </div>
+      <button onclick="navigateTo('deboarding')" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0 active:scale-95">
+        <span>Open Sign-Off Queue</span>
+        <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+      </button>
+    </div>
+  `;
+}
+
 function openTerminateModal(empId) {
   if (!AppState.canPerformHRFunctions()) {
     toast.error('Clearance Denied', 'Terminating or sacking staff is strictly restricted to HR Personnel and Upper Management.');
@@ -3341,13 +3442,25 @@ function openTerminateModal(empId) {
   const emp = AppState.employees.find(e => e.id === empId);
   if (!emp) return;
 
-  // Upper Management protection: non-upper-management cannot sack Rank 4+ staff
-  if (emp.rank >= 4 && !AppState.isUpperManagement()) {
-    toast.error('Security Restriction', 'Only Upper Management (Rank 4+) can terminate managerial or executive personnel.');
+  // 1. Dynamic Constitutional Protection: Highest ranking staff cannot be sacked!
+  if (AppState.isHighestRanking(emp)) {
+    toast.error('Constitutional Governance Lock', `Dynamic Protection Active: ${emp.name} holds the highest organizational rank (Rank ${emp.rank}) and cannot be dismissed.`);
     return;
   }
 
-  // HR Team protection: only Higher Management or higher-ranking HR can terminate HR personnel
+  // 2. Conflict of interest: cannot terminate yourself
+  if (emp.id === AppState.currentUser.id) {
+    toast.error('Governance Restriction', 'You cannot initiate termination proceedings against your own account.');
+    return;
+  }
+
+  // 3. Regular HR cannot initiate on Rank 4+ staff
+  if (emp.rank >= 4 && !AppState.isUpperManagement()) {
+    toast.error('Security Restriction', 'Only Higher Management can initiate dismissal for Upper Management (Rank 4+) personnel.');
+    return;
+  }
+
+  // 4. HR Team protection
   if (emp.department === HR_DEPARTMENT_NAME && !AppState.isUpperManagement() && !(AppState.isHRMember() && AppState.currentUser.rank > emp.rank)) {
     toast.error('Security Restriction', 'Terminating HR personnel requires higher HR rank or Upper Management clearance.');
     return;
@@ -3360,6 +3473,48 @@ function openTerminateModal(empId) {
 
   const avatar = document.getElementById('terminate-emp-avatar');
   if (avatar) avatar.textContent = emp.initials || 'NA';
+
+  // Dynamic Governance Notice & Button Customization
+  const noticeContainer = document.getElementById('terminate-governance-notice');
+  const submitBtn = document.getElementById('terminate-submit-btn');
+  const submitText = document.getElementById('terminate-submit-text');
+
+  if (noticeContainer) {
+    if (emp.rank >= 4) {
+      noticeContainer.innerHTML = `
+        <div class="p-3 bg-purple-500/10 border border-purple-500/25 rounded-xl text-[11px] text-purple-700 dark:text-purple-300 space-y-1">
+          <p class="font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px]">corporate_fare</span>
+            <span>Executive Quorum Required (4 Sign-Offs)</span>
+          </p>
+          <p>Target is Upper Management (Rank ${emp.rank}). Governance mandates independent sign-offs from <strong>at least 4 higher management executives</strong> before separation, deboarding, or severance can be ratified.</p>
+        </div>
+      `;
+      if (submitText) submitText.textContent = 'Initiate Executive Quorum (1/4)';
+    } else if (!AppState.isUpperManagement()) {
+      noticeContainer.innerHTML = `
+        <div class="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-[11px] text-amber-700 dark:text-amber-300 space-y-1">
+          <p class="font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px]">shield_person</span>
+            <span>Upper Management Sign-Off Required</span>
+          </p>
+          <p>As HR, submitting this dismissal queues it for <strong>Executive Sign-Off</strong>. Upper Management must approve before credentials are revoked and deboarding begins.</p>
+        </div>
+      `;
+      if (submitText) submitText.textContent = 'Submit for Executive Sign-Off';
+    } else {
+      noticeContainer.innerHTML = `
+        <div class="p-3 bg-primary/10 border border-primary/25 rounded-xl text-[11px] text-primary space-y-1">
+          <p class="font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px]">verified_user</span>
+            <span>Executive Direct Sign-Off Active</span>
+          </p>
+          <p>You hold Upper Management clearance (Rank ${AppState.currentUser.rank}). Your approval will instantly ratify the dismissal and unlock the 5-step deboarding workflow.</p>
+        </div>
+      `;
+      if (submitText) submitText.textContent = 'Sign Off & Ratify Dismissal';
+    }
+  }
 
   openModal('modal-terminate-employee');
 }
@@ -3379,85 +3534,427 @@ function handleTerminateEmployeeSubmit(e) {
   const emp = AppState.employees.find(e => e.id === empId);
   if (!emp) return;
 
-  if (emp.rank >= 4 && !AppState.isUpperManagement()) {
-    toast.error('Security Restriction', 'Only Upper Management (Rank 4+) can terminate managerial or executive personnel.');
+  // Dynamic Constitutional Protection: Highest ranking staff cannot be sacked!
+  if (AppState.isHighestRanking(emp)) {
+    toast.error('Constitutional Governance Lock', `Dynamic Protection Active: ${emp.name} holds the highest organizational rank (Rank ${emp.rank}) and cannot be dismissed.`);
     return;
   }
 
-  // Mark as terminated & initialize deboarding workflow
-  emp.status = 'Terminated';
+  if (emp.id === AppState.currentUser.id) {
+    toast.error('Governance Restriction', 'Cannot initiate termination proceedings against your own account.');
+    return;
+  }
+
+  if (emp.rank >= 4 && !AppState.isUpperManagement()) {
+    toast.error('Security Restriction', 'Only Higher Management can initiate dismissal for Upper Management (Rank 4+) personnel.');
+    return;
+  }
+
+  const isUpperMgmtTarget = emp.rank >= 4;
+  const isDirectExecRegular = (!isUpperMgmtTarget && AppState.isUpperManagement());
+
+  if (isDirectExecRegular) {
+    // Upper Management directly terminates a regular associate -> 1 required sign-off is instantly fulfilled!
+    emp.status = 'Terminated';
+    emp.clockedIn = false;
+    emp.clockInTime = null;
+    emp.terminationReason = reason;
+    emp.terminationNotes = notes;
+    emp.terminatedAt = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    emp.terminatedBy = AppState.currentUser.name;
+    emp.signedOffBy = AppState.currentUser.name;
+    emp.signedOffAt = emp.terminatedAt;
+    emp.pendingTermination = null;
+    emp.deboarding = {
+      accessRevoked: true,
+      assetsRetrieved: false,
+      assetsDetails: { uniform: false, scanner: false, keys: false, walkie: false },
+      payrollLiquidated: false,
+      payrollAmount: Math.round((emp.rank * 450 + 680) * 100) / 100,
+      ndaSigned: false,
+      exitInterviewCompleted: false,
+      status: 'In Progress'
+    };
+
+    // If active user was the one sacked, fallback session to Global Admin
+    if (emp.id === AppState.currentUserId) {
+      AppState.currentUserId = 'NEX-0001';
+      updateSessionUI();
+    }
+
+    // Remove associate from any active tasks/crews
+    AppState.tasks.forEach(task => {
+      if (task.teamLeadId === emp.id) {
+        task.teamLeadId = null;
+        task.teamLeadName = 'Reassignment Pending';
+      }
+      if (Array.isArray(task.assignees)) {
+        task.assignees = task.assignees.filter(a => a.id !== emp.id);
+      }
+    });
+
+    // Supabase sync
+    if (window.RetailSupabase && typeof window.RetailSupabase.terminateEmployee === 'function') {
+      window.RetailSupabase.terminateEmployee(emp.id, reason, notes);
+    }
+
+    AppState.auditLogs.unshift({
+      timestamp: 'Just now',
+      actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
+      action: 'Associate Sacked / Terminated (Executive Sign-Off)',
+      target: emp.name,
+      detail: `Terminated from ${emp.department}. Reason: ${reason}. Deboarding initialized.`
+    });
+
+    AppState.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      title: `Staff Terminated: ${emp.name}`,
+      message: `${emp.role} was terminated by ${AppState.currentUser.name} (${reason})`,
+      timestamp: 'Just now',
+      read: false,
+      type: 'staff_terminated'
+    });
+
+    AppState.saveState();
+    closeModal('modal-terminate-employee');
+    toast.error('Staff Member Dismissed', `${emp.name} has been terminated. Opening Deboarding & Dismissal Center...`);
+    refreshAllWorkforceViews();
+    navigateTo('deboarding');
+    return;
+  }
+
+  // Otherwise: Sacking requires sign-off / quorum!
+  const requiredSignOffs = isUpperMgmtTarget ? 4 : 1;
+  const initialSignOffs = [];
+
+  // If initiator is Upper Management (for an Upper Management target), initiator's submission counts as signature #1
+  if (AppState.currentUser.rank >= 4) {
+    initialSignOffs.push({
+      approverId: AppState.currentUser.id,
+      approverName: AppState.currentUser.name,
+      approverRole: AppState.currentUser.role,
+      approverRank: AppState.currentUser.rank,
+      signedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      notes: notes || 'Initiated separation proposal and affixed initial executive sign-off.'
+    });
+  }
+
+  emp.status = isUpperMgmtTarget ? 'Pending Executive Quorum' : 'Pending Dismissal Approval';
   emp.clockedIn = false;
   emp.clockInTime = null;
   emp.terminationReason = reason;
   emp.terminationNotes = notes;
-  emp.terminatedAt = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  emp.terminatedBy = AppState.currentUser.name;
-  emp.deboarding = {
-    accessRevoked: true,
-    assetsRetrieved: false,
-    assetsDetails: { uniform: false, scanner: false, keys: false, walkie: false },
-    payrollLiquidated: false,
-    payrollAmount: Math.round((emp.rank * 450 + 680) * 100) / 100,
-    ndaSigned: false,
-    exitInterviewCompleted: false,
-    status: 'In Progress'
+  emp.deboarding = null; // GUARANTEED NULL: NO DEBOARDING OR SEVERANCE CAN PROCEED!
+
+  emp.pendingTermination = {
+    id: `term-req-${Date.now()}`,
+    targetId: emp.id,
+    targetName: emp.name,
+    targetRank: emp.rank,
+    targetRole: emp.role,
+    targetDepartment: emp.department,
+    targetZone: emp.zone,
+    initiator: {
+      id: AppState.currentUser.id,
+      name: AppState.currentUser.name,
+      role: AppState.currentUser.role,
+      rank: AppState.currentUser.rank
+    },
+    initiatedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    reason: reason,
+    notes: notes,
+    proposedSeverance: Math.round((emp.rank * 450 + 680) * 100) / 100,
+    requiredSignOffs: requiredSignOffs,
+    signOffs: initialSignOffs,
+    status: isUpperMgmtTarget ? `Quorum In Progress (${initialSignOffs.length}/${requiredSignOffs})` : 'Awaiting Upper Management Sign-Off'
   };
 
-  // If active user was the one sacked, fallback session to Global Admin
-  if (emp.id === AppState.currentUserId) {
-    AppState.currentUserId = 'NEX-0001';
-    updateSessionUI();
-  }
-
-  // Remove associate from any active tasks/crews
-  AppState.tasks.forEach(task => {
-    if (task.teamLeadId === emp.id) {
-      task.teamLeadId = null;
-      task.teamLeadName = 'Reassignment Pending';
-    }
-    if (Array.isArray(task.assignees)) {
-      task.assignees = task.assignees.filter(a => a.id !== emp.id);
-    }
-  });
-
-  // Supabase sync
-  if (window.RetailSupabase && typeof window.RetailSupabase.terminateEmployee === 'function') {
-    window.RetailSupabase.terminateEmployee(emp.id, reason, notes);
-  }
-
-  // Audit log
   AppState.auditLogs.unshift({
     timestamp: 'Just now',
     actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
-    action: 'Associate Sacked / Terminated',
+    action: isUpperMgmtTarget ? 'Executive Quorum Initiated' : 'HR Dismissal Proposal Submitted',
     target: emp.name,
-    detail: `Terminated from ${emp.department}. Reason: ${reason}. Deboarding initialized.`
+    detail: `Proposed dismissal for ${emp.name} (${emp.department}). Requires ${requiredSignOffs} sign-offs. Current: ${initialSignOffs.length}.`
   });
 
-  // Add Notification
   AppState.notifications.unshift({
     id: `notif-${Date.now()}`,
-    title: `Staff Terminated: ${emp.name}`,
-    message: `${emp.role} was terminated by ${AppState.currentUser.name} (${reason})`,
+    title: isUpperMgmtTarget ? `Executive Quorum: ${emp.name}` : `Dismissal Sign-Off Required: ${emp.name}`,
+    message: `${AppState.currentUser.name} proposed dismissal for ${emp.name} (${reason}). Requires ${requiredSignOffs} executive sign-offs.`,
     timestamp: 'Just now',
     read: false,
-    type: 'staff_terminated'
+    type: 'dismissal_approval_required'
   });
 
   AppState.saveState();
   closeModal('modal-terminate-employee');
-  toast.error('Staff Member Dismissed', `${emp.name} has been terminated. Opening Deboarding & Dismissal Center...`);
-  renderHR();
-  renderHRDepartmentCrews();
-  renderHRStaffRoster();
-  if (typeof currentCrewModalDept !== 'undefined' && currentCrewModalDept) {
-    renderCrewMembersModal();
-  }
-  renderManagement();
-  renderShiftAttendanceFeed();
-  renderSwitchUserModalList();
-  updateNotificationBadge();
+  toast.info(
+    isUpperMgmtTarget ? 'Executive Quorum Initiated' : 'Dismissal Submitted for Review',
+    `${emp.name} placed in Sign-Off Queue (${initialSignOffs.length}/${requiredSignOffs} signatures).`
+  );
+  refreshAllWorkforceViews();
   navigateTo('deboarding');
+}
+
+function openSignOffModal(empId) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp || !emp.pendingTermination) {
+    toast.error('Dossier Not Found', 'No active dismissal sign-off pending for this associate.');
+    return;
+  }
+
+  if (!AppState.canSignOffTermination(emp)) {
+    toast.error('Clearance Denied', 'You do not hold sufficient Higher Management clearance to sign off on this dismissal.');
+    return;
+  }
+
+  if (emp.id === AppState.currentUser.id) {
+    toast.error('Conflict of Interest', 'Organizational governance strictly forbids signing off on your own dismissal.');
+    return;
+  }
+
+  const p = emp.pendingTermination;
+  const hasAlreadySigned = p.signOffs && p.signOffs.some(s => s.approverId === AppState.currentUser.id);
+  if (hasAlreadySigned) {
+    toast.info('Signature Already Affixed', 'You have already co-signed this dismissal proposal.');
+    return;
+  }
+
+  document.getElementById('signoff-emp-id').value = emp.id;
+  document.getElementById('signoff-emp-name').textContent = emp.name;
+  document.getElementById('signoff-emp-role').textContent = `${emp.role} • ${emp.department} • ${emp.zone}`;
+  document.getElementById('signoff-emp-avatar').textContent = emp.initials || 'NA';
+  
+  const rankPill = document.getElementById('signoff-target-rank-pill');
+  if (rankPill) {
+    rankPill.textContent = `Rank ${emp.rank}`;
+    rankPill.className = `badge-pill rank-badge-${emp.rank} font-mono text-[9px] font-bold`;
+  }
+
+  document.getElementById('signoff-initiator-info').textContent = `Proposed by ${p.initiator.name} (${p.initiator.role}) on ${p.initiatedAt}`;
+  document.getElementById('signoff-reason-text').textContent = p.reason || 'Operational Separation';
+  document.getElementById('signoff-notes-text').textContent = p.notes || 'No specific incident notes attached.';
+  document.getElementById('signoff-severance-text').textContent = `$${(p.proposedSeverance || 1130).toLocaleString()}`;
+
+  const currentCount = p.signOffs ? p.signOffs.length : 0;
+  const reqCount = p.requiredSignOffs;
+  const isQuorum = reqCount > 1;
+
+  document.getElementById('signoff-quorum-label').textContent = isQuorum ? 'Executive Quorum Progress' : 'Upper Management Sign-Off';
+  document.getElementById('signoff-quorum-count').textContent = `${currentCount} / ${reqCount} Signatures`;
+  
+  const pct = Math.round((currentCount / reqCount) * 100);
+  document.getElementById('signoff-quorum-bar').style.width = `${pct}%`;
+
+  const sigListEl = document.getElementById('signoff-signatures-list');
+  if (sigListEl) {
+    if (!p.signOffs || p.signOffs.length === 0) {
+      sigListEl.innerHTML = `<p class="text-[10px] text-on-surface-variant italic">No executive signatures affixed yet.</p>`;
+    } else {
+      sigListEl.innerHTML = p.signOffs.map(s => `
+        <div class="flex items-center justify-between text-[11px] p-1.5 rounded-lg bg-surface border border-outline-variant/40">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-secondary text-[14px]">verified</span>
+            <span class="font-bold text-on-surface">${s.approverName}</span>
+            <span class="text-[10px] font-mono text-outline">(${s.approverRole})</span>
+          </div>
+          <span class="text-[10px] font-mono text-on-surface-variant">${s.signedAt}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  const submitText = document.getElementById('signoff-submit-text');
+  if (submitText) {
+    if (currentCount + 1 >= reqCount) {
+      submitText.textContent = 'Affix Final Signature & Ratify Dismissal';
+    } else {
+      submitText.textContent = `Affix Co-Signature (${currentCount + 1} of ${reqCount})`;
+    }
+  }
+
+  const notice = document.getElementById('signoff-ratification-notice');
+  if (notice) {
+    notice.textContent = currentCount + 1 >= reqCount
+      ? 'This is the final required sign-off. Affixing your signature will instantly ratify the termination, permanently lock all system access, and unlock the 5-step deboarding workflow.'
+      : `Affixing your signature will record Signature ${currentCount + 1} of ${reqCount}. Additional higher management sign-offs will be required before termination is ratified.`;
+  }
+
+  document.getElementById('signoff-exec-notes').value = '';
+  openModal('modal-signoff-dismissal');
+}
+
+function handleSignOffDismissalSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const empId = form.emp_id.value;
+  const execNotes = form.signoff_exec_notes.value.trim();
+
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp || !emp.pendingTermination) return;
+
+  if (!AppState.canSignOffTermination(emp)) {
+    toast.error('Clearance Denied', 'Higher Management clearance required.');
+    return;
+  }
+
+  if (emp.id === AppState.currentUser.id) {
+    toast.error('Conflict of Interest', 'Cannot sign off on your own dismissal.');
+    return;
+  }
+
+  const p = emp.pendingTermination;
+  if (!p.signOffs) p.signOffs = [];
+  if (p.signOffs.some(s => s.approverId === AppState.currentUser.id)) {
+    toast.info('Already Signed', 'You have already affixed your signature.');
+    return;
+  }
+
+  // Add new executive signature
+  p.signOffs.push({
+    approverId: AppState.currentUser.id,
+    approverName: AppState.currentUser.name,
+    approverRole: AppState.currentUser.role,
+    approverRank: AppState.currentUser.rank,
+    signedAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    notes: execNotes || 'Executive concurrence and sign-off confirmed.'
+  });
+
+  const quorumMet = p.signOffs.length >= p.requiredSignOffs;
+
+  if (quorumMet) {
+    // Ratify dismissal!
+    emp.status = 'Terminated';
+    emp.clockedIn = false;
+    emp.clockInTime = null;
+    emp.terminatedAt = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    emp.terminatedBy = p.initiator.name;
+    emp.signedOffBy = p.signOffs.map(s => `${s.approverName} (${s.approverRole})`).join('; ');
+    emp.signedOffAt = emp.terminatedAt;
+    emp.terminationReason = p.reason;
+    emp.terminationNotes = p.notes;
+
+    // UNLOCK 5-STEP DEBOARDING WORKFLOW!
+    emp.deboarding = {
+      accessRevoked: true,
+      assetsRetrieved: false,
+      assetsDetails: { uniform: false, scanner: false, keys: false, walkie: false },
+      payrollLiquidated: false,
+      payrollAmount: p.proposedSeverance || Math.round((emp.rank * 450 + 680) * 100) / 100,
+      ndaSigned: false,
+      exitInterviewCompleted: false,
+      status: 'In Progress'
+    };
+
+    // Remove from active tasks
+    AppState.tasks.forEach(task => {
+      if (task.teamLeadId === emp.id) {
+        task.teamLeadId = null;
+        task.teamLeadName = 'Reassignment Pending';
+      }
+      if (Array.isArray(task.assignees)) {
+        task.assignees = task.assignees.filter(a => a.id !== emp.id);
+      }
+    });
+
+    // Supabase sync
+    if (window.RetailSupabase && typeof window.RetailSupabase.terminateEmployee === 'function') {
+      window.RetailSupabase.terminateEmployee(emp.id, p.reason, p.notes);
+    }
+
+    AppState.auditLogs.unshift({
+      timestamp: 'Just now',
+      actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
+      action: emp.rank >= 4 ? 'Executive Quorum Achieved (4/4)' : 'Executive Sign-Off Ratified',
+      target: emp.name,
+      detail: `Dismissal ratified by ${p.signOffs.map(s => s.approverName).join(', ')}. 5-step deboarding protocol activated.`
+    });
+
+    AppState.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      title: `Dismissal Ratified: ${emp.name}`,
+      message: `${emp.name} has been terminated following executive sign-off. Deboarding center is now active.`,
+      timestamp: 'Just now',
+      read: false,
+      type: 'dismissal_ratified'
+    });
+
+    toast.success('Dismissal Ratified!', `${emp.name} has been terminated. 5-step deboarding workflow unlocked.`);
+  } else {
+    // Signature added, still pending quorum
+    p.status = `Quorum In Progress (${p.signOffs.length}/${p.requiredSignOffs})`;
+
+    AppState.auditLogs.unshift({
+      timestamp: 'Just now',
+      actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
+      action: 'Executive Co-Sign Affixed',
+      target: emp.name,
+      detail: `Affixed signature ${p.signOffs.length} of ${p.requiredSignOffs} for dismissal of ${emp.name}.`
+    });
+
+    AppState.notifications.unshift({
+      id: `notif-${Date.now()}`,
+      title: `Executive Co-Sign: ${emp.name}`,
+      message: `${AppState.currentUser.name} affixed signature (${p.signOffs.length}/${p.requiredSignOffs}) for ${emp.name}.`,
+      timestamp: 'Just now',
+      read: false,
+      type: 'dismissal_cosigned'
+    });
+
+    toast.info('Executive Co-Sign Recorded', `Signature ${p.signOffs.length} of ${p.requiredSignOffs} recorded for ${emp.name}.`);
+  }
+
+  AppState.saveState();
+  closeModal('modal-signoff-dismissal');
+  refreshAllWorkforceViews();
+  navigateTo('deboarding');
+}
+
+function rejectEmployeeDismissal(empId) {
+  const emp = AppState.employees.find(e => e.id === empId);
+  if (!emp || !emp.pendingTermination) return;
+
+  if (!AppState.canSignOffTermination(emp)) {
+    toast.error('Clearance Denied', 'Only authorized Higher Management can veto or reject dismissal proposals.');
+    return;
+  }
+
+  const reason = prompt(`Enter executive justification for rejecting the dismissal proposal for ${emp.name}:`, 'Proposal rejected upon executive review. Retained on active roster.');
+  if (reason === null) return; // User cancelled prompt
+
+  const formerInitiator = emp.pendingTermination.initiator?.name || 'HR Operations';
+  emp.pendingTermination = null;
+  emp.status = 'Active';
+  emp.deboarding = null;
+
+  AppState.auditLogs.unshift({
+    timestamp: 'Just now',
+    actor: `${AppState.currentUser.name} (${AppState.currentUser.role})`,
+    action: 'Dismissal Proposal Vetoed / Rejected',
+    target: emp.name,
+    detail: `Executive veto exercised by ${AppState.currentUser.name}. Reason: ${reason}. Employee restored to Active duty.`
+  });
+
+  AppState.notifications.unshift({
+    id: `notif-${Date.now()}`,
+    title: `Dismissal Rejected: ${emp.name}`,
+    message: `Dismissal proposal for ${emp.name} was rejected by ${AppState.currentUser.name}. Initiated by: ${formerInitiator}.`,
+    timestamp: 'Just now',
+    read: false,
+    type: 'dismissal_vetoed'
+  });
+
+  AppState.saveState();
+  toast.success('Dismissal Rejected', `${emp.name} has been retained and restored to Active status.`);
+  refreshAllWorkforceViews();
+}
+
+function rejectCurrentSignOffModal() {
+  const empId = document.getElementById('signoff-emp-id').value;
+  closeModal('modal-signoff-dismissal');
+  if (empId) {
+    rejectEmployeeDismissal(empId);
+  }
 }
 
 function openDissolveTeamModal(deptName) {
@@ -7575,7 +8072,7 @@ function executeOmniCommand(query, source = 'cockpit') {
     // -----------------------------------------------------------------------
     // INTENT 11: DISMISSAL, TERMINATION & DEBOARDING WORKFLOW
     // -----------------------------------------------------------------------
-    else if (lower.includes('deboard') || lower.includes('dismiss') || lower.includes('fire') || lower.includes('terminate') || lower.includes('sack')) {
+    else if (lower.includes('deboard') || lower.includes('dismiss') || lower.includes('fire') || lower.includes('terminate') || lower.includes('sack') || lower.includes('sign off') || lower.includes('co-sign') || lower.includes('veto')) {
       if (!AppState.canPerformHRFunctions()) {
         toast.error('Clearance Denied', 'Staff termination & deboarding workflows are strictly restricted to HR Personnel and Upper Management.');
       } else {
@@ -7589,69 +8086,68 @@ function executeOmniCommand(query, source = 'cockpit') {
           }
         }
 
-        if (targetEmp && targetEmp.status !== 'Terminated') {
-          // Terminate this associate
-          targetEmp.status = 'Terminated';
-          targetEmp.clockedIn = false;
-          targetEmp.clockInTime = null;
-          targetEmp.deboarding = {
-            accessRevoked: true,
-            assetsRetrieved: false,
-            assetsDetails: { uniform: false, scanner: false, keys: false, walkie: false },
-            payrollLiquidated: false,
-            payrollAmount: Math.round((targetEmp.rank * 450 + 680) * 100) / 100,
-            ndaSigned: false,
-            exitInterviewCompleted: false,
-            status: 'In Progress'
-          };
-
-          AppState.auditLogs.unshift({
-            timestamp: 'Just now',
-            actor: `${AppState.currentUser.name} (via Executive AI)`,
-            action: 'Staff Involuntary Dismissal',
-            target: targetEmp.name,
-            detail: `Terminated employment. System credentials revoked. Initiated 5-step deboarding protocol.`
-          });
-
-          AppState.saveState();
-          renderEmployees();
-          renderShiftAttendanceFeed();
-          renderPermissionsMatrix();
-          renderHR();
-          renderHRDepartmentCrews();
-          renderHRStaffRoster();
-          renderCrewMembersModal();
-          renderFloorMap();
-          renderDeboarding();
-
+        // Action A: Veto / Reject Dismissal Proposal
+        if (targetEmp && targetEmp.pendingTermination && (lower.includes('veto') || lower.includes('reject'))) {
+          if (!AppState.canSignOffTermination(targetEmp)) {
+            toast.error('Clearance Denied', 'Higher Management clearance required to veto dismissal proposals.');
+          } else {
+            rejectEmployeeDismissal(targetEmp.id);
+            resultRecord = {
+              id: `exec-${Date.now()}`,
+              query: rawQuery,
+              badge: '✓ VETO EXERCISED: DISMISSAL REJECTED',
+              badgeClass: 'bg-surface-container text-on-surface',
+              title: `Vetoed Dismissal Proposal for ${targetEmp.name}`,
+              detail: `Associate retained on active roster. Credential lock cleared.`,
+              timestamp: 'Just now'
+            };
+            replyHtml = `<p class="text-xs">Dismissal proposal for <strong>${targetEmp.name}</strong> was rejected by Executive Veto. Associate restored to active status.</p>`;
+          }
+        }
+        // Action B: Co-Sign / Approve Pending Dismissal
+        else if (targetEmp && targetEmp.pendingTermination && (lower.includes('sign') || lower.includes('approve') || lower.includes('co-sign'))) {
+          openSignOffModal(targetEmp.id);
           resultRecord = {
             id: `exec-${Date.now()}`,
             query: rawQuery,
-            badge: '✓ EXECUTED: STAFF TERMINATED',
-            badgeClass: 'bg-error-container text-error',
-            title: `Dismissed ${targetEmp.name} & Initiated Deboarding`,
-            detail: `Access credentials, RFID badge, and biometric passkeys permanently locked. Transferred to Deboarding & Compliance Center.`,
-            diffHtml: `
-              <div><span class="text-on-surface-variant">Associate:</span> <strong>${targetEmp.name}</strong> (${targetEmp.department})</div>
-              <div><span class="text-error font-bold">Status:</span> <span>Active ➔ Terminated</span></div>
-              <div><span class="text-secondary font-bold">Deboarding:</span> <span>5-Step Separation Protocol Active</span></div>
-            `,
-            actionHtml: `
-              <button onclick="navigateTo('deboarding')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Open Deboarding Center &rarr;</button>
-            `,
+            badge: 'ACTION: EXECUTIVE SIGN-OFF MODAL',
+            badgeClass: 'bg-purple-500/20 text-purple-700 dark:text-purple-300',
+            title: `Opened Sign-Off Dossier for ${targetEmp.name}`,
+            detail: `Reviewing incident brief and affixing executive quorum signature.`,
+            actionHtml: `<button onclick="openSignOffModal('${targetEmp.id}')" class="px-3 py-1 bg-purple-600 text-white rounded-lg text-xs font-bold">Review &amp; Sign &rarr;</button>`,
             timestamp: 'Just now'
           };
-
-          replyHtml = `
-            <div class="space-y-2">
-              <div class="flex items-center justify-between pb-1 border-b border-outline-variant/40">
-                <span class="badge-pill bg-error text-white font-mono text-[9px] font-bold">TERMINATION EXECUTED</span>
-                <span class="text-[10px] font-mono text-on-surface-variant">${targetEmp.name}</span>
-              </div>
-              <p class="font-bold text-on-surface text-xs">Credentials permanently revoked. 5-step separation protocol initiated.</p>
-            </div>
-          `;
-          toast.warning('Associate Dismissed', `${targetEmp.name} dismissed. Separation workflow initiated.`);
+          replyHtml = `<p class="text-xs">Opened Executive Sign-Off modal for <strong>${targetEmp.name}</strong>.</p>`;
+        }
+        // Action C: Sacking Initiation
+        else if (targetEmp && targetEmp.status !== 'Terminated' && !targetEmp.pendingTermination) {
+          // Dynamic Constitutional Protection check
+          if (AppState.isHighestRanking(targetEmp)) {
+            toast.error('Constitutional Governance Lock', `Dynamic Protection: ${targetEmp.name} holds the highest organizational rank (Rank ${targetEmp.rank}) and cannot be dismissed.`);
+            resultRecord = {
+              id: `exec-${Date.now()}`,
+              query: rawQuery,
+              badge: '🛡️ CONSTITUTIONAL LOCK',
+              badgeClass: 'bg-amber-500/20 text-amber-700 dark:text-amber-300',
+              title: `Dismissal Blocked: ${targetEmp.name}`,
+              detail: `Associate holds the highest active rank in the organization (Rank ${targetEmp.rank}). Dynamic governance forbids involuntary dismissal.`,
+              timestamp: 'Just now'
+            };
+            replyHtml = `<p class="text-xs text-amber-600 dark:text-amber-400 font-bold">Constitutional Governance Lock: ${targetEmp.name} holds the highest rank (Rank ${targetEmp.rank}) and cannot be dismissed.</p>`;
+          } else {
+            openTerminateModal(targetEmp.id);
+            resultRecord = {
+              id: `exec-${Date.now()}`,
+              query: rawQuery,
+              badge: 'ACTION: DISMISSAL MODAL OPENED',
+              badgeClass: 'bg-error-container text-error',
+              title: `Initiating Dismissal for ${targetEmp.name}`,
+              detail: targetEmp.rank >= 4 ? 'Executive Quorum required (at least 4 higher management sign-offs).' : 'Upper Management sign-off required.',
+              actionHtml: `<button onclick="openTerminateModal('${targetEmp.id}')" class="px-3 py-1 bg-error text-white rounded-lg text-xs font-bold">Proceed with Dismissal &rarr;</button>`,
+              timestamp: 'Just now'
+            };
+            replyHtml = `<p class="text-xs">Opened dismissal workflow for <strong>${targetEmp.name}</strong> (${targetEmp.rank >= 4 ? 'Requires 4-Executive Quorum' : 'Requires Upper Management Sign-Off'}).</p>`;
+          }
         } else {
           // Route to deboarding center
           navigateTo('deboarding');
@@ -7661,13 +8157,13 @@ function executeOmniCommand(query, source = 'cockpit') {
             badge: 'NAVIGATION: DEBOARDING',
             badgeClass: 'bg-primary-container text-primary',
             title: 'Navigated to Dismissal & Deboarding Center',
-            detail: 'Reviewing involuntary terminations, asset recovery tracking, severance liquidations, and separation NDAs.',
+            detail: 'Reviewing involuntary terminations, executive sign-off queue, and separation dossiers.',
             actionHtml: `
               <button onclick="navigateTo('deboarding')" class="px-3 py-1 bg-primary text-white rounded-lg text-xs font-bold">Open Center &rarr;</button>
             `,
             timestamp: 'Just now'
           };
-          replyHtml = `<p class="text-xs">Navigated to the Staff Dismissal & Deboarding Center. Reviewing open separation dossiers.</p>`;
+          replyHtml = `<p class="text-xs">Navigated to the Staff Dismissal & Deboarding Center. Reviewing open separation dossiers and sign-off queue.</p>`;
           toast.info('Deboarding Center', 'Viewing separation and dismissal dossiers.');
         }
       }
@@ -7994,7 +8490,7 @@ let activeDeboardingFilter = 'all';
 
 function filterDeboardingList(filter) {
   activeDeboardingFilter = filter;
-  ['all', 'in_progress', 'completed'].forEach(f => {
+  ['all', 'pending', 'in_progress', 'completed'].forEach(f => {
     const btn = document.getElementById(`deboard-tab-${f === 'in_progress' ? 'progress' : f}`);
     if (btn) {
       if (f === filter) {
@@ -8009,9 +8505,11 @@ function filterDeboardingList(filter) {
 
 function renderDeboarding() {
   const container = document.getElementById('deboarding-dossier-list');
+  const pendingContainer = document.getElementById('deboarding-pending-queue');
   if (!container) return;
 
-  // Retrieve all terminated staff
+  // Retrieve pending sign-offs and terminated staff
+  const pendingStaff = AppState.employees.filter(e => e.pendingTermination && e.status !== 'Terminated');
   const terminatedStaff = AppState.employees.filter(e => e.status === 'Terminated');
 
   // Ensure deboarding object exists on each terminated staff
@@ -8038,27 +8536,200 @@ function renderDeboarding() {
     .filter(e => e.deboarding?.payrollLiquidated)
     .reduce((sum, e) => sum + (e.deboarding?.payrollAmount || 0), 0);
 
+  const kpiPending = document.getElementById('deboarding-kpi-pending');
   const kpiTotal = document.getElementById('deboarding-kpi-total');
   const kpiActive = document.getElementById('deboarding-kpi-active');
   const kpiAssets = document.getElementById('deboarding-kpi-assets');
   const kpiSeverance = document.getElementById('deboarding-kpi-severance');
+
   const countAll = document.getElementById('deboard-count-all');
+  const countPending = document.getElementById('deboard-count-pending');
   const countProgress = document.getElementById('deboard-count-progress');
   const countCompleted = document.getElementById('deboard-count-completed');
 
+  if (kpiPending) kpiPending.textContent = pendingStaff.length;
   if (kpiTotal) kpiTotal.textContent = totalDismissals;
   if (kpiActive) kpiActive.textContent = activeCases;
   if (kpiAssets) kpiAssets.textContent = assetsPending;
   if (kpiSeverance) kpiSeverance.textContent = `$${totalSeverance.toLocaleString()}`;
+
   if (countAll) countAll.textContent = totalDismissals;
+  if (countPending) countPending.textContent = pendingStaff.length;
   if (countProgress) countProgress.textContent = activeCases;
   if (countCompleted) countCompleted.textContent = totalDismissals - activeCases;
 
-  // Apply tab filter & search
   const searchQuery = (document.getElementById('deboarding-search-input')?.value || '').toLowerCase().trim();
+
+  // 1. Render Pending Approvals Queue
+  if (pendingContainer) {
+    let displayedPending = pendingStaff;
+    if (searchQuery) {
+      displayedPending = displayedPending.filter(e =>
+        e.name.toLowerCase().includes(searchQuery) ||
+        e.id.toLowerCase().includes(searchQuery) ||
+        e.department.toLowerCase().includes(searchQuery) ||
+        (e.pendingTermination?.reason && e.pendingTermination.reason.toLowerCase().includes(searchQuery))
+      );
+    }
+
+    if (activeDeboardingFilter === 'in_progress' || activeDeboardingFilter === 'completed') {
+      pendingContainer.innerHTML = '';
+    } else if (displayedPending.length > 0) {
+      pendingContainer.innerHTML = `
+        <div class="p-4 bg-purple-500/[0.04] border border-purple-500/30 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-purple-500/20">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-xl">how_to_reg</span>
+              <h3 class="font-headline text-sm font-bold text-on-surface">Executive Sign-Off &amp; Quorum Approval Queue</h3>
+            </div>
+            <span class="badge-pill bg-purple-500/20 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold">
+              ${displayedPending.length} Dossier${displayedPending.length > 1 ? 's' : ''} Awaiting Ratification
+            </span>
+          </div>
+
+          <div class="space-y-3">
+            ${displayedPending.map(emp => {
+              const p = emp.pendingTermination;
+              const signOffs = p.signOffs || [];
+              const reqCount = p.requiredSignOffs || 1;
+              const signCount = signOffs.length;
+              const pct = Math.round((signCount / reqCount) * 100);
+              const isUpperMgmt = emp.rank >= 4;
+
+              const hasSigned = signOffs.some(s => s.approverId === AppState.currentUser.id);
+              const isTarget = emp.id === AppState.currentUser.id;
+              const canSign = AppState.canSignOffTermination(emp) && !hasSigned && !isTarget;
+
+              return `
+                <div class="nexus-card p-4 border border-purple-500/30 bg-surface dark:bg-surface-lowest shadow-sm">
+                  <!-- Header -->
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-outline-variant/30">
+                    <div class="flex items-center gap-3">
+                      <div class="w-11 h-11 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25 flex items-center justify-center font-bold text-sm shrink-0">
+                        ${emp.initials || 'EX'}
+                      </div>
+                      <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <h4 class="font-headline text-sm font-bold text-on-surface">${emp.name}</h4>
+                          <span class="badge-pill bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[10px] font-bold border border-purple-500/25">
+                            ${isUpperMgmt ? 'EXECUTIVE QUORUM (4 REQUIRED)' : 'UPPER MGMT SIGN-OFF (1 REQUIRED)'}
+                          </span>
+                          <span class="badge-pill bg-surface-container font-mono text-[10px] text-on-surface-variant font-medium">${emp.id}</span>
+                          <span class="badge-pill rank-badge-${emp.rank} font-mono text-[9px] font-bold">Rank ${emp.rank}</span>
+                        </div>
+                        <p class="text-xs text-on-surface-variant mt-0.5">
+                          <strong class="text-on-surface">${emp.role}</strong> &bull; ${emp.department} &bull; ${emp.zone}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Quorum Progress -->
+                    <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1 shrink-0">
+                      <span class="text-xs font-bold text-on-surface">${signCount} of ${reqCount} Signatures</span>
+                      <div class="w-28 h-2 bg-surface-container rounded-full overflow-hidden">
+                        <div class="h-full bg-purple-600 transition-all duration-300" style="width: ${pct}%"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Details Grid -->
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 py-3 text-xs border-b border-outline-variant/30">
+                    <div>
+                      <span class="text-[10px] uppercase font-mono font-bold text-on-surface-variant block">Initiated By</span>
+                      <p class="font-semibold text-on-surface mt-0.5">${p.initiator.name} (${p.initiator.role})</p>
+                      <span class="text-[10px] text-outline font-mono">${p.initiatedAt}</span>
+                    </div>
+                    <div>
+                      <span class="text-[10px] uppercase font-mono font-bold text-on-surface-variant block">Reason & Justification</span>
+                      <p class="font-semibold text-on-surface mt-0.5">${p.reason || 'Operational Separation'}</p>
+                      <p class="text-[11px] text-on-surface-variant italic truncate">${p.notes || 'No extra incident notes'}</p>
+                    </div>
+                    <div>
+                      <span class="text-[10px] uppercase font-mono font-bold text-on-surface-variant block">Proposed Severance</span>
+                      <p class="font-bold text-secondary font-mono text-sm mt-0.5">$${(p.proposedSeverance || 1130).toLocaleString()}</p>
+                      <span class="text-[10px] text-on-surface-variant">Locked pending executive ratification</span>
+                    </div>
+                  </div>
+
+                  <!-- Signatures List -->
+                  <div class="py-2.5">
+                    <span class="text-[10px] uppercase font-mono font-bold text-on-surface-variant block mb-1">Affixed Executive Signatures</span>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${signOffs.map(s => `
+                        <div class="px-2.5 py-1 rounded-lg bg-surface-container-low border border-outline-variant/50 text-[11px] flex items-center gap-1.5 shadow-xs">
+                          <span class="material-symbols-outlined text-secondary text-[14px]">verified</span>
+                          <span class="font-semibold text-on-surface">${s.approverName}</span>
+                          <span class="text-[10px] font-mono text-outline">(${s.approverRole})</span>
+                        </div>
+                      `).join('')}
+                      ${Array.from({ length: Math.max(0, reqCount - signCount) }).map((_, i) => `
+                        <div class="px-2.5 py-1 rounded-lg bg-surface-container/40 border border-dashed border-outline-variant/70 text-[11px] flex items-center gap-1 text-outline">
+                          <span class="material-symbols-outlined text-[14px]">pending</span>
+                          <span>Pending Signature #${signCount + i + 1}</span>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-outline-variant/30">
+                    <div class="text-[11px] text-on-surface-variant flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[15px] text-amber-500">lock_clock</span>
+                      <span>Deboarding, credential purge &amp; severance payout <strong>locked</strong> until all ${reqCount} sign-offs are complete.</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      ${hasSigned ? `
+                        <span class="badge-pill bg-secondary/10 text-secondary font-semibold text-[11px] flex items-center gap-1 border border-secondary/25">
+                          <span class="material-symbols-outlined text-[14px]">check</span>
+                          <span>Your Signature Recorded</span>
+                        </span>
+                      ` : isTarget ? `
+                        <span class="badge-pill bg-error/10 text-error font-semibold text-[11px] flex items-center gap-1 border border-error/25">
+                          <span class="material-symbols-outlined text-[14px]">block</span>
+                          <span>Conflict of Interest: Self-Sign Blocked</span>
+                        </span>
+                      ` : canSign ? `
+                        <button onclick="openSignOffModal('${emp.id}')" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1 active:scale-95">
+                          <span class="material-symbols-outlined text-[15px]">draw</span>
+                          <span>Affix Executive Signature (${signCount + 1}/${reqCount})</span>
+                        </button>
+                      ` : `
+                        <span class="text-[10px] font-mono text-outline">Higher Management Clearance Required</span>
+                      `}
+                      ${(AppState.isUpperManagement() && !isTarget) ? `
+                        <button onclick="rejectEmployeeDismissal('${emp.id}')" class="px-3 py-1.5 bg-surface border border-outline-variant text-error hover:bg-error/10 rounded-xl text-xs font-semibold transition-all flex items-center gap-1 active:scale-95" title="Reject / Veto this dismissal proposal">
+                          <span class="material-symbols-outlined text-[15px]">close</span>
+                          <span>Veto / Reject</span>
+                        </button>
+                      ` : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    } else if (activeDeboardingFilter === 'pending') {
+      pendingContainer.innerHTML = `
+        <div class="nexus-card p-12 text-center text-on-surface-variant">
+          <span class="material-symbols-outlined text-5xl mb-2 text-secondary opacity-60">task_alt</span>
+          <h3 class="font-headline text-base font-bold text-on-surface">No Pending Executive Sign-Offs</h3>
+          <p class="text-xs text-on-surface-variant mt-1">All proposed dismissals have been signed off or no proposals are awaiting quorum.</p>
+        </div>
+      `;
+    } else {
+      pendingContainer.innerHTML = '';
+    }
+  }
+
+  // 2. Render Terminated & Deboarding Dossiers
   let displayed = terminatedStaff;
 
-  if (activeDeboardingFilter === 'in_progress') {
+  if (activeDeboardingFilter === 'pending') {
+    container.innerHTML = '';
+    return;
+  } else if (activeDeboardingFilter === 'in_progress') {
     displayed = displayed.filter(e => e.deboarding?.status !== 'Completed');
   } else if (activeDeboardingFilter === 'completed') {
     displayed = displayed.filter(e => e.deboarding?.status === 'Completed');
@@ -8679,12 +9350,18 @@ function handleUploadDocumentSubmit(e) {
   toast.success('Document Authorized & Published', `"${newDoc.title}" is now accessible to eligible workforce members.`);
 }
 
+window.AppState = AppState;
 window.renderDeboarding = renderDeboarding;
 window.filterDeboardingList = filterDeboardingList;
 window.toggleDeboardingStep = toggleDeboardingStep;
 window.authorizeDeboardingPayroll = authorizeDeboardingPayroll;
 window.finalizeDeboarding = finalizeDeboarding;
 window.reinstateStaff = reinstateStaff;
+window.openSignOffModal = openSignOffModal;
+window.handleSignOffDismissalSubmit = handleSignOffDismissalSubmit;
+window.rejectEmployeeDismissal = rejectEmployeeDismissal;
+window.rejectCurrentSignOffModal = rejectCurrentSignOffModal;
+window.updateHRPendingDismissalBanner = updateHRPendingDismissalBanner;
 
 window.renderDocuments = renderDocuments;
 window.canStaffAccessDocument = canStaffAccessDocument;

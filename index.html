@@ -790,6 +790,9 @@
         </div>
       </div>
 
+      <!-- Attention Banner: Pending Executive Dismissal Sign-Offs -->
+      <div id="hr-pending-dismissal-banner" class="hidden"></div>
+
       <!-- Department Teams & Shift Crews Command Console -->
       <section class="nexus-card p-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/40">
@@ -2668,22 +2671,30 @@
       </div>
 
       <!-- KPI Summary Cards -->
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="nexus-card p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-on-surface-variant font-medium">Pending Sign-Off</span>
+            <span class="material-symbols-outlined text-[18px] text-purple-600 dark:text-purple-400">how_to_reg</span>
+          </div>
+          <div id="deboarding-kpi-pending" class="font-headline text-2xl font-extrabold text-purple-600 dark:text-purple-400 font-mono">0</div>
+          <span class="text-[11px] text-on-surface-variant">Quorum &amp; executive review</span>
+        </div>
         <div class="nexus-card p-4">
           <div class="flex items-center justify-between mb-1">
             <span class="text-xs text-on-surface-variant font-medium">Total Dismissals</span>
             <span class="material-symbols-outlined text-[18px] text-error">gavel</span>
           </div>
           <div id="deboarding-kpi-total" class="font-headline text-2xl font-extrabold text-on-surface font-mono">0</div>
-          <span class="text-[11px] text-on-surface-variant">Archived workforce files</span>
+          <span class="text-[11px] text-on-surface-variant">Ratified workforce separations</span>
         </div>
         <div class="nexus-card p-4">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-xs text-on-surface-variant font-medium">Deboarding In-Progress</span>
+            <span class="text-xs text-on-surface-variant font-medium">Deboarding Active</span>
             <span class="material-symbols-outlined text-[18px] text-amber-500">pending_actions</span>
           </div>
           <div id="deboarding-kpi-active" class="font-headline text-2xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">0</div>
-          <span class="text-[11px] text-on-surface-variant">Steps pending completion</span>
+          <span class="text-[11px] text-on-surface-variant">Separation steps in-flight</span>
         </div>
         <div class="nexus-card p-4">
           <div class="flex items-center justify-between mb-1">
@@ -2699,7 +2710,7 @@
             <span class="material-symbols-outlined text-[18px] text-secondary">account_balance_wallet</span>
           </div>
           <div id="deboarding-kpi-severance" class="font-headline text-2xl font-extrabold text-secondary font-mono">$0</div>
-          <span class="text-[11px] text-on-surface-variant">Statutory PTO &amp; settlements</span>
+          <span class="text-[11px] text-on-surface-variant">Statutory settlements paid</span>
         </div>
       </section>
 
@@ -2707,13 +2718,19 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-surface-container-low/60 rounded-2xl border border-outline-variant/40">
         <div class="flex items-center gap-1.5 overflow-x-auto">
           <button id="deboard-tab-all" onclick="filterDeboardingList('all')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-primary text-on-primary transition-all deboard-filter-btn">All Dismissed (<span id="deboard-count-all">0</span>)</button>
-          <button id="deboard-tab-progress" onclick="filterDeboardingList('in_progress')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all deboard-filter-btn">In Progress (<span id="deboard-count-progress">0</span>)</button>
+          <button id="deboard-tab-pending" onclick="filterDeboardingList('pending')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all deboard-filter-btn">Pending Sign-Off (<span id="deboard-count-pending">0</span>)</button>
+          <button id="deboard-tab-progress" onclick="filterDeboardingList('in_progress')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all deboard-filter-btn">Deboarding In-Progress (<span id="deboard-count-progress">0</span>)</button>
           <button id="deboard-tab-completed" onclick="filterDeboardingList('completed')" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all deboard-filter-btn">Cleared &amp; Archived (<span id="deboard-count-completed">0</span>)</button>
         </div>
         <div class="relative min-w-[240px]">
           <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
-          <input id="deboarding-search-input" oninput="renderDeboarding()" type="text" placeholder="Search dismissed staff..." class="w-full pl-9 pr-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
+          <input id="deboarding-search-input" oninput="renderDeboarding()" type="text" placeholder="Search dismissed or pending staff..." class="w-full pl-9 pr-3 py-1.5 text-xs bg-surface dark:bg-surface-lowest border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none"/>
         </div>
+      </div>
+
+      <!-- Executive Quorum & Pending Sign-Off Container -->
+      <div id="deboarding-pending-queue" class="space-y-4">
+        <!-- Rendered dynamically by renderDeboardingPendingApprovals() -->
       </div>
 
       <!-- Dismissed Staff Cards Container -->
@@ -3462,20 +3479,112 @@
           <textarea name="terminate_notes" rows="2" placeholder="Record mandatory HR incident or justification..." class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-error focus:outline-none"></textarea>
         </div>
 
-        <div class="p-3 bg-error/10 border border-error/20 rounded-xl text-[11px] text-error space-y-1">
-          <p class="font-bold flex items-center gap-1">
-            <span class="material-symbols-outlined text-[15px]">warning</span>
-            <span>Critical Security Notice</span>
-          </p>
-          <p>Terminating this associate immediately revokes all POS/terminal passkeys, cancels uncompleted duty assignments, and synchronizes to the <code>nexus_employees</code> database table.</p>
-        </div>
+        <div id="terminate-governance-notice" class="space-y-2"></div>
 
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-outline-variant/40">
           <button type="button" onclick="closeModal('modal-terminate-employee')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
-          <button type="submit" class="px-5 py-2 bg-error text-white text-xs font-bold rounded-xl hover:bg-error/90 shadow-md active:scale-95 flex items-center gap-1.5">
+          <button id="terminate-submit-btn" type="submit" class="px-5 py-2 bg-error text-white text-xs font-bold rounded-xl hover:bg-error/90 shadow-md active:scale-95 flex items-center gap-1.5">
             <span class="material-symbols-outlined text-[16px]">gavel</span>
-            <span>Confirm Termination</span>
+            <span id="terminate-submit-text">Confirm Termination</span>
           </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: EXECUTIVE DISMISSAL SIGN-OFF & QUORUM -->
+  <!-- ========================================================================= -->
+  <div id="modal-signoff-dismissal" class="modal-backdrop hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+    <div class="modal-content w-full max-w-lg bg-surface-lowest dark:bg-surface-lowest border border-purple-500/40 rounded-2xl shadow-2xl p-6 relative">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/50">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">verified_user</span>
+          </div>
+          <div>
+            <h3 class="font-headline text-lg font-bold text-on-surface">Executive Dismissal Authorization</h3>
+            <p class="text-xs text-on-surface-variant">Constitutional sign-off &amp; multi-executive quorum approval</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-signoff-dismissal')" class="p-1 rounded-full text-on-surface-variant hover:text-on-surface">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="handleSignOffDismissalSubmit(event)" class="space-y-4">
+        <input type="hidden" id="signoff-emp-id" name="emp_id" value=""/>
+
+        <!-- Target Associate Dossier Card -->
+        <div class="p-3.5 bg-surface-container rounded-xl border border-outline-variant/50 flex items-center gap-3">
+          <div id="signoff-emp-avatar" class="w-10 h-10 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold text-xs">NA</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <h4 id="signoff-emp-name" class="font-bold text-xs text-on-surface truncate">Associate Name</h4>
+              <span id="signoff-target-rank-pill" class="badge-pill bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono text-[9px] font-bold">Rank 1</span>
+            </div>
+            <p id="signoff-emp-role" class="text-[11px] text-on-surface-variant truncate">Role Title • Department</p>
+            <p id="signoff-initiator-info" class="text-[10px] text-outline font-mono">Proposed by Initiator</p>
+          </div>
+        </div>
+
+        <!-- Stated Reason & Severance Preview -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div class="p-2.5 bg-surface-container-low rounded-xl border border-outline-variant/40">
+            <span class="text-[10px] uppercase font-mono font-bold text-on-surface-variant block mb-0.5">Termination Reason</span>
+            <p id="signoff-reason-text" class="font-semibold text-on-surface">Misconduct</p>
+            <p id="signoff-notes-text" class="text-[11px] text-on-surface-variant italic truncate mt-0.5">Incident details</p>
+          </div>
+          <div class="p-2.5 bg-surface-container-low rounded-xl border border-outline-variant/40">
+            <span class="text-[10px] uppercase font-mono font-bold text-on-surface-variant block mb-0.5">Proposed Severance Package</span>
+            <p id="signoff-severance-text" class="font-bold text-secondary font-mono text-base">$1,130</p>
+            <span class="text-[10px] text-on-surface-variant">Statutory PTO &amp; separation release</span>
+          </div>
+        </div>
+
+        <!-- Quorum Signatures Tracker -->
+        <div class="p-3 bg-purple-500/[0.04] border border-purple-500/25 rounded-xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">how_to_reg</span>
+              <span id="signoff-quorum-label">Governance Sign-Off Progress</span>
+            </span>
+            <span id="signoff-quorum-count" class="font-mono text-xs font-bold text-purple-700 dark:text-purple-300">1 / 4 Signatures</span>
+          </div>
+          <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+            <div id="signoff-quorum-bar" class="h-full bg-purple-600 transition-all duration-300" style="width: 25%"></div>
+          </div>
+          <div id="signoff-signatures-list" class="space-y-1 pt-1 max-h-24 overflow-y-auto">
+            <!-- Dynamic list of recorded signatures -->
+          </div>
+        </div>
+
+        <!-- Approver Directive / Notes -->
+        <div>
+          <label class="block text-xs font-semibold text-on-surface mb-1">Executive Sign-Off Directive / Notes (Optional)</label>
+          <textarea id="signoff-exec-notes" name="signoff_exec_notes" rows="2" placeholder="Record executive concurrence, clearance instruction, or statutory authorization remarks..." class="w-full px-3 py-2 text-xs bg-surface dark:bg-surface-low border border-outline-variant rounded-xl focus:ring-1 focus:ring-purple-500 focus:outline-none"></textarea>
+        </div>
+
+        <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-700 dark:text-amber-300 space-y-0.5">
+          <p class="font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[15px]">gavel</span>
+            <span>Legal Notice of Executive Ratification</span>
+          </p>
+          <p id="signoff-ratification-notice">Affixing your executive signature authenticates this involuntary separation. When all required sign-offs are logged, terminal passkeys are permanently locked and the 5-step deboarding workflow activates.</p>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-outline-variant/40">
+          <button type="button" onclick="rejectCurrentSignOffModal()" class="px-3 py-2 text-xs font-semibold text-error hover:bg-error/10 rounded-xl flex items-center gap-1 transition-colors">
+            <span class="material-symbols-outlined text-[15px]">close</span>
+            <span>Veto / Reject Proposal</span>
+          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="closeModal('modal-signoff-dismissal')" class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:bg-surface-container rounded-xl">Cancel</button>
+            <button id="signoff-submit-btn" type="submit" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow-md active:scale-95 flex items-center gap-1.5 transition-all">
+              <span class="material-symbols-outlined text-[16px]">draw</span>
+              <span id="signoff-submit-text">Affix Signature &amp; Ratify</span>
+            </button>
+          </div>
         </div>
       </form>
     </div>
